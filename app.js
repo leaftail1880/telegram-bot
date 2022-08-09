@@ -57,6 +57,11 @@ bot.command("time", (ctx) => {
   ctx.reply(t.shortTime());
 });
 
+
+bot.command("for", (ctx) => {
+  ctx.reply(process.env);
+});
+
 // bot.on("message", (ctx) => {
 //     ctx.reply(ctx.message.from.id)
 //   const ogr = MEMBERS[ctx.message.from.id];
