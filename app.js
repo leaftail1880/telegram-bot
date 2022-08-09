@@ -7,7 +7,7 @@ import { t } from "./functions/timeCLS.js";
 
 // node app
 // nodemon app
-let VERSION = 1,
+let VERSION = 5,
   IsStable = true;
 /**======================
  * Инициализация процессов
