@@ -1,14 +1,14 @@
-import 'dotenv/config';
+import "dotenv/config";
 import express from "express";
 import { Telegraf } from "telegraf";
 import { MEMBERS, PORT } from "./config.js";
-import { format } from './functions/formatterCLS.js';
-import { t } from './functions/timeCLS.js';
+import { format } from "./functions/formatterCLS.js";
+import { t } from "./functions/timeCLS.js";
 
 // node app
 // nodemon app
 let VERSION = 1,
-IsStable = true
+  IsStable = true;
 /**======================
  * Инициализация процессов
  *========================**/
@@ -24,25 +24,26 @@ bot.start((ctx) => {
 });
 /*========================*/
 
-
 /**================================================================================================
  *                                           КОМАНДЫ
  *  Все самые основные команды бота
- *  
- *  
- *  
+ *
+ *
+ *
  *================================================================================================**/
 bot.command("test", (ctx) => {
-  if (ctx.message.text.startsWith('.')) return
+  if (ctx.message.text.startsWith(".")) return;
   const ogr = MEMBERS[ctx.message.from.id];
-  if (!ogr) return
-  //ctx.reply('Дата:\n'+ stringifyEx(ogr, ' '))
-  let time = t.ArrrayTime(), ss = Number(ogr.start), ee = Number(ogr.end)
-  time[0] = time[0] + ogr.msk ?? 0
-  time = Number(`${time[0]}${time[1]}`)
-   ctx.reply(`${ss}\n${time}\n${ee}`)
-   ctx.reply(`${tt >= ss} ${tt <= ee}`)
-  if (tt >= ss || tt <= ee) ctx.deleteMessage(ctx.message.message_id)
+  if (!ogr) return;
+  let time = t.ArrrayTime(),
+    ss = Number(ogr.start),
+    ee = Number(ogr.end);
+  time[0] = time[0] + ogr.msk ?? 0;
+  time = Number(`${time[0]}${time[1]}`);
+  ctx.reply(`${ss}\n${time}\n${ee}`);
+  ctx.reply(`state: ${tt >= ss} ${tt <= ee}`);
+  if ((tt >= ss && ss != 0) || tt <= ee)
+    ctx.deleteMessage(ctx.message.message_id);
 });
 
 bot.command("time", (ctx) => {
@@ -60,10 +61,12 @@ bot.command("reg", (ctx) => {
 });
 
 bot.launch();
-app.listen(PORT, () => console.log(`Port ${PORT}, version ${VERSION} (${IsStable ? 'Стабильная' : "Тестовая"})`));
-
-
+app.listen(PORT, () =>
+  console.log(
+    `Port ${PORT}, version ${VERSION} (${IsStable ? "Стабильная" : "Тестовая"})`
+  )
+);
 
 // Включить плавную остановку
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
