@@ -43,8 +43,8 @@ bot.command("test", (ctx) => {
     if (`${time[1]}`.length < 2) time[1] = '0' + time[1]
     time[0] = time[0] + ogr.msk ?? 0;
     time = Number(`${time[0]}${time[1]}`);
-    ctx.reply(`${ss}\n${time}\n${ee}`);
-    ctx.reply(`state: ${time >= ss} ${time <= ee}`);
+    ctx.reply(`Время: (кривой формат)\n${ss}\n${time}\n${ee}`);
+    ctx.reply(`Если хотя бы один true, сообщение удалится: ${(ss && time >= ss)} ${time <= ee}`);
     if ((ss && time >= ss) || time <= ee)
       ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
