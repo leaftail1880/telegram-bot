@@ -32,18 +32,22 @@ bot.start((ctx) => {
  *
  *================================================================================================**/
 bot.command("test", (ctx) => {
-  if (ctx.message.text.startsWith(".")) return;
-  const ogr = MEMBERS[ctx.message.from.id];
-  if (!ogr) return;
-  let time = t.ArrrayTime(),
-    ss = Number(ogr.start),
-    ee = Number(ogr.end);
-  time[0] = time[0] + ogr.msk ?? 0;
-  time = Number(`${time[0]}${time[1]}`);
-  ctx.reply(`${ss}\n${time}\n${ee}`);
-  ctx.reply(`state: ${tt >= ss} ${tt <= ee}`);
-  if ((tt >= ss && ss != 0) || tt <= ee)
-    ctx.deleteMessage(ctx.message.message_id);
+  try {
+    if (ctx.message.text.startsWith(".")) return;
+    const ogr = MEMBERS[ctx.message.from.id];
+    if (!ogr) return;
+    let time = t.ArrrayTime(),
+      ss = Number(ogr.start),
+      ee = Number(ogr.end);
+    time[0] = time[0] + ogr.msk ?? 0;
+    time = Number(`${time[0]}${time[1]}`);
+    ctx.reply(`${ss}\n${time}\n${ee}`);
+    ctx.reply(`state: ${tt >= ss} ${tt <= ee}`);
+    if ((time >= ss && ss != 0) || time <= ee)
+      ctx.deleteMessage(ctx.message.message_id);
+  } catch (e) {
+    ctx.reply(format.stringifyEx(e, ' '))
+  }
 });
 
 bot.command("time", (ctx) => {
