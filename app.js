@@ -118,7 +118,7 @@ bot.command("test", (ctx) => {
   const ee = e.getTime()
    ctx.reply(`${s.toTimeString()}` + '\n'+ ''+ t.toTimeString()  + '\n'+ `${e.toTimeString()}`)
    ctx.reply(`${tt >= ss} ${tt <= ee}`)
-  if (tt >= ss || tt <= ee) ctx.reply(ctx.message.message_id)
+  if (tt >= ss || tt <= ee) ctx.deleteMessage(ctx.message.message_id)
 });
 
 bot.command("time", (ctx) => {
@@ -137,3 +137,9 @@ bot.command("reg", (ctx) => {
 
 bot.launch();
 app.listen(PORT, () => console.log(`My server is running on port ${PORT}`));
+
+
+
+// Включить плавную остановку
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
