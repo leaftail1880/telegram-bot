@@ -42,11 +42,12 @@ bot.command("test", (ctx) => {
     time[0] = time[0] + ogr.msk ?? 0;
     time = Number(`${time[0]}${time[1]}`);
     ctx.reply(`${ss}\n${time}\n${ee}`);
-    ctx.reply(`state: ${tt >= ss} ${tt <= ee}`);
+    ctx.reply(`state: ${time >= ss} ${time <= ee}`);
     if ((time >= ss && ss != 0) || time <= ee)
       ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
-    ctx.reply(format.stringifyEx(e, ' '))
+    typeof e === 'object' ? ctx.reply(format.stringifyEx(e, ' ')) : ctx.reply(e)
+    console.warn(e);
   }
 });
 
