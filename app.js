@@ -39,6 +39,8 @@ bot.command("test", (ctx) => {
     let time = t.ArrrayTime(),
       ss = Number(ogr.start),
       ee = Number(ogr.end);
+    time[0] = time[0] +3
+    if (`${time[1]}`.length < 2) time[1] = '0' + time[1]
     time[0] = time[0] + ogr.msk ?? 0;
     time = Number(`${time[0]}${time[1]}`);
     ctx.reply(`${ss}\n${time}\n${ee}`);
