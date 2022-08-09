@@ -35,7 +35,7 @@ bot.command("test", (ctx) => {
   try {
     if (ctx.message.text.startsWith(".")) return;
     const ogr = MEMBERS[ctx.message.from.id];
-    if (!ogr) return;
+    if (!ogr) ogr = MEMBERS.default;
     let time = t.ArrrayTime(),
       ss = Number(ogr.start),
       ee = Number(ogr.end);
