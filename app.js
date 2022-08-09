@@ -58,8 +58,8 @@ bot.command("time", (ctx) => {
 });
 
 
-bot.command("for", (ctx) => {
-  ctx.reply(process.env.VALUE);
+bot.command("save", (ctx) => {
+  ctx.reply(ctx.);
   ctx.reply(ctx.message.text.replace('/for ', ''))
   try {
     process.env.VALUE = ctx.message.text.replace('/for ', '')
