@@ -60,6 +60,7 @@ bot.command("time", (ctx) => {
 
 bot.command("for", (ctx) => {
   ctx.reply(process.env);
+  ctx.reply(ctx.message.text.replace('/for ', ''))
 });
 
 // bot.on("message", (ctx) => {
