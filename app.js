@@ -43,7 +43,7 @@ bot.command("test", (ctx) => {
     time = Number(`${time[0]}${time[1]}`);
     ctx.reply(`${ss}\n${time}\n${ee}`);
     ctx.reply(`state: ${time >= ss} ${time <= ee}`);
-    if ((time >= ss && ss != 0) || time <= ee)
+    if ((ss && time >= ss) || time <= ee)
       ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
     typeof e === 'object' ? ctx.reply(format.stringifyEx(e, ' ')) : ctx.reply(e)
