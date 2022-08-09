@@ -7,7 +7,8 @@ import { t } from './functions/timeCLS.js';
 
 // node app
 // nodemon app
-
+let VERSION = 1,
+IsStable = true
 /**======================
  * Инициализация процессов
  *========================**/
@@ -59,7 +60,7 @@ bot.command("reg", (ctx) => {
 });
 
 bot.launch();
-app.listen(PORT, () => console.log(`My server is running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Port ${PORT}, version ${VERSION} (${IsStable ? 'Стабильная' : "Тестовая"})`));
 
 
 
