@@ -20,6 +20,11 @@ bot.command("", (ctx) => {
 
 */
 
+let members = {} 
+env.CUSTOM_MEMBERS.split(',').forEach(e => {
+  members[e.split(':')[0]] = e.split(':')[1]
+});
+
 commands.push({ command: "chat", description: "Информация о чате" });
 bot.command("chat", (ctx) => {
   ctx.reply(`Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title}\nType: ${ctx.chat.type}`)
@@ -29,9 +34,14 @@ bot.command("chat", (ctx) => {
 commands.push({ command: "test", description: "Проверка" });
 bot.command("test", (ctx) => {
   try {
-    const ogr = MEMBERS[ctx.message.from.id];
+    const id = members[ctx.message.from.i]
+    const ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
-    if (ctx.message.text.startsWith("!") && ogr.admin) return;
+    let c = false
+    await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
+      if (e.status == 'administrator' || e.status == 'creator') c =true
+    })
+    if (ctx.message.text.startsWith("!") &&  c) return;
     let time = t.ArrrayTime(),
       ss = Number(`${Number(ogr.start[0]) + ogr.msk}${ogr.start[1]}`),
       ee = Number(`${Number(ogr.end[0]) + ogr.msk}${ogr.end[1]}`);
@@ -65,5 +75,10 @@ bot.command("test", (ctx) => {
 
 bot.command("reg", (ctx) => {
   ctx.reply("Твой айди: " + ctx.message.from.id);
+  let c = false
+  await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
+    if (e.status == 'administrator' || e.status == 'creator') c =true
+  })
+  ctx.reply('Ты админ: ' + c)
 });
 bot.telegram.setMyCommands(commands);

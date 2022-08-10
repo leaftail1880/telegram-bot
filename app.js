@@ -13,6 +13,7 @@ let VERSION = [5, 0, 24]
  *========================**/
 const app = express();
 export const bot = new Telegraf(process.env.TOKEN);
+export const env = process.env
 /*========================*/
 
 /**======================
