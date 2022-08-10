@@ -23,6 +23,9 @@ bot.start((ctx) => {
 });
 /*========================*/
 
+bot.help((ctx) => {
+  ctx.telegram.getMyCommands().then(r => ctx.reply(r.join('\n')))
+})
 
 const Plugins = ["commands"];
 for (const plugin of Plugins) {
