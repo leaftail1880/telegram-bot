@@ -38,7 +38,7 @@ bot.command("test", (ctx) => {
     const ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
     let c = false
-    await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
+    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
       if (e.status == 'administrator' || e.status == 'creator') c =true
     })
     if (ctx.message.text.startsWith("!") &&  c) return;
@@ -76,7 +76,7 @@ bot.command("test", (ctx) => {
 bot.command("reg", (ctx) => {
   ctx.reply("Твой айди: " + ctx.message.from.id);
   let c = false
-  await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
+  ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
     if (e.status == 'administrator' || e.status == 'creator') c =true
   })
   ctx.reply('Ты админ: ' + c)
