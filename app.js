@@ -30,7 +30,6 @@ for (const plugin of Plugins) {
   import(`./${plugin}/index.js`)
     .then(() => {
       console.warn(`[loaded] ${plugin} (${Date.now() - start} ms)`);
-      count++;
     })
     .catch((error) => {
       console.warn(`[Error][plugin] ${plugin}: ` + error + error.stack);
