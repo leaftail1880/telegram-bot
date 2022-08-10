@@ -1,19 +1,17 @@
 import "dotenv/config";
 import express from "express";
 import { Telegraf } from "telegraf";
-import { MEMBERS, PORT } from "./config.js";
-import { format } from "./functions/formatterCLS.js";
-import { t } from "./functions/timeCLS.js";
+import { PORT } from "./config.js";
+
 
 // node app
 // nodemon app
-let VERSION = 5,
-  IsStable = true;
+let VERSION = [5, 0, 1]
 /**======================
  * Инициализация процессов
  *========================**/
 const app = express();
-const bot = new Telegraf(process.env.TOKEN);
+export const bot = new Telegraf(process.env.TOKEN);
 /*========================*/
 
 /**======================
@@ -24,66 +22,26 @@ bot.start((ctx) => {
 });
 /*========================*/
 
-/**================================================================================================
- *                                           КОМАНДЫ
- *  Все самые основные команды бота
- *
- *
- *
- *================================================================================================**/
-bot.command("test", (ctx) => {
-  try {
-    if (ctx.message.text.startsWith(".")) return;
-    const ogr = MEMBERS[ctx.message.from.id];
-    if (!ogr) ogr = MEMBERS.default;
-    let time = t.ArrrayTime(),
-      ss = Number(ogr.start),
-      ee = Number(ogr.end);
-    time[0] = time[0] +3
-    if (`${time[1]}`.length < 2) time[1] = '0' + time[1]
-    time[0] = time[0] + ogr.msk ?? 0;
-    time = Number(`${time[0]}${time[1]}`);
-    ctx.reply(`Время: (кривой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
-    // ctx.reply(`Если хотя бы один true, сообщение удалится: ${(ss && time >= ss)} ${time <= ee}`);
-    if ((ss && time >= ss) || time <= ee)
-      ctx.deleteMessage(ctx.message.message_id);
-  } catch (e) {
-    typeof e === 'object' ? ctx.reply(format.stringifyEx(e, ' ')) : ctx.reply(e)
-    console.warn(e);
-  }
-});
 
-bot.command("time", (ctx) => {
-  ctx.reply(t.shortTime());
-});
+const Plugins = ["commands"];
+for (const plugin of Plugins) {
+  const start = Date.now();
 
+  import(`./${plugin}/index.js`)
+    .then(() => {
+      console.warn(`[loaded] ${plugin} (${Date.now() - start} ms)`);
+      count++;
+    })
+    .catch((error) => {
+      console.warn(`[Error][plugin] ${plugin}: ` + error + error.stack);
+    });
+}
 
-bot.command("save", (ctx) => {
-  ctx.reply(ctx.message.text.replace('/for ', ''))
-  try {
-    process.env.VALUE = ctx.message.text.replace('/for ', '')
-    ctx.reply(process.env.VALUE);
-  } catch (e) {
-    ctx.reply(e)
-  }
-
-
-});
-
-// bot.on("message", (ctx) => {
-//     ctx.reply(ctx.message.from.id)
-//   const ogr = MEMBERS[ctx.message.from.id];
-//   ctx.reply(ogr)
-// });
-
-bot.command("reg", (ctx) => {
-  ctx.reply("Твой айди: " + ctx.message.from.id);
-});
 
 bot.launch();
 app.listen(PORT, () =>
   console.log(
-    `Port ${PORT}, version ${VERSION} (${IsStable ? "Стабильная" : "Тестовая"})`
+    `v${VERSION.join('.')} (${VERSION[2] != 0 ? "Стабильная" : "Тестовая"}), Port ${PORT}`
   )
 );
 
