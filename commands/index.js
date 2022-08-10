@@ -1,4 +1,4 @@
-import { bot } from "../app.js";
+import { bot, env } from "../app.js";
 import { MEMBERS } from "../config.js";
 import { format } from "../functions/formatterCLS.js";
 import { t } from "../functions/timeCLS.js";
