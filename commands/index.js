@@ -20,10 +20,10 @@ bot.command("", (ctx) => {
 
 */
 
-let members = {} 
-env.CUSTOM_MEMBERS.split(',').forEach(e => {
-  members[e.split(':')[0]] = e.split(':')[1]
-});
+// let members = {} 
+// env.CUSTOM_MEMBERS.split(',').forEach(e => {
+//   members[e.split(':')[0]] = e.split(':')[1]
+// });
 
 commands.push({ command: "chat", description: "Информация о чате" });
 bot.command("chat", (ctx) => {
