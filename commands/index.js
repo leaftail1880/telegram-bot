@@ -34,22 +34,7 @@ import { t } from "../functions/timeCLS.js";
   }
 });
 
-bot.command("time", (ctx) => {
-  ctx.reply(t.shortTime());
-});
 
-
-bot.command("save", (ctx) => {
-  ctx.reply(ctx.message.text.replace('/for ', ''))
-  try {
-    process.env.VALUE = ctx.message.text.replace('/for ', '')
-    ctx.reply(process.env.VALUE);
-  } catch (e) {
-    ctx.reply(e)
-  }
-
-
-});
 
 // bot.on("message", (ctx) => {
 //     ctx.reply(ctx.message.from.id)

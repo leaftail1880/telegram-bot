@@ -6,7 +6,8 @@ import { PORT } from "./config.js";
 
 // node app
 // nodemon app
-let VERSION = [5, 0, 1]
+let VERSION = [5, 0, 24]
+
 /**======================
  * Инициализация процессов
  *========================**/
@@ -40,7 +41,7 @@ for (const plugin of Plugins) {
 bot.launch();
 app.listen(PORT, () =>
   console.log(
-    `v${VERSION.join('.')} (${VERSION[2] != 0 ? "Стабильная" : "Тестовая"}), Port ${PORT}`
+    `v${VERSION.join('.')} (${VERSION[2] == 0 ? "Стабильная" : "Тестовая"}), Port ${PORT}`
   )
 );
 
