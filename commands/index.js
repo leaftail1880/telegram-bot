@@ -54,17 +54,15 @@ bot.command("test", (ctx) => {
     if (`${time[1]}`.length < 2) time[1] = "0" + time[1];
     time = Number(`${time[0]}${time[1]}`);
     //ctx.reply(`Время: (кривой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
+    let q = (ss && time >= ss)
     ctx.reply(
-      `Если хотя бы один true, сообщение удалится: ${ss && time >= ss} ${
+      `Если хотя бы один true, сообщение удалится: ${q} ${
         time <= ee
       }`
     );
-    if ((ss && time >= ss) || time <= ee)
+    if (q || time <= ee)
       ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
-    typeof e === "object"
-      ? ctx.reply(format.stringifyEx(e, " "))
-      : ctx.reply(e);
     console.warn(e);
   }
 });
