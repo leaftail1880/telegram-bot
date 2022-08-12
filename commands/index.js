@@ -43,9 +43,10 @@ bot.command("test", (ctx) => {
       if (e.status == "administrator" || e.status == "creator") c = true;
     });
     if (ctx.message.text.startsWith("!") && c) return;
-    let time = t.ArrrayTime(),
+    let time = ctx.message.split(' ').slice(1)//t.ArrrayTime(),
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
+      ctx.reply(time)
     time[0] = time[0] + 3;
     if (time[0] == 24) time[0] = 0;
     if (time[0] == 25) time[0] = 1;
