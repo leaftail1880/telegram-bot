@@ -20,31 +20,32 @@ bot.command("", (ctx) => {
 
 */
 
-// let members = {} 
-// env.CUSTOM_MEMBERS.split(',').forEach(e => {
-//   members[e.split(':')[0]] = e.split(':')[1]
-// });
+let members = {};
+env.CUSTOM_MEMBERS.split(",").forEach((e) => {
+  members[e.split(":")[0]] = e.split(":")[1];
+});
 
 commands.push({ command: "chat", description: "Информация о чате" });
 bot.command("chat", (ctx) => {
-  ctx.reply(`Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title}\nType: ${ctx.chat.type}`)
+  ctx.reply(
+    `Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title}\nType: ${ctx.chat.type}`
+  );
 });
-
 
 commands.push({ command: "test", description: "Проверка" });
 bot.command("test", (ctx) => {
   try {
-    const id = members[ctx.message.from.i]
+    const id = members[ctx.message.from.id];
     const ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
-    let c = false
-    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
-      if (e.status == 'administrator' || e.status == 'creator') c =true
-    })
-    if (ctx.message.text.startsWith("!") &&  c) return;
+    let c = false;
+    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
+      if (e.status == "administrator" || e.status == "creator") c = true;
+    });
+    if (ctx.message.text.startsWith("!") && c) return;
     let time = t.ArrrayTime(),
-      ss = Number(`${Number(ogr.start[0]) + ogr.msk}${ogr.start[1]}`),
-      ee = Number(`${Number(ogr.end[0]) + ogr.msk}${ogr.end[1]}`);
+      ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
+      ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
     time[0] = time[0] + 3;
     if (time[0] == 24) time[0] = 0;
     if (time[0] == 25) time[0] = 1;
@@ -72,13 +73,26 @@ bot.command("test", (ctx) => {
 //   const ogr = MEMBERS[ctx.message.from.id];
 //   ctx.reply(ogr)
 // });
-
+commands.push({ command: "reg", description: "Проверка" });
 bot.command("reg", (ctx) => {
   ctx.reply("Твой айди: " + ctx.message.from.id);
-  let c = false
-  ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then(e => {
-    if (e.status == 'administrator' || e.status == 'creator') c =true
-  })
-  ctx.reply('Ты админ: ' + c)
+  let c = false;
+  ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
+    if (e.status == "administrator" || e.status == "creator") c = true;
+  });
+  ctx.reply("Ты админ: " + c);
 });
+
+
+// let calls = 0
+// commands.push({ command: "call", description: "Общий сбор" });
+// bot.command("reg", (ctx) => {
+//   let c = false;
+//   ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
+//     if (e.status == "administrator" || e.status == "creator") c = true;
+//     ctx.telegram.getChatMember(ctx.chat.id)
+//     ctx.
+//   });
+// });
+
 bot.telegram.setMyCommands(commands);
