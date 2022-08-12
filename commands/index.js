@@ -36,7 +36,7 @@ commands.push({ command: "test", description: "Проверка" });
 bot.command("test", (ctx) => {
   try {
     const id = members[ctx.message.from.id];
-    const ogr = MEMBERS[id];
+    let ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
     let c = false;
     ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
