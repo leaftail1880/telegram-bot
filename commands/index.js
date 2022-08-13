@@ -53,7 +53,7 @@ bot.command("test", (ctx) => {
     if (time[0] == 26) time[0] = 2;
     if (`${time[1]}`.length < 2) time[1] = "0" + time[1];
     time = Number(`${time[0]}${time[1]}`);
-    //ctxreply(`Время: (кривой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
+    //ctxreply(`Время: (криой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
     let q = (ss == 0 && time >= ss)
     ctx.reply(
       `Если хотя бы один true, сообщение удалится: ${q} ${
