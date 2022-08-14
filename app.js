@@ -16,7 +16,7 @@ export const bot = new Telegraf(process.env.TOKEN);
 export const env = process.env
 /*========================*/
 
-/**======================
+/**======================s
  *    Приветствие
  *========================**/
 bot.start((ctx) => {
