@@ -31,7 +31,7 @@ bot.command("chat", (ctx) => {
     `Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title}\nType: ${ctx.chat.type}`
   );
 });
-
+//git test
 commands.push({ command: "test", description: "Проверка" });
 bot.command("test", (ctx) => {
   try {
