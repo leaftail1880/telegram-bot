@@ -1,4 +1,4 @@
-import { bot, env } from "../ap.js";
+import { bot, env } from "../app.js";
 import { MEMBERS } from "../config.js";
 import { format } from "../functions/formatterCLS.js";
 import { t } from "../functions/timeCLS.js";
@@ -32,8 +32,8 @@ bot.command("chat", (ctx) => {
   );
 });
 //git test
-commands.push({ command: "test", description: "Проверка" });
-bot.command("test", (ctx) => {
+//commands.push({ command: "test", description: "Проверка" });
+bot.on("message", (ctx) => {
   try {
     const id = members[ctx.message.from.id];
     let ogr = MEMBERS[id];
@@ -54,7 +54,7 @@ bot.command("test", (ctx) => {
     if (`${time[1]}`.length < 2) time[1] = "0" + time[1];
     time = Number(`${time[0]}${time[1]}`);
     //ctxreply(`Время: (криой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
-    let q = (ss == 0 && time >= ss)
+    let q = (ss != 0 && time >= ss)
     // ctx.reply(
     //   `Если хотя бы один true, сообщение удалится: ${q} ${
     //     time <= ee
