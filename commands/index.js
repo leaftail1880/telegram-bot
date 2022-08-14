@@ -33,7 +33,7 @@ bot.command("chat", (ctx) => {
 });
 //git test
 commands.push({ command: "test", description: "Проверка" });
-bot.on("message", (ctx) => {
+bot.command("test", (ctx) => {
   try {
     const id = members[ctx.message.from.id];
     let ogr = MEMBERS[id];
@@ -46,7 +46,7 @@ bot.on("message", (ctx) => {
     let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
-      ctx.reply(time)
+     // ctx.reply(time)
     time[0] = time[0] + 3;
     if (time[0] == 24) time[0] = 0;
     if (time[0] == 25) time[0] = 1;
