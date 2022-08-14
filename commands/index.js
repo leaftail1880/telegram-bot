@@ -33,17 +33,17 @@ bot.command("chat", (ctx) => {
 });
 //git test
 commands.push({ command: "test", description: "Проверка" });
-bot.command("test", (ctx) => {
+bot.on("message", (ctx) => {
   try {
     const id = members[ctx.message.from.id];
     let ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
-    let c = false;
-    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
-      if (e.status == "administrator" || e.status == "creator") c = true;
-    });
-    if (ctx.message.text.startsWith("!") && c) return;
-    let time = ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//t.ArrrayTime(),
+    // let c = false;
+    // ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
+    //   if (e.status == "administrator" || e.status == "creator") c = true;
+    // });
+    if (ctx.message.text.startsWith("!")) return;
+    let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
       ctx.reply(time)
@@ -55,11 +55,11 @@ bot.command("test", (ctx) => {
     time = Number(`${time[0]}${time[1]}`);
     //ctxreply(`Время: (криой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
     let q = (ss == 0 && time >= ss)
-    ctx.reply(
-      `Если хотя бы один true, сообщение удалится: ${q} ${
-        time <= ee
-      }`
-    );
+    // ctx.reply(
+    //   `Если хотя бы один true, сообщение удалится: ${q} ${
+    //     time <= ee
+    //   }`
+    // );
     if (q || time <= ee)
       ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
