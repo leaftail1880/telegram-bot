@@ -25,9 +25,9 @@ bot.start((ctx) => {
 /*========================*/
 
 bot.help((ctx) => {
-  ctx.telegram.getMyCommands().then(r => ctx.reply(r.join('\n')))
+  ctx.telegram.getMyCommands().then(r => ctx.reply(r.map(e=>e.name + ' - ' + e.description).join('\n')))
 })
-//yh
+//y
 const Plugins = ["commands"];
 for (const plugin of Plugins) {
   const start = Date.now();
