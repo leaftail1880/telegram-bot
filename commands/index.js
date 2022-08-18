@@ -77,9 +77,8 @@ bot.command("reg", (ctx) => {
   ctx.reply("Твой айди: " + ctx.message.from.id);
   let c = false;
   ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
-    if (e.status == "administrator" || e.status == "creator") c = true;
+    if (e.status == "administrator" || e.status == "creator") ctx.reply("Ты админ");
   });
-  ctx.reply("Ты админ: " + c);
 });
 
 

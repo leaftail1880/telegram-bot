@@ -6,7 +6,7 @@ import { PORT } from "./config.js";
 
 // node app
 // nodemon app
-let VERSION = [5, 0, 24]
+let VERSION = [5, 0, 43]
 
 /**======================
  * Инициализация процессов
@@ -25,7 +25,7 @@ bot.start((ctx) => {
 /*========================*/
 
 bot.help((ctx) => {
-  ctx.telegram.getMyCommands().then(r => ctx.reply(r.map(e=>e.name + ' - ' + e.description).join('\n')))
+  ctx.telegram.getMyCommands().then(r => ctx.reply(r.map(e=>e.command + ' - ' + e.description).join('\n')))
 })
 //y
 const Plugins = ["commands"];
