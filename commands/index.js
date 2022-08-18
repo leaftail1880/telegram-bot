@@ -74,7 +74,13 @@ bot.on("message", (ctx) => {
 // });
 commands.push({ command: "reg", description: "Проверка" });
 bot.command("reg", (ctx) => {
-  ctx.reply("Твой айди: " + ctx.message.from.id);
+  console.log('start')
+  try { 
+    ctx.reply("Твой айди: " + ctx.message.from.id);
+  } catch (e) {
+    console.log(e) 
+  }
+  console.log('end')
 });
 
 
