@@ -74,11 +74,17 @@ bot.on("message", (ctx) => {
 // });
 commands.push({ command: "reg", description: "Проверка" });
 bot.command("reg", (ctx) => {
-  ctx.reply("Твой айди: " + ctx.message.from.id);
-  let c = false;
-  ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
-    if (e.status == "administrator" || e.status == "creator") ctx.reply("Ты админ");
-  });
+  try {
+    
+    ctx.reply("Твой айди: " + ctx.message.from.id);
+    let c = false;
+    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
+      if (e.status == "administrator" || e.status == "creator") ctx.reply("Ты админ");
+    });
+  } catch (e) {
+    ctx.reply("Error")
+    ctx.reply(e)
+  }
 });
 
 
