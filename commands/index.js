@@ -46,7 +46,7 @@ bot.on("message", (ctx) => {
     let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
-     // ctx.reply(time)
+    // ctx.reply(time)
     time[0] = time[0] + 3;
     if (time[0] == 24) time[0] = 0;
     if (time[0] == 25) time[0] = 1;
@@ -74,17 +74,7 @@ bot.on("message", (ctx) => {
 // });
 commands.push({ command: "reg", description: "Проверка" });
 bot.command("reg", (ctx) => {
-  try {
-    
-    ctx.reply("Твой айди: " + ctx.message.from.id);
-    let c = false;
-    ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
-      if (e.status == "administrator" || e.status == "creator") ctx.reply("Ты админ");
-    });
-  } catch (e) {
-    ctx.reply("Error")
-    ctx.reply(e)
-  }
+  ctx.reply("Твой айди: " + ctx.message.from.id);
 });
 
 
