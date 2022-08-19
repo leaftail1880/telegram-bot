@@ -42,7 +42,7 @@ bot.on("message", (ctx) => {
     // ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
     //   if (e.status == "administrator" || e.status == "creator") c = true;
     // });
-    if (ctx.message.text.startsWith("!")) return;
+    if (ctx.message.text && ctx.message.text.startsWith("!")) return;
     let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
