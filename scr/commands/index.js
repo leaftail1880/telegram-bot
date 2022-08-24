@@ -1,4 +1,4 @@
-import { bot, env } from "../app.js";
+import { bot, env } from "../tg.js";
 import { MEMBERS } from "../config.js";
 import { format } from "../functions/formatterCLS.js";
 import { t } from "../functions/timeCLS.js";
@@ -31,18 +31,30 @@ bot.command("chat", (ctx) => {
     `Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title}\nType: ${ctx.chat.type}`
   );
 });
+
+commands.push({ command: "reg", description: "Айди выдаеьт" });
+bot.command("reg", (ctx) => {
+  console.log('start')
+  try { 
+    ctx.reply("Твой айди: " + ctx.message.from.id);
+  } catch (e) {
+    console.log(e) 
+  }
+  console.log('end')
+});
+
+
 //git test
 //commands.push({ command: "test", description: "Проверка" });
-bot.on("message", (ctx) => {
+bot.on("message", async (ctx) => {
   try {
     const id = members[ctx.message.from.id];
     let ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
-    // let c = false;
-    // ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id).then((e) => {
-    //   if (e.status == "administrator" || e.status == "creator") c = true;
-    // });
-    if (ctx.message.text && ctx.message.text.startsWith("!")) return;
+    let c = false;
+    const e = await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id)
+    if (e.status == "administrator" || e.status == "creator") c = true;
+    if (ctx.message.text && ctx.message.text.startsWith("!") && c) return;
     let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
@@ -72,16 +84,7 @@ bot.on("message", (ctx) => {
 //   const ogr = MEMBERS[ctx.message.from.id];
 //   ctx.reply(ogr)
 // });
-commands.push({ command: "reg", description: "Проверка" });
-bot.command("reg", (ctx) => {
-  console.log('start')
-  try { 
-    ctx.reply("Твой айди: " + ctx.message.from.id);
-  } catch (e) {
-    console.log(e) 
-  }
-  console.log('end')
-});
+
 
 
 // let calls = 0
