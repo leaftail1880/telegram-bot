@@ -1,6 +1,6 @@
 export const PORT = 3546;
 
-export const dev = true;
+export const dev = false;
 
 export const MEMBERS = {
   // .
