@@ -43,10 +43,21 @@ bot.command("reg", (ctx) => {
   console.log('end')
 });
 
+//commands.push({ command: "env", description: "Айди выдаеьт" });
+bot.on("message", (ctx) => {
+  if (!ctx.message.text || ctx.message.text != '-env') return
+  //console.log('start')
+  try { 
+    const e = format.stringifyEx(env, ' ')
+    console.log(e)
+    //ctx.reply(e);
+  } catch (e) {
+    console.log(e) 
+  }
+  //console.log('end')
+});
 
-//git test
-//commands.push({ command: "test", description: "Проверка" });
-bot.on("message", async (ctx) => {
+async function check(ctx) {
   try {
     const id = members[ctx.message.from.id];
     let ogr = MEMBERS[id];
@@ -77,7 +88,12 @@ bot.on("message", async (ctx) => {
   } catch (e) {
     console.warn(e);
   }
-});
+}
+
+//git test
+//commands.push({ command: "test", description: "Проверка" });
+bot.on("message", check(ctx));
+bot.on("sticker", check(ctx));
 
 // bot.on("message", (ctx) => {
 //     ctx.reply(ctx.message.from.id)

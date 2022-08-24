@@ -6,7 +6,7 @@ import { Telegraf } from "telegraf";
 
 // node app
 // nodemon app
-export let VERSION = [6, 0, 1]
+export let VERSION = [6, 0, 42]
 
 /**======================
  * Инициализация процессов
