@@ -92,8 +92,8 @@ async function check(ctx) {
 
 //git test
 //commands.push({ command: "test", description: "Проверка" });
-bot.on("message", check(ctx));
-bot.on("sticker", check(ctx));
+bot.on("message", (ctx) => check(ctx));
+bot.on("sticker", (ctx) => check(ctx));
 
 // bot.on("message", (ctx) => {
 //     ctx.reply(ctx.message.from.id)
