@@ -1,5 +1,5 @@
-import { PORT } from "./config.js";
-import { app, bot, VERSION } from "./tg.js";
+import { PORT, VERSION } from "./config.js";
+import { app, bot } from "./tg.js";
 
 const Plugins = ["hello", "commands"];
 for (const plugin of Plugins) {
