@@ -1,4 +1,4 @@
-export let VERSION = [6, 1, 1];
+export let VERSION = [6, 1, 2];
 
 export const dev = false;
 
