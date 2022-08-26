@@ -34,27 +34,23 @@ bot.command("chat", (ctx) => {
 
 commands.push({ command: "reg", description: "Айди выдаеьт" });
 bot.command("reg", (ctx) => {
-  console.log('start')
-  try { 
+  console.log("start");
+  try {
     ctx.reply("Твой айди: " + ctx.message.from.id);
   } catch (e) {
-    console.log(e) 
+    console.log(e);
   }
-  console.log('end')
+  console.log("end");
 });
 
-//commands.push({ command: "env", description: "Айди выдаеьт" });
 bot.on("message", (ctx) => {
-  if (!ctx.message.text || ctx.message.text != '-env') return
-  //console.log('start')
-  try { 
-    const e = format.stringifyEx(env, ' ')
-    console.log(e)
-    //ctx.reply(e);
+  if (!ctx.message.text || ctx.message.text != "-env") return;
+  try {
+    const e = format.stringifyEx(env, " ");
+    console.log(e);
   } catch (e) {
-    console.log(e) 
+    console.log(e);
   }
-  //console.log('end')
 });
 
 async function check(ctx) {
@@ -63,45 +59,30 @@ async function check(ctx) {
     let ogr = MEMBERS[id];
     if (!ogr) ogr = MEMBERS.default;
     let c = false;
-    const e = await ctx.telegram.getChatMember(ctx.chat.id, ctx.message.from.id)
+    const e = await ctx.telegram.getChatMember(
+      ctx.chat.id,
+      ctx.message.from.id
+    );
     if (e.status == "administrator" || e.status == "creator") c = true;
     if (ctx.message.text && ctx.message.text.startsWith("!") && c) return;
-    let time = t.ArrrayTime(), //ctx.message?.text?.split(' ')?.slice(1) ?? [10,0],//
+    let time = t.ArrrayTime(),
       ss = Number(`${ogr.start[0]}${ogr.start[1]}`),
       ee = Number(`${ogr.end[0]}${ogr.end[1]}`);
-    // ctx.reply(time)
     time[0] = time[0] + 3;
     if (time[0] == 24) time[0] = 0;
     if (time[0] == 25) time[0] = 1;
     if (time[0] == 26) time[0] = 2;
     if (`${time[1]}`.length < 2) time[1] = "0" + time[1];
     time = Number(`${time[0]}${time[1]}`);
-    //ctxreply(`Время: (криой формат)\nНачало: ${ss}\nСейчас: ${time}\nКонец: ${ee}`);
-    let q = (ss != 0 && time >= ss)
-    // ctx.reply(
-    //   `Если хотя бы один true, сообщение удалится: ${q} ${
-    //     time <= ee
-    //   }`
-    // );
-    if (q || time <= ee)
-      ctx.deleteMessage(ctx.message.message_id);
+    let q = ss != 0 && time >= ss;
+    if (q || time <= ee) ctx.deleteMessage(ctx.message.message_id);
   } catch (e) {
     console.warn(e);
   }
 }
 
-//git test
-//commands.push({ command: "test", description: "Проверка" });
 bot.on("message", (ctx) => check(ctx));
 bot.on("sticker", (ctx) => check(ctx));
-
-// bot.on("message", (ctx) => {
-//     ctx.reply(ctx.message.from.id)
-//   const ogr = MEMBERS[ctx.message.from.id];
-//   ctx.reply(ogr)
-// });
-
-
 
 // let calls = 0
 // commands.push({ command: "call", description: "Общий сбор" });

@@ -1,4 +1,4 @@
-export const PORT = 3546;
+export let VERSION = [6, 1, 1];
 
 export const dev = false;
 
@@ -28,3 +28,5 @@ export const MEMBERS = {
     end: ["05", "00"],
   },
 };
+
+export const PORT = 3546;

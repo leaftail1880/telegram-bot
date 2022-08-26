@@ -49,10 +49,10 @@ class formatter {
     }
     return getString(startObject, "", space ?? "" != "");
   }
-  
+
   /**
-  * Convert Durations to milliseconds
-  */
+   * Convert Durations to milliseconds
+   */
   toMS(value) {
     const number = Number(value.replace(/[^-.0-9]+/g, ""));
     value = value.replace(/\s+/g, "");
@@ -64,6 +64,5 @@ class formatter {
     else if (/\d+(?=s)/i.test(value)) return number * 1000;
     else if (/\d+(?=ms|milliseconds?)/i.test(value)) return number;
   }
-
 }
-export const format = new formatter()
+export const format = new formatter();

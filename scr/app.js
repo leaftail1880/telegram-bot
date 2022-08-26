@@ -1,9 +1,7 @@
 import { PORT } from "./config.js";
 import { app, bot, VERSION } from "./tg.js";
 
-
-//y
-const Plugins = [ "hello", "commands"];
+const Plugins = ["hello", "commands"];
 for (const plugin of Plugins) {
   const start = Date.now();
 
@@ -16,11 +14,12 @@ for (const plugin of Plugins) {
     });
 }
 
-
 bot.launch();
 app.listen(PORT, () =>
   console.log(
-    `v${VERSION.join('.')} (${VERSION[2] == 0 ? "Стабильная" : "Тестовая"}), Port ${PORT}`
+    `v${VERSION.join(".")} (${
+      VERSION[2] == 0 ? "Стабильная" : "Тестовая"
+    }), Port ${PORT}`
   )
 );
 
