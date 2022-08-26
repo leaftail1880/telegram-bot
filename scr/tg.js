@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import { Telegraf } from "telegraf";
 
+if (!process || process.env || !process.env.TOKEN) throw new Error('Нет доступа к process.env или токену')
+
 /**======================
  * Инициализация процессов
  *========================**/
