@@ -1,7 +1,8 @@
-import { bot, env } from "../tg.js";
-import { MEMBERS } from "../config.js";
-import { format } from "../functions/formatterCLS.js";
-import { t } from "../functions/timeCLS.js";
+import { bot, env } from "../../app/setup/tg.js";
+import { MEMBERS, VERSION } from "../../app/config.js";
+import { format } from "../../app/functions/formatterCLS.js";
+import { t } from "../../app/functions/timeCLS.js";
+import { database } from "../../app.js";
 const commands = [];
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -34,13 +35,31 @@ bot.command("chat", (ctx) => {
 
 commands.push({ command: "reg", description: "Айди выдаеьт" });
 bot.command("reg", (ctx) => {
-  console.log("start");
   try {
     ctx.reply("Твой айди: " + ctx.message.from.id);
   } catch (e) {
     console.log(e);
   }
-  console.log("end");
+});
+
+commands.push({ command: "version", description: "Версия бота" });
+bot.command("version", (ctx) => {
+  try {
+    ctx.reply(`Сейчас запущен Кобольдя v${VERSION.join(' ')}\nРежим: ${env.whereImRunning}`);
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+//commands.push({ command: "reg", description: "Айди выдаеьт" });
+bot.command("db", async (ctx) => {
+  
+  try {
+    const a = await database.get(ctx.message.text.split(' ')[1])
+    ctx.reply(a);
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 bot.on("message", (ctx) => {

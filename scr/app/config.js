@@ -1,4 +1,4 @@
-export let VERSION = [6, 1, 4];
+export let VERSION = [6, 1, 6];
 
 export const dev = true;
 
@@ -29,4 +29,4 @@ export const MEMBERS = {
   },
 };
 
-export const PORT = 3546;
+export const PORT = 35246;

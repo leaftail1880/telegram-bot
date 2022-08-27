@@ -1,4 +1,4 @@
-import { bot } from "../tg.js";
+import { bot } from "../../app/setup/tg.js";
 
 
 /**======================ss
