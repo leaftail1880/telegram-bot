@@ -1,14 +1,13 @@
-import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
-const a = dotenv.config().parsed
+import "dotenv/config";
 import express from "express";
 import { Telegraf } from "telegraf";
 
-if (!a || !a.TOKEN) throw new Error('Нет доступа к .env или токену')
+if (!process || !process.env || !process.env.TOKEN) throw new Error('Нет доступа к process.env или токену')
 
 /**======================
  * Инициализация процессов
  *========================**/
 export const app = express();
-export const bot = new Telegraf(a.TOKEN);
-export const env = a;
+export const bot = new Telegraf(process.env.TOKEN);
+export const env = process.env;
 /*========================*/
