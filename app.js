@@ -1,2 +1,1 @@
-import { dev } from "./scr/config.js"
-if (!dev) import("./scr/app.js")
+import "./scr/app.js"

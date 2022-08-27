@@ -1,6 +1,6 @@
-export let VERSION = [6, 1, 2];
+export let VERSION = [6, 1, 3];
 
-export const dev = false;
+export const dev = true;
 
 export const MEMBERS = {
   // .
