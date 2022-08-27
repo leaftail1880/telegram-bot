@@ -53,4 +53,3 @@ app.listen(PORT, async () => {
  *========================**/
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
-process.once("SIGKILL", () => bot.stop("SIGKILL"));
