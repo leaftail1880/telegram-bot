@@ -7,12 +7,6 @@ export const Plugins = ["commands", "timeChecker", "updates"],
   database = new db();
 
 /**======================
- * Запуск бота
- *========================**/
-bot.launch();
-
-
-/**======================
  * При старте
  *========================**/
 app.listen(PORT, async () => {
@@ -21,6 +15,21 @@ app.listen(PORT, async () => {
       VERSION[2] == 0 ? "Стабильная" : "Тестовая"
     }), Порт: ${PORT}`
   );
+
+  /**======================
+   * Запуск бота
+   *========================**/
+  try {
+    await bot.launch();
+  } catch (error) {
+    console.warn('Ошибка при запуске бота: '+ error)
+    bot.stop('errorStart')
+    return
+  }
+  bot.catch((error)=>{
+    console.log('Ошибка при работе бота: ',error)
+    bot.stop('error')
+  })
 
   /**======================
    * Подключение к базе данных
