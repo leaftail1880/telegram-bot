@@ -1,4 +1,4 @@
-export let VERSION = [6, 2, 1];
+export let VERSION = [6, 2, 2];
 
 export const dbkey = {
   session: 'bot_session'
