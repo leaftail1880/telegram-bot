@@ -2,10 +2,9 @@ import { Context } from "telegraf";
 import { isAdmin } from "../../app/functions/check.js";
 import { bot, groups } from "../../app/setup/tg.js";
 
-
 const public_cmds = {},
   private_cmds = {},
-  hprefixes = new RegExp(/^[.|-|$]/gm),
+  hprefixes = [".", "-", "$"],
   types = {
     public: "public",
     groups: "groups",
@@ -47,22 +46,32 @@ export class cmd {
     };
     this.callback = callback;
 
-    if (CMDtype == types.public && Ptype == 'def') {
+    if (CMDtype == types.public && Ptype == "def") {
       public_cmds[info.name] = this;
     } else {
       private_cmds[info.name] = this;
     }
   }
   static getCmd(msg, isDefCmd) {
-    if (!msg) return false
+    if (!msg) return false;
     /**
      * @type {cmd}
      */
     let cmd;
     if (isDefCmd) {
-      cmd = public_cmds[Object.keys(public_cmds).find((e) => e == msg || e == msg.split('@')[0])];
+      cmd =
+        public_cmds[
+          Object.keys(public_cmds).find(
+            (e) => e == msg || e == msg.split("@")[0]
+          )
+        ];
     } else {
-      cmd = private_cmds[Object.keys(private_cmds).find((e) => e == msg || e == msg.split('@')[0])];
+      cmd =
+        private_cmds[
+          Object.keys(private_cmds).find(
+            (e) => e == msg || e == msg.split("@")[0]
+          )
+        ];
     }
     if (!cmd) return false;
     return cmd;
@@ -73,12 +82,12 @@ export class cmd {
       (command.info.type == "gp" &&
         !groups[ctx.chat.id] &&
         ctx.chat.type != "private") ||
-      (command.info.perm && !(await isAdmin(ctx, ctx.message.from.id)))
+      (command.info.perm &&
+        ctx.chat.type != "private" &&
+        !(await isAdmin(ctx, ctx.message.from.id)))
     );
   }
 }
-
-bot.on("text");
 
 bot.on("text", async (ctx) => {
   /**
@@ -91,8 +100,12 @@ bot.on("text", async (ctx) => {
     command = cmd.getCmd(t.split(" ")[0].substring(1), true);
     if (!command) return;
   } else {
-    
-    if (!t || !hprefixes.test(t) || !t.split(" ")[0]?.substring(1)) return;
+    if (
+      !t ||
+      !hprefixes.find((e) => t.startsWith(e)) ||
+      !t.split(" ")[0]?.substring(1)
+    )
+      return;
     command = cmd.getCmd(t.split(" ")[0].substring(1));
     if (!command) return;
     if (await cmd.cantUse(command, ctx))
@@ -102,12 +115,11 @@ bot.on("text", async (ctx) => {
   }
 
   try {
-    command.callback(
-      ctx,
-      t
-        .match(/"[^"]+"|[^\s]+/g)
-        .map((e) => e.replace(/"(.+)"/, "$1").toString())
-    );
+    const a = t
+      .match(/"[^"]+"|[^\s]+/g)
+      .map((e) => e.replace(/"(.+)"/, "$1").toString());
+    a.shift();
+    command.callback(ctx, a);
     console.log(
       `[Cmd][${ctx.message.from.username ?? ctx.message.from.first_name}][${
         command.info.name
@@ -143,7 +155,7 @@ new cmd({ name: "help", description: "Список команд" }, async (ctx) 
   );
   p = Object.values(private_cmds)
     .filter(async (e) => await cmd.cantUse(e, ctx))
-    .map((e) => "  -**" + e.info.name + "** - " + e.info.description)
+    .map((e) => "  -" + e.info.name + " - " + e.info.description)
     .join("\n");
   o = `${c[0] ? `Доступные везде команды:\n${c}` : ""}\n${
     p ? `\nДоступные вам в этом чате команды:\n${p}` : ""
@@ -152,17 +164,17 @@ new cmd({ name: "help", description: "Список команд" }, async (ctx) 
   ctx.reply(o);
 });
 
-import("./cmds.js").then(()=>{
-  let o = []
-  Object.keys(public_cmds)
-  .forEach((e) => o.push({command: e, description: public_cmds[e].info.description }))
+import("./cmds.js").then(() => {
+  let o = [];
+  Object.keys(public_cmds).forEach((e) =>
+    o.push({ command: e, description: public_cmds[e].info.description })
+  );
   o = o.filter((e) => e.command != "start" && e.command != "help");
 
-if (o[0]) bot.telegram.setMyCommands(o);
-console.log(
-  `[Load][commands] Кол-во команд: ${o.length}${
-    o[0] ? `, список: ${o.map((e) => e.command).join(", ")}` : ""
-  }`
-);
-})
-
+  if (o[0]) bot.telegram.setMyCommands(o);
+  console.log(
+    `[Load][commands] Кол-во команд: ${o.length}${
+      o[0] ? `, список: ${o.map((e) => e.command).join(", ")}` : ""
+    }`
+  );
+});

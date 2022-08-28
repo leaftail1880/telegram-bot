@@ -11,6 +11,7 @@ export const Plugins = ["commands", "timeChecker", "updates"],
  *========================**/
 bot.launch();
 
+
 /**======================
  * При старте
  *========================**/
@@ -49,7 +50,7 @@ app.listen(PORT, async () => {
 });
 
 /**======================
- * Инициализация процессов
+ * Остановка процессов
  *========================**/
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
