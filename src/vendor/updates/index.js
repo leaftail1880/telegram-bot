@@ -19,9 +19,8 @@ function bigger(array, array2, returnArray = true) {
   return returnArray ? array : 0;
 }
 
-let session = 0;
-(async () => {
-  session = await database.get(dbkey.session);
+export async function update() {
+  let session = await database.get(dbkey.session);
 
   data.v = `${VERSION.join(".")}.${session}`;
   const dbversion = await database.get(dbkey.version, true);
@@ -42,4 +41,5 @@ let session = 0;
       [VERSION[0], VERSION[1], VERSION[2], session],
       true
     );
-})();
+  return session
+};

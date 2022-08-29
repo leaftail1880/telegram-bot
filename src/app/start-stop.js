@@ -3,16 +3,17 @@ import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
+import { update } from "../vendor/updates/index.js";
 
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["commands", "timeChecker", "updates", "html"];
+const Plugins = ["commands", "timeChecker", "html"];
 
 export const data = {
   v: VERSION.join("."),
   isLatest: true,
-  versionMSG: `v${VERSION.join(".")}`,
+  versionMSG: `v${VERSION.join(".")} (Init)`,
 };
 
 async function checkBOT() {
@@ -22,7 +23,7 @@ async function checkBOT() {
 
   await database.add(dbkey.session, 1);
 
-  let session = await database.get(dbkey.session);
+  let session = await update()
   setTimeout(() => {
     setInterval(async () => {
       const cur = await database.get(dbkey.session);
