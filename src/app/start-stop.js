@@ -1,5 +1,5 @@
 import { PORT, VERSION } from "./config.js";
-import { bot } from "./setup/tg.js";
+import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 
@@ -7,6 +7,8 @@ import { database } from "../index.js";
  * Плагины
  *========================**/
 const Plugins = ["commands", "timeChecker", "updates"];
+
+export let v = VERSION.join('.')
 
 /**
  * Запуск бота
@@ -64,7 +66,7 @@ export async function SERVISE_start() {
 export async function SERVISE_stop(reason) {
   await bot.telegram.sendMessage(
     members.xiller,
-    `Бот остановлен. Причина: ${reason}`
+    `Бот v${v} остановлен. Причина: ${reason}`
   );
   bot.stop(reason)
   process.exit(0)
