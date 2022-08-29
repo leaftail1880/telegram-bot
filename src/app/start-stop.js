@@ -23,10 +23,12 @@ async function checkBOT() {
   await database.add(dbkey.session, 1);
 
   let session = await database.get(dbkey.session);
-
-  setInterval(async () => {
-    if ((await database.get(dbkey.session)) > session) SERVISE_stop("new");
-  }, 1000);
+  setTimeout(() => {
+    setInterval(async () => {
+      const cur = await database.get(dbkey.session);
+      if (cur > session) SERVISE_stop("new bot: " + cur + "/" + session);
+    }, 1000);
+  }, 2000)
 }
 
 /**
