@@ -54,7 +54,7 @@ export async function SERVISE_start() {
   for (const plugin of Plugins) {
     const start = Date.now();
 
-    await import(`./vendor/${plugin}/index.js`).catch((error) => {
+    await import(`../vendor/${plugin}/index.js`).catch((error) => {
       console.warn(`[Error][Plugin] ${plugin}: ` + error + error.stack);
     });
     console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
