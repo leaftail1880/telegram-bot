@@ -1,15 +1,17 @@
-import { PORT, VERSION } from "./app/config.js";
-import { app, bot } from "./app/setup/tg.js";
+import { PORT, VERSION } from "./config.js";
+import { bot } from "./setup/tg.js";
 import { createClient } from "redis";
-import { db } from "./app/setup/db.js";
-
-export const Plugins = ["commands", "timeChecker", "updates"],
-  database = new db();
 
 /**======================
- * При старте
+ * Плагины
  *========================**/
-app.listen(PORT, async () => {
+const Plugins = ["commands", "timeChecker", "updates"];
+
+/**
+ * Запуск бота
+ * @returns {void}
+ */
+export async function SERVISE_start() {
   console.log(
     `[Load] Обнаружен Кобольдя v${VERSION.join(".")} (${
       VERSION[2] == 0 ? "Стабильная" : "Тестовая"
@@ -22,14 +24,14 @@ app.listen(PORT, async () => {
   try {
     await bot.launch();
   } catch (error) {
-    console.warn('Ошибка при запуске бота: '+ error)
-    bot.stop('errorStart')
-    return
+    console.warn("Ошибка при запуске бота: " + error);
+    SERVISE_stop("errorStart");
+    return;
   }
-  bot.catch((error)=>{
-    console.log('Ошибка при работе бота: ',error)
-    bot.stop('error')
-  })
+  bot.catch((error) => {
+    console.log("Ошибка при работе бота: ", error);
+    SERVISE_stop("error");
+  });
 
   /**======================
    * Подключение к базе данных
@@ -56,10 +58,13 @@ app.listen(PORT, async () => {
     });
     console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
   }
-});
+}
 
-/**======================
- * Остановка процессов
- *========================**/
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+export async function SERVISE_stop(reason) {
+  await bot.telegram.sendMessage(
+    members.xiller,
+    `Бот остановлен. Причина: ${reason}`
+  );
+  bot.stop(reason)
+  process.exit(0)
+}

@@ -118,7 +118,7 @@ export class db {
   }
   /**
    * @param {String} key
-   * @returns {Boolean}
+   * @returns {Promise<Boolean>}
    */
   async has(key) {
     if (!this.client) throw new Error("Нет дб");
