@@ -77,12 +77,12 @@ export class db {
    * @param {String} key
    * @returns {String | Boolean | Object}
    */
-  async get(key) {
+  async get(key, jsonparse = false) {
     if (!this.client) throw new Error("Нет дб");
     const start = Date.now();
     const value = await this.client.get(key);
     this.logAdd("get", start);
-    return value;
+    return jsonparse ? JSON.parse(value) : value;
   }
   /**
    * Устанавливает данные в базу данных

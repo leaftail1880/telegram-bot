@@ -1,8 +1,6 @@
-import { bot, env, members } from "../../app/setup/tg.js";
-import { MEMBERS, VERSION } from "../../app/config.js";
-import { format } from "../../app/functions/formatterCLS.js";
+import { bot, members } from "../../app/setup/tg.js";
+import { MEMBERS } from "../../app/config.js";
 import { t } from "../../app/functions/timeCLS.js";
-import { database } from "../../app.js";
 
 async function check(ctx) {
   try {

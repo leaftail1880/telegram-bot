@@ -8,6 +8,11 @@ import { SERVISE_start, SERVISE_stop } from "./app/start-stop.js";
  *========================**/
 export const database = new db();
 
+app.addListener("error", (error) => {
+  console.warn('Error on app: ', error)
+  SERVISE_stop("app error")
+})
+
 /**======================
  * Запуск
  *========================**/

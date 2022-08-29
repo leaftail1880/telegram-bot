@@ -1,40 +1,40 @@
-import { PORT, VERSION } from "./config.js";
+import { dbkey, PORT, VERSION } from "./config.js";
 import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
+import { format } from "./functions/formatterCLS.js";
 
 /**======================
  * Плагины
  *========================**/
 const Plugins = ["commands", "timeChecker", "updates"];
 
-export let v = VERSION.join('.')
+export const data = {
+  v: VERSION.join("."),
+  isLatest: true,
+  versionMSG: `v${VERSION.join(".")}`,
+};
+
+async function checkBOT() {
+  if (!(await database.has(dbkey.session))) {
+    await database.set(dbkey.session, 0);
+  }
+
+  await database.add(dbkey.session, 1);
+
+  let session = await database.get(dbkey.session);
+
+  setInterval(async () => {
+    if ((await database.get(dbkey.session)) > session) SERVISE_stop("new");
+  }, 1000);
+}
 
 /**
  * Запуск бота
  * @returns {void}
  */
 export async function SERVISE_start() {
-  console.log(
-    `[Load] Обнаружен Кобольдя v${VERSION.join(".")} (${
-      VERSION[2] == 0 ? "Стабильная" : "Тестовая"
-    }), Порт: ${PORT}`
-  );
-
-  /**======================
-   * Запуск бота
-   *========================**/
-  try {
-    await bot.launch();
-  } catch (error) {
-    console.warn("Ошибка при запуске бота: " + error);
-    SERVISE_stop("errorStart");
-    return;
-  }
-  bot.catch((error) => {
-    console.log("Ошибка при работе бота: ", error);
-    SERVISE_stop("error");
-  });
+  console.log(`[Load] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`);
 
   /**======================
    * Подключение к базе данных
@@ -50,6 +50,17 @@ export async function SERVISE_start() {
 
   database.client = client;
 
+  await checkBOT();
+
+  /**======================
+   * Запуск бота
+   *========================**/
+  await bot.launch();
+  bot.catch((error) => {
+    console.log("Ошибка при работе бота: ", error);
+    SERVISE_stop("error", error);
+  });
+
   /**======================
    * Загрузка плагинов
    *========================**/
@@ -63,11 +74,13 @@ export async function SERVISE_start() {
   }
 }
 
-export async function SERVISE_stop(reason) {
+export async function SERVISE_stop(reason, extra) {
   await bot.telegram.sendMessage(
     members.xiller,
-    `Бот v${v} остановлен. Причина: ${reason}`
+    `Бот v${data.v} остановлен. Причина: ${reason}${
+      extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+    }`
   );
-  bot.stop(reason)
-  process.exit(0)
+  bot.stop(reason);
+  process.exit(0);
 }

@@ -1,9 +1,8 @@
-import { bot, env } from "../../app/setup/tg.js";
-import { VERSION } from "../../app/config.js";
+import { env } from "../../app/setup/tg.js";
 import { format } from "../../app/functions/formatterCLS.js";
-import { database } from "../../app.js";
+import { database } from "../../index.js";
 import { cmd } from "./index.js";
-import { SERVISE_stop } from "../../app/start-stop.js";
+import { data, SERVISE_stop } from "../../app/start-stop.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -79,9 +78,7 @@ new cmd(
   },
   async (ctx) => {
     ctx.reply(
-      `Сейчас запущен Кобольдя v${VERSION.join(".")}0${await database.get(
-        "bot_session"
-      )}\nРежим: ${env.whereImRunning}`
+      `Сейчас запущен Кобольдя ${data.versionMSG}\nРежим: ${env.whereImRunning}`
     );
   }
 );
