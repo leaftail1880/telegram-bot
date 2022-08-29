@@ -8,4 +8,4 @@
 | Please do not remove or move this line anywhere in this file
 | 
 */
-import "./src/app.js"
+import "./src/index.js"

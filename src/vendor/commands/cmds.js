@@ -3,6 +3,7 @@ import { VERSION } from "../../app/config.js";
 import { format } from "../../app/functions/formatterCLS.js";
 import { database } from "../../app.js";
 import { cmd } from "./index.js";
+import { SERVISE_stop } from "../../app/start-stop.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -39,6 +40,19 @@ new cmd(
         ctx.chat.type
       }`
     );
+  }
+);
+
+new cmd(
+  {
+    name: "stop",
+    prefix: "hide",
+    description: "Информация о чате",
+    permisson: 1,
+    type: "groups",
+  },
+  () => {
+    SERVISE_stop('manually')
   }
 );
 

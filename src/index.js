@@ -11,10 +11,10 @@ export const database = new db();
 /**======================
  * Запуск
  *========================**/
-app.listen(PORT, SERVISE_start());
+app.listen(PORT, () => SERVISE_start());
 
 /**======================
  * Остановка
  *========================**/
-process.once("SIGINT", SERVISE_stop("SIGINT"));
-process.once("SIGTERM", SERVISE_stop("SIGTERM"));
+process.once("SIGINT", () => SERVISE_stop("SIGINT"));
+process.once("SIGTERM", () => SERVISE_stop("SIGTERM"));

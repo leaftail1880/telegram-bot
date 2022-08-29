@@ -1,6 +1,7 @@
 import { PORT, VERSION } from "./config.js";
 import { bot } from "./setup/tg.js";
 import { createClient } from "redis";
+import { database } from "../index.js";
 
 /**======================
  * Плагины
