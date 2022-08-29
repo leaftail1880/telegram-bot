@@ -7,7 +7,7 @@ import { format } from "./functions/formatterCLS.js";
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["commands", "timeChecker", "updates"];
+const Plugins = ["commands", "timeChecker", "updates", "html"];
 
 export const data = {
   v: VERSION.join("."),

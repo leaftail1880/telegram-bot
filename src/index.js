@@ -13,6 +13,8 @@ app.addListener("error", (error) => {
   SERVISE_stop("app error")
 })
 
+app.get("/healtz", (req, res) => res.sendStatus(200));
+
 /**======================
  * Запуск
  *========================**/
