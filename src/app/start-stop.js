@@ -12,7 +12,7 @@ import {
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["Commands", "timeChecker", "html"];
+const Plugins = ["Command", "timeChecker", "html"];
 
 /**======================
  * Кэш сессии

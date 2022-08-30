@@ -178,7 +178,7 @@ import("./cmds.js").then(() => {
 
   if (o[0]) bot.telegram.setMyCommands(o);
   console.log(
-    `> Commands Кол-во команд: ${allKmds.length}${
+    `> Command Кол-во команд: ${allKmds.length}${
       allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
     }`
   );
