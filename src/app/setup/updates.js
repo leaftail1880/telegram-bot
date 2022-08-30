@@ -52,6 +52,7 @@ export async function updateVisualVersion(data) {
 }
 
 export async function checkUpdates(data) {
+  if (data.stopped) return
   let session = data.session;
 
   const dbversion = await database.get(dbkey.version, true);

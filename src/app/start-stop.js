@@ -19,7 +19,8 @@ export const data = {
   versionMSG: `v${VERSION.join(".")} (Init)`,
   session: 0,
   start_time: Date.now(),
-  started: false
+  started: false,
+  stopped: false
 };
 
 /**
@@ -111,8 +112,8 @@ export async function SERVISE_stop(
       extra ? ` (${format.stringifyEx(extra, " ")})` : ""
     }\nApp: ${stopApp}\nBot: ${stopBot}`
   );
-  if (stopBot && data.started) bot.stop(reason);
-  if (stopApp) process.exit(0);
+  if (stopBot && data.started) bot.stop(reason), data.stopped = true;
+  stopApp ? process.exit(0) : setTimeout(() => process.exit(0), 3000000)
   console.log(
     `[Stop] Бот ${data.versionMSG} остановлен${
       reason ? ` по причине: ${reason}.` : "."
