@@ -9,7 +9,6 @@ import { format } from "./functions/formatterCLS.js";
  *========================**/
 const Plugins = ["updates", "commands", "timeChecker", "html"];
 
-
 /**======================
  * Кэш сессии
  *========================**/
@@ -18,7 +17,7 @@ export const data = {
   isLatest: true,
   versionMSG: `v${VERSION.join(".")} (Init)`,
   session: 0,
-  start_time: Date.now()
+  start_time: Date.now(),
 };
 
 /**
@@ -26,8 +25,16 @@ export const data = {
  * @returns {void}
  */
 export async function SERVISE_start() {
-  console.log(`[Load] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`);
-
+  console.log("[Load]");
+  console.log(
+    `[Load][Start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
+  );
+  console.log("[Load]");
+  let anim = true,
+    c = 0;
+  setInterval(async () => {
+    if (anim) console.log(`[Load] ${c}/5`), c++;
+  }, 1000);
   /**======================
    * Подключение к базе данных
    *========================**/
@@ -58,10 +65,16 @@ export async function SERVISE_start() {
   setInterval(async () => {
     const cur = await database.get(dbkey.session);
     if (cur > data.session)
-      SERVISE_stop(`Обнаружена вторая сессия номер ${cur} (против активной ${session})`, null, true, false);
+      SERVISE_stop(
+        `Обнаружена вторая сессия номер ${cur} (против активной ${session})`,
+        null,
+        true,
+        false
+      );
   }, 1000);
 
   setTimeout(async () => {
+    anim = false;
     /**======================
      * Запуск бота
      *========================**/
@@ -70,6 +83,7 @@ export async function SERVISE_start() {
     /**======================
      * Загрузка плагинов
      *========================**/
+    console.log('[Load][Plugins]')
     for (const plugin of Plugins) {
       const start = Date.now();
 
@@ -78,6 +92,9 @@ export async function SERVISE_start() {
       });
       console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
     }
+    console.log("[Load]");
+    console.log(`[Load][End] ${(Date.now() - data.start_time) / 1000} сек`);
+    console.log("[Load]");
   }, 5000);
 }
 
@@ -89,15 +106,21 @@ export async function SERVISE_stop(
 ) {
   await bot.telegram.sendMessage(
     members.xiller,
-    `⚠️ Бот ${data.versionMSG} остановлен${reason ?  ` по причине: ${reason}.` : '.'}${
+    `⚠️ Бот ${data.versionMSG} остановлен${
+      reason ? ` по причине: ${reason}.` : "."
+    }${
       extra ? ` (${format.stringifyEx(extra, " ")})` : ""
     }\nApp: ${stopApp}\nBot: ${stopBot}`
   );
   if (stopBot) bot.stop(reason);
   if (stopApp) process.exit(0);
-  console.log(`[Stop] Бот ${data.versionMSG} остановлен${reason ?  ` по причине: ${reason}.` : '.'}${
-    extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-  }\nApp: ${stopApp}\nBot: ${stopBot}`)
+  console.log(
+    `[Stop] Бот ${data.versionMSG} остановлен${
+      reason ? ` по причине: ${reason}.` : "."
+    }${
+      extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+    }\nApp: ${stopApp}\nBot: ${stopBot}`
+  );
 }
 
 async function updateSession() {
