@@ -51,7 +51,7 @@ new cmd(
     type: "groups",
   },
   (ctx, args) => {
-    SERVISE_stop('manually', null, args[0] ?? false, args[1] ?? false)
+    SERVISE_stop('Ручная остановка', null, args[0] ?? false, args[1] ?? false)
   }
 );
 

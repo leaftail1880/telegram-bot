@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-
+import { members } from "../setup/tg.js";
 /**
  * 
  * @param {Context} ctx 

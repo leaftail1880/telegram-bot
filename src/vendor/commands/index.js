@@ -77,15 +77,17 @@ export class cmd {
     return cmd;
   }
   static async cantUse(command, ctx) {
-    return (
-      (command.info.type == "groups" && !groups[ctx.chat.id]) ||
-      (command.info.type == "gp" &&
+    let _a = command.info.type == "groups" && !groups[ctx.chat.id],
+      _b =
+        command.info.type == "gp" &&
         !groups[ctx.chat.id] &&
-        ctx.chat.type != "private") ||
-      (command.info.perm &&
-        ctx.chat.type != "private" &&
-        !(await isAdmin(ctx, ctx.message.from.id)))
-    );
+        ctx.chat.type != "private",
+      _c =
+        (command.info.perm == 1 &&
+          ctx.chat.type != "private" &&
+          !(await isAdmin(ctx, ctx.message.from.id))) ||
+        (command.info.perm == 2 && id == members.xiller);
+    return _a && _b && _c;
   }
 }
 
