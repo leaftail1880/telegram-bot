@@ -17,7 +17,7 @@ process.on("unhandledRejection", async (err) => {
   } else SERVISE_stop("app error", err, true, true);
 });
 
-app.get("/hp", (req, res) => res.sendStatus(200));
+app.get("/healt", (_req, res) => res.sendStatus(200));
 
 /**======================
  * Запуск

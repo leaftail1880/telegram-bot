@@ -76,9 +76,9 @@ export async function SERVISE_start() {
   data.started = true;
   bot.telegram.sendMessage(
     members.xiller,
-    `✅ Кобольдя ${data.versionMSG} запущен за ${
+    `⌬ Кобольдя ${data.versionMSG} (${
       (Date.now() - data.start_time) / 1000
-    } сек`
+    } сек)`
   );
 
   /**======================
@@ -123,21 +123,20 @@ export async function SERVISE_stop(
   extra = null,
   stopBot = true,
   stopApp = true,
-  reload = false
+  reload = false,
+  sendMessage = true
 ) {
-  if (data.started)
+  if (data.started && sendMessage)
     await bot.telegram.sendMessage(
       members.xiller,
-      `⚠️ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-      }\n🌐 Остановка сервера: ${
-        stopApp ? "❌ Да" : "✅ Нет"
-      }\n🤖 Остановка бота: ${stopBot ? "❌ Да" : "✅ Нет"}`
+      `☒ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        extra ? ` (${format.stringifyEx(extra, " ")}) ` : ""
+      }(${stopApp ? 'app' : ''}${stopBot ? ' bot': ''})`
     ),
       console.log(
-        `[Stop] ${reason ? `${reason}.` : ""}${
-          extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-        } APPsop: ${stopApp} BOTstop: ${stopBot}`
+        `☒ ${reason ? `${reason}.` : ""}${
+          extra ? ` (${format.stringifyEx(extra, " ")}) ` : ""
+        } (${stopApp ? 'app' : ''}${stopBot ? ' bot': ''})`
       );
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;
@@ -148,7 +147,7 @@ export async function SERVISE_stop(
     : reload
     ? ""
     : setTimeout(() => {
-        console.log("[Stop] End.");
+        console.log("☒ End.");
         process.exit(0);
       }, 12000000);
 }
