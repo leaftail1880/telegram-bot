@@ -17,16 +17,16 @@ process.on("unhandledRejection", (err) => {
 });
 
 
-router.use((req, res, next) => {
-  res.header('Access-Control-Allow-Methods', 'GET');
-  next();
-});
+// router.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Methods', 'GET');
+//   next();
+// });
 
-router.get('/hp', (req, res) => {
-  res.status(200).send('Ok');
-});
+// router.get('/hp', (req, res) => {
+//   res.status(200).send('Ok');
+// });
 
-app.use('/api/v1', router);
+//app.use('/api/v1', router);
 // app.get('/', )
 app.get("/hp", (req, res) => res.sendStatus(200));
 // app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
