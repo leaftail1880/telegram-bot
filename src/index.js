@@ -12,24 +12,14 @@ export const database = new db();
 /**======================
  * Всякая хрень
  *========================**/
-process.on("unhandledRejection", (err) => {
-  SERVISE_stop("app error", err)
+process.on("unhandledRejection", async (err) => {
+  await SERVISE_stop("app error", err, true, false)
+
+  setTimeout(() =>  SERVISE_start(), 5000)
 });
 
-
-// router.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Methods', 'GET');
-//   next();
-// });
-
-// router.get('/hp', (req, res) => {
-//   res.status(200).send('Ok');
-// });
-
-//app.use('/api/v1', router);
-// app.get('/', )
 app.get("/hp", (req, res) => res.sendStatus(200));
-// app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
+
 
 
 /**======================

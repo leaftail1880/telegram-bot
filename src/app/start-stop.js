@@ -120,7 +120,8 @@ export async function SERVISE_stop(
   reason,
   extra = null,
   stopBot = true,
-  stopApp = true
+  stopApp = true,
+  reload = false
 ) {
   if (data.started)
     await bot.telegram.sendMessage(
@@ -136,10 +137,14 @@ export async function SERVISE_stop(
           extra ? ` (${format.stringifyEx(extra, " ")})` : ""
         }\nApp: ${stopApp}\nBot: ${stopBot}`
       );
-  if (stopBot && data.started && !data.stopped)
-    (data.stopped = true), bot.stop(reason);
+  if (stopBot && data.started && !data.stopped) {
+    data.stopped = true;
+    bot.stop(reason);
+  }
   stopApp
     ? process.exit(0)
+    : reload
+    ? ""
     : setTimeout(() => {
         console.log("[Stop] Конец сессии.");
         process.exit(0);
