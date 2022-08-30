@@ -22,13 +22,13 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get('/health', (req, res) => {
+router.get('/hp', (req, res) => {
   res.status(200).send('Ok');
 });
 
 app.use('/api/v1', router);
 // app.get('/', )
-app.get("/healt", (req, res) => res.sendStatus(200));
+app.get("/hp", (req, res) => res.sendStatus(200));
 // app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
 
 
