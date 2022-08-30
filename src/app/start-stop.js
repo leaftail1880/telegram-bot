@@ -120,17 +120,13 @@ export async function SERVISE_stop(
         extra ? ` (${format.stringifyEx(extra, " ")})` : ""
       }\nApp: ${stopApp}\nBot: ${stopBot}`
     );
+  if (data.started)  console.log(  `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${   extra ? ` (${format.stringifyEx(extra, " ")})` : ""  }\nApp: ${stopApp}\nBot: ${stopBot}`);
   if (stopBot && data.started) bot.stop(reason), (data.stopped = true);
   stopApp
     ? process.exit(0)
     : setTimeout(() => {
         console.log("Конец сессии.");
         process.exit(0);
-      }, 1500000);
-  if (data.started)
-    console.log(
-      `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-      }\nApp: ${stopApp}\nBot: ${stopBot}`
-    );
+      }, 1000 * 60 * 20);
+    
 }
