@@ -130,13 +130,13 @@ export async function SERVISE_stop(
     await bot.telegram.sendMessage(
       members.xiller,
       `☒ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")}) ` : ""
-      }(${stopApp ? 'app' : ''}${stopBot ? ' bot': ''})`
+        extra ? ` (${format.stringifyEx(extra, " ")}) ` : " "
+      }(${stopApp ? 'app ' : ''}${stopBot ? 'bot': ''})`
     ),
       console.log(
         `☒ ${reason ? `${reason}.` : ""}${
           extra ? ` (${format.stringifyEx(extra, " ")}) ` : ""
-        } (${stopApp ? 'app' : ''}${stopBot ? ' bot': ''})`
+        } (${stopApp ? 'app ' : ''}${stopBot ? 'bot': ''})`
       );
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;

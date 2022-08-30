@@ -1,6 +1,6 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 4, 4],
+export const VERSION = [6, 5, 0],
   PORT = !env.xillerPC ? 3001 : new Date(Date.now()).getMilliseconds(),
   Plugins = ["Command", "timeChecker", "html"],
   dbkey = {
