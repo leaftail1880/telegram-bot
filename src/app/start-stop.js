@@ -16,7 +16,7 @@ const Plugins = ["updates", "commands", "timeChecker", "html"];
 export const data = {
   v: VERSION.join("."),
   isLatest: true,
-  versionMSG: `v${VERSION.join(".")}`,
+  versionMSG: `v${VERSION.join(".")} (Init)`,
   session: 0,
   start_time: Date.now()
 };
