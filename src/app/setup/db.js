@@ -10,7 +10,7 @@ export class db {
   }
   setClient(c, ms) {
     this.client = c;
-    this.log("connect", ms);
+    this.logAdd("connect", ms);
   }
   logAdd(msg = "</>", startMS = Date.now()) {
     const push = {

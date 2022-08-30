@@ -12,7 +12,7 @@ import {
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["commands", "timeChecker", "html"];
+const Plugins = ["Commands", "timeChecker", "html"];
 
 /**======================
  * Кэш сессии
@@ -32,16 +32,16 @@ export const data = {
  * @returns {void}
  */
 export async function SERVISE_start() {
-  console.log("[Load]");
+  console.log(" ");
   console.log(
-    `[Load][Start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
+    `> [Start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
   );
-  console.log("[Load]");
-  let anim = true,
-    c = 0;
-  setInterval(async () => {
-    if (anim) console.log(`[Load] ${c}/5`), c++;
-  }, 1000);
+  console.log(" ");
+  // let anim = true,
+  //   c = 0;
+  // setInterval(async () => {
+  //   if (anim) console.log(`> ${c}/5`), c++;
+  // }, 1000);
   /**======================
    * Подключение к базе данных
    *========================**/
@@ -54,7 +54,7 @@ export async function SERVISE_start() {
 
   await client.connect();
 
-  database.client = client;
+  database.setClient(client);
 
   await updateSession(data);
 
@@ -71,40 +71,48 @@ export async function SERVISE_start() {
   /**======================
    * Остановка при обнаружении новой версии
    *========================**/
-  setInterval(async () => {
-    checkUpdates(data);
-  }, 1000);
+  // setInterval(async () => {
+  //   checkUpdates(data);
+  // }, 1000);
 
-  setTimeout(async () => {
-    anim = false;
-    /**======================
-     * Запуск бота
-     *========================**/
-    await bot.launch();
-    data.started = true;
-    bot.telegram.sendMessage(
-      members.xiller,
-      `✅ Кобольдя ${data.versionMSG} запущен за ${
-        (Date.now() - data.start_time) / 1000
-      } сек`
-    );
+  //setTimeout(async () => {
+  //anim = false;
+  /**======================
+   * Запуск бота
+   *========================**/
+  await bot.launch();
+  data.started = true;
+  bot.telegram.sendMessage(
+    members.xiller,
+    `✅ Кобольдя ${data.versionMSG} запущен за ${
+      (Date.now() - data.start_time) / 1000
+    } сек`
+  );
 
-    /**======================
-     * Загрузка плагинов
-     *========================**/
-    console.log("[Load][Plugins]");
-    for (const plugin of Plugins) {
-      const start = Date.now();
+  /**======================
+   * Загрузка плагинов
+   *========================**/
 
-      await import(`../vendor/${plugin}/index.js`).catch((error) => {
-        console.warn(`[Error][Plugin] ${plugin}: ` + error + error.stack);
-      });
-      console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
-    }
-    console.log("[Load]");
-    console.log(`[Load][End] ${(Date.now() - data.start_time) / 1000} сек`);
-    console.log("[Load]");
-  }, 5000);
+  console.log("Plugins: ");
+  console.log(" ");
+  for (const plugin of Plugins) {
+    const start = Date.now();
+
+    await import(`../vendor/${plugin}/index.js`).catch((error) => {
+      console.warn(`> Error ${plugin}: ` + error + error.stack);
+    });
+    console.log(`> ${plugin} (${Date.now() - start} ms)`);
+  }
+  console.log(" ");
+  console.log("Done.");
+  console.log(" ");
+  console.log(
+    `> [End] ${(Date.now() - data.start_time) / 1000} sec, Session: ${
+      data.session
+    }`
+  );
+  console.log(" ");
+  //}, 5000);
 }
 
 export async function SERVISE_stop(
@@ -118,19 +126,21 @@ export async function SERVISE_stop(
       members.xiller,
       `⚠️ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
         extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-      }\n🌐 Остановка сервера: ${stopApp ? '❌ Да' : '✅ Нет'}\n🤖 Остановка бота: ${stopBot ? '❌ Да' : '✅ Нет'}`
+      }\n🌐 Остановка сервера: ${
+        stopApp ? "❌ Да" : "✅ Нет"
+      }\n🤖 Остановка бота: ${stopBot ? "❌ Да" : "✅ Нет"}`
     ),
-    console.log(
-      `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-      }\nApp: ${stopApp}\nBot: ${stopBot}`
-    );
-  if (stopBot && data.started && !data.stopped) bot.stop(reason), (data.stopped = true);
+      console.log(
+        `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+          extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+        }\nApp: ${stopApp}\nBot: ${stopBot}`
+      );
+  if (stopBot && data.started && !data.stopped)
+    (data.stopped = true), bot.stop(reason);
   stopApp
     ? process.exit(0)
     : setTimeout(() => {
         console.log("[Stop] Конец сессии.");
         process.exit(0);
-      }, 1000 * 60 * 20);
-    
+      }, 12000000);
 }

@@ -167,16 +167,19 @@ new cmd({ name: "help", description: "Список команд" }, async (ctx) 
 });
 
 import("./cmds.js").then(() => {
-  let o = [];
-  Object.keys(public_cmds).forEach((e) =>
-    o.push({ command: e, description: public_cmds[e].info.description })
-  );
+  let o = [],
+    allKmds = [];
+  Object.keys(public_cmds).forEach((e) => {
+    o.push({ command: e, description: public_cmds[e].info.description });
+    allKmds.push(e);
+  });
+  Object.keys(private_cmds).forEach((e) => allKmds.push(e));
   o = o.filter((e) => e.command != "start" && e.command != "help");
 
   if (o[0]) bot.telegram.setMyCommands(o);
   console.log(
-    `[Load][commands] Кол-во команд: ${o.length}${
-      o[0] ? `, список: ${o.map((e) => e.command).join(", ")}` : ""
+    `> Commands Кол-во команд: ${allKmds.length}${
+      allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
     }`
   );
 });

@@ -31,16 +31,12 @@ export async function updateSession(data) {
 export async function updateVisualVersion(data) {
   let session = data.session;
 
-  data.v = `${VERSION.join(".")}.${session}`;
   const dbversion = await database.get(dbkey.version, true);
   data.isLatest = bigger(
     dbversion,
     [VERSION[0], VERSION[1], VERSION[2], session],
     false
   );
-  data.versionMSG = `v${data.v}${
-    data.isLatest == 1 ? ` (Стабильная)` : " (Последняя)"
-  }`;
 
   if (data.isLatest == 2 || data.isLatest == "empty array")
     database.set(
@@ -48,11 +44,17 @@ export async function updateVisualVersion(data) {
       [VERSION[0], VERSION[1], VERSION[2], session],
       true
     ),
-      (data.isLatest = 2);
+      (data.isLatest = 2),
+      (data.session = 0),
+      await database.set(dbkey.session, 0);
+  data.v = `${VERSION.join(".")}.${session}`;
+  data.versionMSG = `v${data.v}${
+    data.isLatest == 1 ? ` (Стабильная)` : " (Последняя)"
+  }`;
 }
 
 export async function checkUpdates(data) {
-  if (data.stopped) return
+  if (data.stopped) return;
   let session = data.session;
 
   const dbversion = await database.get(dbkey.version, true);
@@ -62,7 +64,12 @@ export async function checkUpdates(data) {
     false
   );
 
-  if (data.isLatest == 2 || data.isLatest == "empty array" || data.isLatest == 0) return;
+  if (
+    data.isLatest == 2 ||
+    data.isLatest == "empty array" ||
+    data.isLatest == 0
+  )
+    return;
 
   SERVISE_stop(
     `Обнаружена более актуальная запущенная версия ${dbversion.join(
