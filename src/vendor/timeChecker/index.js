@@ -1,5 +1,5 @@
 import { bot, members } from "../../app/setup/tg.js";
-import { MEMBERS } from "../../app/config.js";
+import { MEMBERS } from "../../config.js";
 import { t } from "../../app/functions/timeCLS.js";
 
 async function check(ctx) {

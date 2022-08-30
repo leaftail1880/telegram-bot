@@ -1,6 +1,7 @@
 import { Context } from "telegraf";
 import { isAdmin } from "../../app/functions/check.js";
 import { bot, groups } from "../../app/setup/tg.js";
+import { data } from "../../app/start-stop.js";
 
 const public_cmds = {},
   private_cmds = {},
@@ -123,9 +124,9 @@ bot.on("text", async (ctx) => {
     a.shift();
     command.callback(ctx, a);
     console.log(
-      `[Cmd][${ctx.message.from.username ?? ctx.message.from.first_name}][${
+      `${ctx.message.from.username ?? ctx.message.from.id}: ${t} (${
         command.info.name
-      }] ${t}`
+      })`
     );
   } catch (e) {
     console.warn(
@@ -177,9 +178,10 @@ import("./cmds.js").then(() => {
   o = o.filter((e) => e.command != "start" && e.command != "help");
 
   if (o[0]) bot.telegram.setMyCommands(o);
-  console.log(
-    `> Command Кол-во команд: ${allKmds.length}${
-      allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
-    }`
-  );
+  if (data.isDev)
+    console.log(
+      `> Command Кол-во команд: ${allKmds.length}${
+        allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
+      }`
+    );
 });

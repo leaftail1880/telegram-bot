@@ -1,5 +1,5 @@
-import { PORT } from "./app/config.js";
-import { app, router } from "./app/setup/tg.js";
+import { PORT } from "./config.js";
+import { app } from "./app/setup/tg.js";
 import { db } from "./app/setup/db.js";
 import { SERVISE_start, SERVISE_stop } from "./app/start-stop.js";
 
@@ -8,17 +8,16 @@ import { SERVISE_start, SERVISE_stop } from "./app/start-stop.js";
  *========================**/
 export const database = new db();
 
-
 /**======================
  * Всякая хрень
  *========================**/
 process.on("unhandledRejection", async (err) => {
-  SERVISE_stop("app error", err, true, true)
+  if (err?.response?.error_code === 409) {
+    SERVISE_stop("Запущено два экземпляра", null, true, true);
+  } else SERVISE_stop("app error", err, true, true);
 });
 
 app.get("/hp", (req, res) => res.sendStatus(200));
-
-
 
 /**======================
  * Запуск

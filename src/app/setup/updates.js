@@ -1,5 +1,4 @@
-import { dbkey, VERSION } from "../config.js";
-import { SERVISE_stop } from "../start-stop.js";
+import { dbkey, VERSION } from "../../config.js";
 import { database } from "../../index.js";
 
 /**
@@ -12,8 +11,8 @@ function bigger(array, array2, returnArray = true) {
   for (let a = 0; a <= Math.max(array.length, array2.length); a++) {
     const one = array[a] ?? 0,
       two = array2[a] ?? 0;
-    if (one > two) return returnArray ? array : 1;
-    if (two > one) return returnArray ? array2 : 2;
+    if (one > two) return returnArray ? array : true;
+    if (two > one) return returnArray ? array2 : false;
   }
   return returnArray ? array : 0;
 }
@@ -25,58 +24,43 @@ export async function updateSession(data) {
 
   await database.add(dbkey.session, 1);
 
-  data.session = await database.get(dbkey.session);
+  data.session = await database.get(dbkey.session, true);
 }
 
+/**
+ * Обновляет data.v, data.versionMSG, data.isLatest, version и session
+ * @param {Object} data
+ */
 export async function updateVisualVersion(data) {
+  // Получаем данные
   let session = data.session;
-
   const dbversion = await database.get(dbkey.version, true);
+
+  // Сравниваем версии
   data.isLatest = bigger(
-    dbversion,
     [VERSION[0], VERSION[1], VERSION[2], session],
+    dbversion,
     false
   );
 
-  if (data.isLatest == 2 || data.isLatest == "empty array")
+  // Если версия новая
+  if (data.isLatest) {
+    // Прописываем ее в базе данных
     database.set(
       dbkey.version,
-      [VERSION[0], VERSION[1], VERSION[2], session],
+      [VERSION[0], VERSION[1], VERSION[2], Number(session)],
       true
-    ),
-      (data.isLatest = 2),
-      (data.session = 0),
-      await database.set(dbkey.session, 0);
+    );
+    data.isLatest = true;
+
+    // Обнуляем сессию
+    data.session = 0;
+    database.set(dbkey.session, 0);
+  }
+
+  // Записываем значения
   data.v = `${VERSION.join(".")}.${session}`;
   data.versionMSG = `v${data.v}${
-    data.isLatest == 1 ? ` (Стабильная)` : " (Последняя)"
+    data.isLatest ? ` (Стабильная)` : " (Последняя)"
   }`;
-}
-
-export async function checkUpdates(data) {
-  if (data.stopped) return;
-  let session = data.session;
-
-  const dbversion = await database.get(dbkey.version, true);
-  data.isLatest = bigger(
-    dbversion,
-    [VERSION[0], VERSION[1], VERSION[2], session],
-    false
-  );
-
-  if (
-    data.isLatest == 2 ||
-    data.isLatest == "empty array" ||
-    data.isLatest == 0
-  )
-    return;
-
-  SERVISE_stop(
-    `Обнаружена более актуальная запущенная версия ${dbversion.join(
-      "."
-    )} (против активной ${data.v})`,
-    null,
-    true,
-    false
-  );
 }

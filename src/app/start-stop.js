@@ -1,19 +1,21 @@
-import { PORT, VERSION } from "./config.js";
-import { app, bot, members } from "./setup/tg.js";
+import { Plugins, PORT, VERSION } from "../config.js";
+import { app, bot, env, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
-import {
-  checkUpdates,
-  updateSession,
-  updateVisualVersion,
-} from "./setup/updates.js";
+import { updateSession, updateVisualVersion } from "./setup/updates.js";
 
-/**======================
- * Плагины
- *========================**/
-const Plugins = ["Command", "timeChecker", "html"];
-
+/**
+ * @typedef {Object} sessionCache
+ * @property {String} v 6.3.3
+ * @property {Boolean} isLatest true | false | 'empty array'
+ * @property {String} versionMSG v6.3.3 (Init)
+ * @property {Number} session 0
+ * @property {Number} start_time 1224214
+ * @property {Boolean} started true
+ * @property {Boolean} stopped false
+ * @property {Boolean} isDev false
+ */
 /**======================
  * Кэш сессии
  *========================**/
@@ -25,23 +27,21 @@ export const data = {
   start_time: Date.now(),
   started: false,
   stopped: false,
+  isDev: env.xillerPC ? true : false,
 };
-
 /**
  * Запуск бота
  * @returns {void}
  */
 export async function SERVISE_start() {
-  console.log(" ");
-  console.log(
-    `> [Start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
-  );
-  console.log(" ");
-  // let anim = true,
-  //   c = 0;
-  // setInterval(async () => {
-  //   if (anim) console.log(`> ${c}/5`), c++;
-  // }, 1000);
+  if (data.isDev) {
+    console.log(" ");
+    console.log(
+      `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
+    );
+    console.log(" ");
+  } else console.log(`> v${VERSION.join(".")}, Port: ${PORT}`);
+
   /**======================
    * Подключение к базе данных
    *========================**/
@@ -50,14 +50,15 @@ export async function SERVISE_start() {
     url: process.env.REDIS_URL,
   });
 
-  client.on("error", (err) => console.log("[DB][Error] ", err));
+  client.on("error", (err) => console.log("[DB Error] ", err));
 
+  // Сохранение клиента
   await client.connect();
-
   database.setClient(client);
 
   await updateSession(data);
 
+  // Обновляет data.v, data.versionMSG, data.isLatest, version и session
   await updateVisualVersion(data);
 
   /**======================
@@ -68,15 +69,6 @@ export async function SERVISE_start() {
     SERVISE_stop("error", error);
   });
 
-  /**======================
-   * Остановка при обнаружении новой версии
-   *========================**/
-  // setInterval(async () => {
-  //   checkUpdates(data);
-  // }, 1000);
-
-  //setTimeout(async () => {
-  //anim = false;
   /**======================
    * Запуск бота
    *========================**/
@@ -92,28 +84,38 @@ export async function SERVISE_start() {
   /**======================
    * Загрузка плагинов
    *========================**/
-
-  console.log("Plugins: ");
-  console.log(" ");
+  let plgs = [];
+  if (data.isDev) {
+    console.log("Plugins: ");
+    console.log(" ");
+  }
   for (const plugin of Plugins) {
     const start = Date.now();
 
     await import(`../vendor/${plugin}/index.js`).catch((error) => {
       console.warn(`> Error ${plugin}: ` + error + error.stack);
     });
-    console.log(`> ${plugin} (${Date.now() - start} ms)`);
+    data.isDev
+      ? console.log(`> ${plugin} (${Date.now() - start} ms)`)
+      : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
-  console.log(" ");
-  console.log("Done.");
-  console.log(" ");
-  console.log(
-    `> [End] ${(Date.now() - data.start_time) / 1000} sec, Session: ${
-      data.session
-    }`
-  );
-  console.log(" ");
+  if (data.isDev) {
+    console.log(" ");
+    console.log("Done.");
+    console.log(" ");
+    console.log(
+      `> [Load end] ${(Date.now() - data.start_time) / 1000} sec, Session: ${
+        data.session
+      }`
+    );
+  } else
+    console.log(
+      `> ${(Date.now() - data.start_time) / 1000} sec, Session: ${
+        data.session
+      }, plugins: ${plgs.join(", ")}`
+    );
+  if (data.isDev) console.log(" ");
   app.get("/healt", (_req, res) => res.sendStatus(200));
-  //}, 5000);
 }
 
 export async function SERVISE_stop(
@@ -133,9 +135,9 @@ export async function SERVISE_stop(
       }\n🤖 Остановка бота: ${stopBot ? "❌ Да" : "✅ Нет"}`
     ),
       console.log(
-        `> [Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        `[Stop] ${reason ? `${reason}.` : ""}${
           extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-        }\nApp: ${stopApp}\nBot: ${stopBot}`
+        } APPsop: ${stopApp} BOTstop: ${stopBot}`
       );
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;
@@ -146,7 +148,7 @@ export async function SERVISE_stop(
     : reload
     ? ""
     : setTimeout(() => {
-        console.log("[Stop] Конец сессии.");
+        console.log("[Stop] End.");
         process.exit(0);
       }, 12000000);
 }
