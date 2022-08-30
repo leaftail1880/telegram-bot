@@ -1,5 +1,5 @@
 import { PORT, VERSION } from "./config.js";
-import { bot, members } from "./setup/tg.js";
+import { app, bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
@@ -112,6 +112,7 @@ export async function SERVISE_start() {
     }`
   );
   console.log(" ");
+  app.get("/healt", (_req, res) => res.sendStatus(200));
   //}, 5000);
 }
 
