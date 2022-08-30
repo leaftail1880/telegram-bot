@@ -1,14 +1,14 @@
-import { dbkey, PORT, VERSION } from "./config.js";
+import { PORT, VERSION } from "./config.js";
 import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
-import { checkUpdates } from "../vendor/updates/index.js";
+import { checkUpdates, updateSession, updateVisualVersion } from "./setup/updates.js";
 
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["updates", "commands", "timeChecker", "html"];
+const Plugins = ["commands", "timeChecker", "html"];
 
 /**======================
  * Кэш сессии
@@ -19,6 +19,7 @@ export const data = {
   versionMSG: `v${VERSION.join(".")} (Init)`,
   session: 0,
   start_time: Date.now(),
+  started: false
 };
 
 /**
@@ -50,7 +51,9 @@ export async function SERVISE_start() {
 
   database.client = client;
 
-  await updateSession();
+  await updateSession(data);
+
+  await updateVisualVersion(data)
 
   /**======================
    * Обработчик ошибок
@@ -64,7 +67,7 @@ export async function SERVISE_start() {
    * Остановка при обнаружении новой версии
    *========================**/
   setInterval(async () => {
-    checkUpdates()
+    checkUpdates(data)
   }, 1000);
 
   setTimeout(async () => {
@@ -73,6 +76,8 @@ export async function SERVISE_start() {
      * Запуск бота
      *========================**/
     await bot.launch();
+    data.started = true
+    bot.telegram.sendMessage(members.xiller, `✅ Кобольдя ${data.versionMSG} запущен за ${(Date.now() - data.start_time) / 1000} сек`);
 
     /**======================
      * Загрузка плагинов
@@ -98,7 +103,7 @@ export async function SERVISE_stop(
   stopBot = true,
   stopApp = true
 ) {
-  await bot.telegram.sendMessage(
+  if (data.started) await bot.telegram.sendMessage(
     members.xiller,
     `⚠️ Бот ${data.versionMSG} остановлен${
       reason ? ` по причине: ${reason}.` : "."
@@ -106,7 +111,7 @@ export async function SERVISE_stop(
       extra ? ` (${format.stringifyEx(extra, " ")})` : ""
     }\nApp: ${stopApp}\nBot: ${stopBot}`
   );
-  if (stopBot) bot.stop(reason);
+  if (stopBot && data.started) bot.stop(reason);
   if (stopApp) process.exit(0);
   console.log(
     `[Stop] Бот ${data.versionMSG} остановлен${
@@ -117,12 +122,4 @@ export async function SERVISE_stop(
   );
 }
 
-async function updateSession() {
-  if (!(await database.has(dbkey.session))) {
-    await database.set(dbkey.session, 0);
-  }
 
-  await database.add(dbkey.session, 1);
-
-  data.session = await database.get(dbkey.session);
-}

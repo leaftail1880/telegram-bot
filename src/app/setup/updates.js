@@ -1,6 +1,5 @@
-import { dbkey, VERSION } from "../../app/config.js";
-import { bot, members } from "../../app/setup/tg.js";
-import { data, SERVISE_stop } from "../../app/start-stop.js";
+import { dbkey, VERSION } from "../config.js";
+import { SERVISE_stop } from "../start-stop.js";
 import { database } from "../../index.js";
 
 /**
@@ -9,7 +8,7 @@ import { database } from "../../index.js";
  * @param {Array<Number>} array2
  */
 function bigger(array, array2, returnArray = true) {
-  if (!array || !array2) return 'empty array'
+  if (!array || !array2) return "empty array";
   for (let a = 0; a <= Math.max(array.length, array2.length); a++) {
     const one = array[a] ?? 0,
       two = array2[a] ?? 0;
@@ -19,8 +18,18 @@ function bigger(array, array2, returnArray = true) {
   return returnArray ? array : 0;
 }
 
-(async () => {
-  let session = data.session
+export async function updateSession(data) {
+  if (!(await database.has(dbkey.session))) {
+    await database.set(dbkey.session, 0);
+  }
+
+  await database.add(dbkey.session, 1);
+
+  data.session = await database.get(dbkey.session);
+}
+
+export async function updateVisualVersion(data) {
+  let session = data.session;
 
   data.v = `${VERSION.join(".")}.${session}`;
   const dbversion = await database.get(dbkey.version, true);
@@ -33,18 +42,17 @@ function bigger(array, array2, returnArray = true) {
     data.isLatest == 1 ? ` (Стабильная)` : " (Последняя)"
   }`;
 
-  bot.telegram.sendMessage(members.xiller, `✅ Кобольдя ${data.versionMSG} запущен за ${(Date.now() - data.start_time) / 1000} сек`);
-
-  if (data.isLatest == 2 || data.isLatest == 'empty array')
+  if (data.isLatest == 2 || data.isLatest == "empty array")
     database.set(
       dbkey.version,
       [VERSION[0], VERSION[1], VERSION[2], session],
       true
-    );
-})();
+    ),
+      (data.isLatest = 2);
+}
 
-export async function checkUpdates() {
-  let session = data.session
+export async function checkUpdates(data) {
+  let session = data.session;
 
   const dbversion = await database.get(dbkey.version, true);
   data.isLatest = bigger(
@@ -53,10 +61,14 @@ export async function checkUpdates() {
     false
   );
 
-  if (data.isLatest == 2 || data.isLatest == 'empty array') return
+  if (data.isLatest == 2 || data.isLatest == "empty array" || data.isLatest == 0) return;
 
-  SERVISE_stop(`Обнаружена более актуальная запущенная версия ${dbversion.join('.')} (против активной ${data.v})`,
-  null,
-  true,
-  false)
-};
+  SERVISE_stop(
+    `Обнаружена более актуальная запущенная версия ${dbversion.join(
+      "."
+    )} (против активной ${data.v})`,
+    null,
+    true,
+    false
+  );
+}
