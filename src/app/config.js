@@ -1,13 +1,9 @@
-export let VERSION = [6, 3, 17];
+export let VERSION = [6, 3, 18];
 
 export const dbkey = {
-  session: 'bot_session',
-  version: 'bot_latest_version'
-}
-
-
-
-export const dev = true;
+  session: "bot_session",
+  version: "bot_latest_version",
+};
 
 export const MEMBERS = {
   // .
@@ -36,4 +32,4 @@ export const MEMBERS = {
   },
 };
 
-export const PORT = 3001///35261 + new Date(Date.now()).getMilliseconds();
+export const PORT = 3001; ///35261 + new Date(Date.now()).getMilliseconds();
