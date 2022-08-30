@@ -1,6 +1,6 @@
 import { dbkey, VERSION } from "../../app/config.js";
 import { bot, members } from "../../app/setup/tg.js";
-import { data } from "../../app/start-stop.js";
+import { data, SERVISE_stop } from "../../app/start-stop.js";
 import { database } from "../../index.js";
 
 /**
@@ -42,3 +42,21 @@ function bigger(array, array2, returnArray = true) {
       true
     );
 })();
+
+export async function checkUpdates() {
+  let session = data.session
+
+  const dbversion = await database.get(dbkey.version, true);
+  data.isLatest = bigger(
+    dbversion,
+    [VERSION[0], VERSION[1], VERSION[2], session],
+    false
+  );
+
+  if (data.isLatest == 2 || data.isLatest == 'empty array') return
+
+  SERVISE_stop(`Обнаружена более актуальная запущенная версия ${dbversion.join('.')} (против активной ${data.v})`,
+  null,
+  true,
+  false)
+};

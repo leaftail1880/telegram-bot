@@ -3,6 +3,7 @@ import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
+import { checkUpdates } from "../vendor/updates/index.js";
 
 /**======================
  * Плагины
@@ -63,14 +64,7 @@ export async function SERVISE_start() {
    * Остановка при обнаружении новой версии
    *========================**/
   setInterval(async () => {
-    const cur = await database.get(dbkey.session);
-    if (cur > data.session)
-      SERVISE_stop(
-        `Обнаружена вторая сессия номер ${cur} (против активной ${session})`,
-        null,
-        true,
-        false
-      );
+    checkUpdates()
   }, 1000);
 
   setTimeout(async () => {
