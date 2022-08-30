@@ -3,7 +3,11 @@ import { bot, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
-import { checkUpdates, updateSession, updateVisualVersion } from "./setup/updates.js";
+import {
+  checkUpdates,
+  updateSession,
+  updateVisualVersion,
+} from "./setup/updates.js";
 
 /**======================
  * Плагины
@@ -20,7 +24,7 @@ export const data = {
   session: 0,
   start_time: Date.now(),
   started: false,
-  stopped: false
+  stopped: false,
 };
 
 /**
@@ -54,7 +58,7 @@ export async function SERVISE_start() {
 
   await updateSession(data);
 
-  await updateVisualVersion(data)
+  await updateVisualVersion(data);
 
   /**======================
    * Обработчик ошибок
@@ -68,7 +72,7 @@ export async function SERVISE_start() {
    * Остановка при обнаружении новой версии
    *========================**/
   setInterval(async () => {
-    checkUpdates(data)
+    checkUpdates(data);
   }, 1000);
 
   setTimeout(async () => {
@@ -77,13 +81,18 @@ export async function SERVISE_start() {
      * Запуск бота
      *========================**/
     await bot.launch();
-    data.started = true
-    bot.telegram.sendMessage(members.xiller, `✅ Кобольдя ${data.versionMSG} запущен за ${(Date.now() - data.start_time) / 1000} сек`);
+    data.started = true;
+    bot.telegram.sendMessage(
+      members.xiller,
+      `✅ Кобольдя ${data.versionMSG} запущен за ${
+        (Date.now() - data.start_time) / 1000
+      } сек`
+    );
 
     /**======================
      * Загрузка плагинов
      *========================**/
-    console.log('[Load][Plugins]')
+    console.log("[Load][Plugins]");
     for (const plugin of Plugins) {
       const start = Date.now();
 
@@ -104,23 +113,24 @@ export async function SERVISE_stop(
   stopBot = true,
   stopApp = true
 ) {
-  if (data.started) await bot.telegram.sendMessage(
-    members.xiller,
-    `⚠️ Бот ${data.versionMSG} остановлен${
-      reason ? ` по причине: ${reason}.` : "."
-    }${
-      extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-    }\nApp: ${stopApp}\nBot: ${stopBot}`
-  );
-  if (stopBot && data.started) bot.stop(reason), data.stopped = true;
-  stopApp ? process.exit(0) : setTimeout(() => process.exit(0), 3000000)
-  console.log(
-    `[Stop] Бот ${data.versionMSG} остановлен${
-      reason ? ` по причине: ${reason}.` : "."
-    }${
-      extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-    }\nApp: ${stopApp}\nBot: ${stopBot}`
-  );
+  if (data.started)
+    await bot.telegram.sendMessage(
+      members.xiller,
+      `⚠️ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+      }\nApp: ${stopApp}\nBot: ${stopBot}`
+    );
+  if (stopBot && data.started) bot.stop(reason), (data.stopped = true);
+  stopApp
+    ? process.exit(0)
+    : setTimeout(() => {
+        console.log("Конец сессии.");
+        process.exit(0);
+      }, 1500000);
+  if (data.started)
+    console.log(
+      `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+      }\nApp: ${stopApp}\nBot: ${stopBot}`
+    );
 }
-
-
