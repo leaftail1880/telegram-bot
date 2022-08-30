@@ -119,6 +119,11 @@ export async function SERVISE_stop(
       `⚠️ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
         extra ? ` (${format.stringifyEx(extra, " ")})` : ""
       }\n🌐 Остановка сервера: ${stopApp ? '❌ Да' : '✅ Нет'}\n🤖 Остановка бота: ${stopBot ? '❌ Да' : '✅ Нет'}`
+    ),
+    console.log(
+      `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+      }\nApp: ${stopApp}\nBot: ${stopBot}`
     );
   if (stopBot && data.started && !data.stopped) bot.stop(reason), (data.stopped = true);
   stopApp
@@ -126,11 +131,6 @@ export async function SERVISE_stop(
     : setTimeout(() => {
         console.log("[Stop] Конец сессии.");
         process.exit(0);
-      }, 1500000);
-  if (data.started)
-    console.log(
-      `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-      }\nApp: ${stopApp}\nBot: ${stopBot}`
-    );
+      }, 1000 * 60 * 20);
+    
 }
