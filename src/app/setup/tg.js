@@ -25,6 +25,7 @@ if (!process || !process.env || !process.env.TOKEN)
  * Инициализация процессов
  *========================**/
 export const app = express();
+export const router = express.Router();
 export const bot = new Telegraf(process.env.TOKEN);
 /**
  * @type {environment}

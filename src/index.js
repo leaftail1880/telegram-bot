@@ -1,5 +1,5 @@
 import { PORT } from "./app/config.js";
-import { app } from "./app/setup/tg.js";
+import { app, router } from "./app/setup/tg.js";
 import { db } from "./app/setup/db.js";
 import { SERVISE_start, SERVISE_stop } from "./app/start-stop.js";
 
@@ -8,13 +8,30 @@ import { SERVISE_start, SERVISE_stop } from "./app/start-stop.js";
  *========================**/
 export const database = new db();
 
-app.addListener("error", (error) => {
-  console.warn('Error on app: ', error)
-  SERVISE_stop("app error")
-})
 
+/**======================
+ * Всякая хрень
+ *========================**/
+process.on("unhandledRejection", (err) => {
+  SERVISE_stop("app error", err)
+});
+
+
+router.use((req, res, next) => {
+  res.header('Access-Control-Allow-Methods', 'GET');
+  next();
+});
+
+router.get('/health', (req, res) => {
+  res.status(200).send('Ok');
+});
+
+app.use('/api/v1', router);
+// app.get('/', )
 app.get("/healt", (req, res) => res.sendStatus(200));
-app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
+// app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
+
+
 /**======================
  * Запуск
  *========================**/

@@ -132,7 +132,7 @@ export async function SERVISE_stop(
       }\n🤖 Остановка бота: ${stopBot ? "❌ Да" : "✅ Нет"}`
     ),
       console.log(
-        `[Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
+        `> [Stop] Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
           extra ? ` (${format.stringifyEx(extra, " ")})` : ""
         }\nApp: ${stopApp}\nBot: ${stopBot}`
       );
