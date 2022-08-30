@@ -34,6 +34,7 @@ export const data = {
  * @returns {void}
  */
 export async function SERVISE_start() {
+  app.get("/healt", (_req, res) => res.sendStatus(200));
   if (data.isDev) {
     console.log(" ");
     console.log(
@@ -115,7 +116,7 @@ export async function SERVISE_start() {
       }, plugins: ${plgs.join(", ")}`
     );
   if (data.isDev) console.log(" ");
-  app.get("/healt", (_req, res) => res.sendStatus(200));
+  
 }
 
 export async function SERVISE_stop(
