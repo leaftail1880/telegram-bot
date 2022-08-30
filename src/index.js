@@ -14,7 +14,7 @@ app.addListener("error", (error) => {
 })
 
 app.get("/healt", (req, res) => res.sendStatus(200));
-
+app.get(`:${PORT}/healt`, (req, res) => res.sendStatus(200))
 /**======================
  * Запуск
  *========================**/
