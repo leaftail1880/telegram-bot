@@ -1,6 +1,6 @@
 import { dbkey, VERSION } from "../../app/config.js";
 import { bot, members } from "../../app/setup/tg.js";
-import { SERVISE_stop, data } from "../../app/start-stop.js";
+import { data } from "../../app/start-stop.js";
 import { database } from "../../index.js";
 
 /**
@@ -19,9 +19,8 @@ function bigger(array, array2, returnArray = true) {
   return returnArray ? array : 0;
 }
 
-let session = 0;
 (async () => {
-  session = await database.get(dbkey.session);
+  let session = data.session
 
   data.v = `${VERSION.join(".")}.${session}`;
   const dbversion = await database.get(dbkey.version, true);
@@ -34,7 +33,7 @@ let session = 0;
     data.isLatest == 1 ? ` (Стабильная)` : " (Последняя)"
   }`;
 
-  bot.telegram.sendMessage(members.xiller, data.versionMSG);
+  bot.telegram.sendMessage(members.xiller, `✅ Кобольдя ${data.versionMSG} запущен за ${(Date.now() - data.start_time) / 1000} сек`);
 
   if (data.isLatest == 2 || data.isLatest == 'empty array')
     database.set(

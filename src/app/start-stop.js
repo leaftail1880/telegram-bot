@@ -7,29 +7,19 @@ import { format } from "./functions/formatterCLS.js";
 /**======================
  * Плагины
  *========================**/
-const Plugins = ["commands", "timeChecker", "updates", "html"];
+const Plugins = ["updates", "commands", "timeChecker", "html"];
 
+
+/**======================
+ * Кэш сессии
+ *========================**/
 export const data = {
   v: VERSION.join("."),
   isLatest: true,
   versionMSG: `v${VERSION.join(".")}`,
+  session: 0,
+  start_time: Date.now()
 };
-
-async function checkBOT() {
-  if (!(await database.has(dbkey.session))) {
-    await database.set(dbkey.session, 0);
-  }
-
-  await database.add(dbkey.session, 1);
-
-  let session = await database.get(dbkey.session);
-  setTimeout(() => {
-    setInterval(async () => {
-      const cur = await database.get(dbkey.session);
-      if (cur > session) SERVISE_stop("new bot: " + cur + "/" + session);
-    }, 1000);
-  }, 2000)
-}
 
 /**
  * Запуск бота
@@ -52,37 +42,70 @@ export async function SERVISE_start() {
 
   database.client = client;
 
-  await checkBOT();
+  await updateSession();
 
   /**======================
-   * Запуск бота
+   * Обработчик ошибок
    *========================**/
-  await bot.launch();
   bot.catch((error) => {
     console.log("Ошибка при работе бота: ", error);
     SERVISE_stop("error", error);
   });
 
   /**======================
-   * Загрузка плагинов
+   * Остановка при обнаружении новой версии
    *========================**/
-  for (const plugin of Plugins) {
-    const start = Date.now();
+  setInterval(async () => {
+    const cur = await database.get(dbkey.session);
+    if (cur > data.session)
+      SERVISE_stop(`Обнаружена вторая сессия номер ${cur} (против активной ${session})`, null, true, false);
+  }, 1000);
 
-    await import(`../vendor/${plugin}/index.js`).catch((error) => {
-      console.warn(`[Error][Plugin] ${plugin}: ` + error + error.stack);
-    });
-    console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
-  }
+  setTimeout(async () => {
+    /**======================
+     * Запуск бота
+     *========================**/
+    await bot.launch();
+
+    /**======================
+     * Загрузка плагинов
+     *========================**/
+    for (const plugin of Plugins) {
+      const start = Date.now();
+
+      await import(`../vendor/${plugin}/index.js`).catch((error) => {
+        console.warn(`[Error][Plugin] ${plugin}: ` + error + error.stack);
+      });
+      console.log(`[Load] ${plugin} (${Date.now() - start} ms)`);
+    }
+  }, 5000);
 }
 
-export async function SERVISE_stop(reason, extra) {
+export async function SERVISE_stop(
+  reason,
+  extra = null,
+  stopBot = true,
+  stopApp = true
+) {
   await bot.telegram.sendMessage(
     members.xiller,
-    `Бот v${data.v} остановлен. Причина: ${reason}${
+    `⚠️ Бот ${data.versionMSG} остановлен${reason ?  ` по причине: ${reason}.` : '.'}${
       extra ? ` (${format.stringifyEx(extra, " ")})` : ""
-    }`
+    }\nApp: ${stopApp}\nBot: ${stopBot}`
   );
-  bot.stop(reason);
-  process.exit(0);
+  if (stopBot) bot.stop(reason);
+  if (stopApp) process.exit(0);
+  console.log(`[Stop] Бот ${data.versionMSG} остановлен${reason ?  ` по причине: ${reason}.` : '.'}${
+    extra ? ` (${format.stringifyEx(extra, " ")})` : ""
+  }\nApp: ${stopApp}\nBot: ${stopBot}`)
+}
+
+async function updateSession() {
+  if (!(await database.has(dbkey.session))) {
+    await database.set(dbkey.session, 0);
+  }
+
+  await database.add(dbkey.session, 1);
+
+  data.session = await database.get(dbkey.session);
 }

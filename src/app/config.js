@@ -1,51 +1,11 @@
-export let VERSION = [6, 2, 12];
+export let VERSION = [6, 2, 13];
 
 export const dbkey = {
   session: 'bot_session',
   version: 'bot_latest_version'
 }
 
-/**
- * @typedef {Object} DBUser
- * @property {Number} id 
- * @property {String} nickname 
- * @property {String} name 
- * @property {String} customName 
- * @property {String} tag 
- * @property {Number} active 
- * @property {Number} call 
- * @property {Number} pin 
- */
 
-
-/**
- * 
- * @param {Number} id 
- * @param {String} nickname 
- * @param {String} name 
- * @param {String} customName 
- * @param {String} tag 
- * @param {Number} active 
- * @param {Number} call 
- * @param {Number} pin 
- * @returns {DBUser}
- */
-export function CreateUser(id, nickname, name, customName = null, tag = null, active = Date.now(), call = Date.now(), pin = Date.now()) {
-  return {
-    static: {
-      id: id,
-      nickname: nickname,
-      name: name,
-    },
-    cache: {
-      nickname: customName,
-      tag: tag,
-      lastActive: active,
-      lastCall: call,
-      lastPin: pin
-    }
-  }
-}
 
 export const dev = true;
 

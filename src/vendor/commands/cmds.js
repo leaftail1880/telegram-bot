@@ -50,8 +50,8 @@ new cmd(
     permisson: 1,
     type: "groups",
   },
-  () => {
-    SERVISE_stop('manually')
+  (ctx, args) => {
+    SERVISE_stop('manually', null, args[0] ?? false, args[1] ?? false)
   }
 );
 
