@@ -13,7 +13,7 @@ export const database = new db();
  *========================**/
 process.on("unhandledRejection", async (err) => {
   if (err?.response?.error_code === 409) {
-    SERVISE_stop("Запущено два экземпляра", null, true, true);
+    SERVISE_stop("Запущено два экземпляра", null, true, false);
   } else SERVISE_stop("app error", err, true, true);
 });
 

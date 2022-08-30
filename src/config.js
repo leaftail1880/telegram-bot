@@ -1,4 +1,4 @@
-export const VERSION = [6, 4, 1],
+export const VERSION = [6, 4, 2],
   PORT = 3001,
   Plugins = ["Command", "timeChecker", "html"],
   dbkey = {
