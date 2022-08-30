@@ -13,9 +13,7 @@ export const database = new db();
  * Всякая хрень
  *========================**/
 process.on("unhandledRejection", async (err) => {
-  await SERVISE_stop("app error", err, true, false)
-
-  setTimeout(() =>  SERVISE_start(), 5000)
+  SERVISE_stop("app error", err, true, true)
 });
 
 app.get("/hp", (req, res) => res.sendStatus(200));
