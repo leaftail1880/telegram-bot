@@ -1,5 +1,6 @@
 import { Context } from "telegraf";
-import { isAdmin } from "../../app/functions/check.js";
+import { isAdmin } from "../../app/functions/checkFNC.js";
+import { bold, italic, text_parse } from "../../app/functions/textFNC.js";
 import { bot, groups } from "../../app/setup/tg.js";
 import { data } from "../../app/start-stop.js";
 
@@ -148,23 +149,27 @@ new cmd({ name: "start", description: "Начало работы с ботом �
 new cmd({ name: "help", description: "Список команд" }, async (ctx) => {
   if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
     return ctx.reply("А команд то и нет");
-  let c = [],
-    p,
-    o;
-  c.push(
-    Object.values(public_cmds)
-      .map((e) => "  /" + e.info.name + " - " + e.info.description)
-      .join("\n")
-  );
-  p = Object.values(private_cmds)
-    .filter(async (e) => await cmd.cantUse(e, ctx))
-    .map((e) => "  -" + e.info.name + " - " + e.info.description)
-    .join("\n");
-  o = `${c[0] ? `Доступные везде команды:\n${c}` : ""}\n${
-    p ? `\nДоступные вам в этом чате команды:\n${p}` : ""
-  }`;
-  if (!o) return ctx.reply("А доступных команд то и нет");
-  ctx.reply(o);
+  let c = false,
+    p = false,
+    a = [];
+
+  Object.values(public_cmds).forEach((e) => {
+    if (!c) a.push(`Доступные везде команды:\n`), (c = true);
+    a.push(`  /${e.info.name}`);
+    a.push(italic(` - ${e.info.description}\n`));
+  });
+
+  Object.values(private_cmds)
+    .filter(async (e) => !(await cmd.cantUse(e, ctx)))
+    .forEach((e) => {
+      if (!p) a.push(`\nДоступные вам в этом чате команды:\n`), (p = true);
+      a.push(`  `);
+      a.push(bold(`-${e.info.name}`));
+      a.push(italic(` - ${e.info.description}\n`));
+    });
+  let o = text_parse(a);
+  if (!o.newtext) return ctx.reply("А доступных команд то и нет");
+  ctx.reply(o.newtext, { entities: o.extra });
 });
 
 import("./cmds.js").then(() => {

@@ -3,6 +3,7 @@ import { format } from "../../app/functions/formatterCLS.js";
 import { database } from "../../index.js";
 import { cmd } from "./index.js";
 import { data, SERVISE_stop } from "../../app/start-stop.js";
+import { bold, text_parse } from "../../app/functions/textFNC.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -23,7 +24,37 @@ new cmd({
   
 })
 ..
+
+*bold \*text*
+_italic \*text_
+__underline__
+~strikethrough~
+||spoiler||
+*bold _italic bold ~italic bold strikethrough ||italic bold strikethrough spoiler||~ __underline italic bold___ bold*
+[inline URL](http://www.example.com/)
+[inline mention of a user](tg://user?id=123456789)
+`inline fixed-width code`
+```
+pre-formatted fixed-width code block
+```
+```python
+pre-formatted fixed-width code block written in the Python programming language
+```
+
 */
+
+new cmd({
+  name: 'msg',
+  prefix: 'hide',
+  description: 'Ы',
+  permisson: 0,
+  type: 'hide'
+}, (ctx, args) => {
+  const text = text_parse([
+    'text ', bold('bold text'), ' normal text'
+  ])
+  ctx.reply(text.newtext, {entities: text.extra})
+})
 
 new cmd(
   {

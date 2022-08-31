@@ -1,7 +1,7 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 5, 1],
-  PORT = !env.xillerPC ? 3001 : new Date(Date.now()).getMilliseconds(),
+export const VERSION = [6, 5, 5],
+  PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   Plugins = ["Command", "timeChecker", "html"],
   dbkey = {
     session: "bot_session",

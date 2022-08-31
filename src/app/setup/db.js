@@ -15,7 +15,7 @@ export class db {
     const push = {
       msg: msg,
       time: Date.now() - startMS,
-      dopmsg: dopmsg
+      dopmsg: dopmsg,
     };
     this.log.push(push);
   }
@@ -51,7 +51,10 @@ export class db {
   logFormat(prefix = "db") {
     this.logAdd("logFormat");
     return this.log.map(
-      (e) => `[${prefix}] ${e.msg} ${e.time > 0 ? e.time + " ms" : ""} ${e.dopmsg ? e.dopmsg : ''}`
+      (e) =>
+        `[${prefix}] ${e.msg} ${e.time > 0 ? e.time + " ms" : ""} ${
+          e.dopmsg ? e.dopmsg : ""
+        }`
     );
   }
 
@@ -77,8 +80,8 @@ export class db {
    */
   async get(key, jsonparse = false) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    const value = await this.client.get(key);
+    const start = Date.now(),
+      value = await this.client.get(key);
     this.logAdd("get", start);
     return jsonparse ? JSON.parse(value) : value;
   }
@@ -100,19 +103,8 @@ export class db {
         : value
     );
     if (typeof lifetime == "number") this.client.expire(key, lifetime);
-    //this.pushKey(key);
     this.logAdd("set", start);
     return value;
-  }
-  async pushKey(key) {
-    let c = await this.client.get("keys"),
-      a = c?.split(",") ?? [];
-    a.push(key);
-    const filtered = [];
-    a.forEach((e) => {
-      if (!filtered.includes(e)) filtered.push(e);
-    });
-    await this.client.set("keys", filtered.filter((e) => e).join());
   }
   /**
    * @param {String} key
@@ -120,47 +112,37 @@ export class db {
    */
   async has(key) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    const boolean = await this.client.exists(key);
+    const start = Date.now(),
+      boolean = await this.client.exists(key);
     this.logAdd("has", start);
     return boolean;
   }
   async add(key, number = 1) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    const result = await this.client.incrBy(key, number);
+    const start = Date.now(),
+      result = await this.client.incrBy(key, number);
     this.logAdd("add", start);
-    //this.pushKey(key);
     return result;
   }
   async remove(key, number = 1) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    const result = await this.client.decrBy(key, number);
-    this.logAdd("remove", start);
-    //this.pushKey(key);
-    return result;
-  }
-  async oldKeys(filter = () => true) {
-    if (!this.client) throw new Error("Нет дб");
     const start = Date.now(),
-      keys = await this.client.get("keys"),
-      ks = keys?.split(",") ?? [];
-    this.logAdd("oldKeys", start);
-    return ks.filter((e) => filter(e));
+      result = await this.client.decrBy(key, number);
+    this.logAdd("remove", start);
+    return result;
   }
   async keys(filter = () => true) {
     if (!this.client) throw new Error("Нет дб");
     const start = Date.now(),
-      keys = await this.client.keys("*")
+      keys = await this.client.keys("*");
     this.logAdd("keys", start);
     return keys.filter((e) => filter(e));
   }
   async getValues(filter = () => true) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    let collection = [];
-    const keys = await this.keys();
+    const start = Date.now(),
+      collection = [],
+      keys = await this.keys();
     for (const a of keys.filter((e) => filter(e))) {
       collection.push(await this.client.get(a));
     }
@@ -173,9 +155,9 @@ export class db {
    */
   async getPairs() {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now();
-    let collection = {};
-    const arg = await this.keys();
+    const start = Date.now(),
+      collection = {},
+      arg = await this.keys();
     for (const a of arg) {
       collection[a] = await this.client.get(a);
     }
@@ -186,10 +168,9 @@ export class db {
   /*
   async (key) {
     if (!this.client) throw new Error("Нет дб");
-    const start = Date.now()
-    const a = await this.client(key)
-    this.logAdd('', start)
-    return a
+    const start = Date.now(), a = await this.client(key);
+    this.logAdd('', start);
+    return a;
   }
    */
 }

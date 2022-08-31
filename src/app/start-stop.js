@@ -28,6 +28,7 @@ export const data = {
   started: false,
   stopped: false,
   isDev: env.xillerPC ? true : false,
+  fullStartLog: true,
 };
 /**
  * Запуск бота
@@ -38,7 +39,7 @@ export async function SERVISE_start() {
   if (data.isDev) {
     console.log(" ");
     console.log(
-      `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${PORT}`
+      `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${!env.local ? PORT : `localhost:${PORT}`}`
     );
     console.log(" ");
   } else console.log(`> v${VERSION.join(".")}, Port: ${PORT}`);
@@ -47,16 +48,29 @@ export async function SERVISE_start() {
    * Подключение к базе данных
    *========================**/
 
-  const client = createClient({
-    url: process.env.REDIS_URL,
-  });
+  const s = Date.now(),
+    client = createClient({
+      url: process.env.REDIS_URL,
+    });
 
-  client.on("error", (err) => console.log("[DB Error] ", err));
+  client.on("error", async (err) => {
+    if (err.message == 'Client IP address is not in the allowlist.') {
+      console.warn("◔ Перерегайся: https://dashboard.render.com/r/red-cc4qn1un6mprie1hdlrg");
+      await SERVISE_stop('db ip update', null ,true, true, false, false)
+      return
+    }
+    console.warn("◔ Error: ", err); 
+  });
 
   // Сохранение клиента
   await client.connect();
-  database.setClient(client);
+  database.setClient(client, s);
+  if (data.isDev) {
+    console.log("◔ Подключено");
+    console.log(" ");
+  }
 
+  // Обновляет сессию
   await updateSession(data);
 
   // Обновляет data.v, data.versionMSG, data.isLatest, version и session
@@ -116,7 +130,6 @@ export async function SERVISE_start() {
       }, plugins: ${plgs.join(", ")}`
     );
   if (data.isDev) console.log(" ");
-  
 }
 
 export async function SERVISE_stop(
@@ -130,14 +143,14 @@ export async function SERVISE_stop(
   if (data.started && sendMessage)
     await bot.telegram.sendMessage(
       members.xiller,
-      `☒ Бот остановлен${reason ? ` по причине: ${reason}.` : "."}${
-        extra ? ` (${format.stringifyEx(extra, " ")}) ` : " "
-      }(${stopApp ? 'app ' : ''}${stopBot ? 'bot': ''})`
+      `☒ ${reason ? `${reason}.` : "Остановка."}${
+        extra ? ` (${typeof extra != 'string' ? format.stringifyEx(extra, " ") : extra}) ` : " "
+      }(${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
     ),
       console.log(
         `☒ ${reason ? `${reason}.` : ""}${
-          extra ? ` (${format.stringifyEx(extra, " ")}) ` : ""
-        } (${stopApp ? 'app ' : ''}${stopBot ? 'bot': ''})`
+          extra ? ` (${typeof extra != 'string' ? format.stringifyEx(extra, " ") : extra}) ` : ""
+        } (${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
       );
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;

@@ -2,3 +2,4 @@
 /git_test
 .env
 package-lock.json
+test.js

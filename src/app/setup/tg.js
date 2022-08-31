@@ -41,7 +41,7 @@ env.CUSTOM_MEMBERS.split(",").forEach((e) => {
 export const members = member;
 let gps = {};
 env.allowedGroups.split(",").forEach((e) => {
-  gps[e] = true
+  gps[e] = true;
 });
 export const groups = gps;
 /*========================*/

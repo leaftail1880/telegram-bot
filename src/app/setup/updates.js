@@ -45,6 +45,8 @@ export async function updateVisualVersion(data) {
 
   // Если версия новая
   if (data.isLatest) {
+    console.log("⍚ New version! ⍚");
+    console.log(" ");
     // Прописываем ее в базе данных
     database.set(
       dbkey.version,
@@ -61,6 +63,6 @@ export async function updateVisualVersion(data) {
   // Записываем значения
   data.v = `${VERSION.join(".")}.${session}`;
   data.versionMSG = `v${data.v}${
-    data.isLatest ? ` (Стабильная)` : " (Последняя)"
+    data.isLatest ? ` (Последняя)` : " (Стабильная)"
   }`;
 }

@@ -1,3 +1,5 @@
+import { bot } from "../setup/tg.js";
+
 class formatter {
   stringifyEx(startObject, space = undefined) {
     let unsafeProperty = "unsafeproperty.fixed";
