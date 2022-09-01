@@ -144,12 +144,12 @@ export async function SERVISE_stop(
     await bot.telegram.sendMessage(
       members.xiller,
       `☒ ${reason ? `${reason}.` : "Остановка."}${
-        extra ? ` (${typeof extra != 'string' ? format.stringifyEx(extra, " ") : extra}) ` : " "
+        extra ? `\n(${typeof extra == 'object' ? format.stringifyEx(extra, " ") : extra}) ` : " "
       }(${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
     ),
       console.log(
         `☒ ${reason ? `${reason}.` : ""}${
-          extra ? ` (${typeof extra != 'string' ? format.stringifyEx(extra, " ") : extra}) ` : ""
+          extra ? `\n(${typeof extra == 'object' ? format.stringifyEx(extra, " ") : extra}) ` : ""
         } (${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
       );
   if (stopBot && data.started && !data.stopped) {

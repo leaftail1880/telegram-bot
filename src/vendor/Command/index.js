@@ -1,12 +1,19 @@
 import { Context } from "telegraf";
 import { isAdmin } from "../../app/functions/checkFNC.js";
 import { bold, italic, text_parse } from "../../app/functions/textFNC.js";
-import { bot, groups } from "../../app/setup/tg.js";
+import { bot, groups, members } from "../../app/setup/tg.js";
 import { data } from "../../app/start-stop.js";
 
 const public_cmds = {},
   private_cmds = {},
   hprefixes = [".", "-", "$"];
+/**
+ * @typedef {String} CommandType
+ * @property {String} group
+ * @property {String} private
+ * @property {String} all
+ */
+
 export class cmd {
   /**
    * Создает команду
@@ -15,36 +22,37 @@ export class cmd {
    * @param {String} info.prefix def (/) || hide (.-$)
    * @param {String} info.description Описание
    * @param {Number} info.permisson 0 - все, 1 - админы
-   * @param {Array<import("telegraf/typings/core/types/typegram.js").BotCommandScope>} info.scopes
+   * @param {CommandType} info.type all | group | private
    * @param {function(Context, Array)} callback
    */
   constructor(info, callback) {
     if (!info.name) return;
-    let prefix,
-      Ptype = "def";
+    let type = "def";
 
     // Определение префикса
-    if (info.prefix == "hide") Ptype = "hide";
+    if (info.prefix == "hide") type = "hide";
 
     // Регистрация инфы
     this.info = {
       name: info.name,
       description: info.description ?? "Пусто",
-      prefix: {
-        type: Ptype,
-        pref: prefix,
-      },
-      scopes: info.scopes,
+      type: info.type,
       perm: info.permisson ?? 0,
     };
     this.callback = callback;
 
-    if (info.scopes && Ptype == "def") {
+    if (info.type && type == "def") {
       public_cmds[info.name] = this;
     } else {
       private_cmds[info.name] = this;
     }
   }
+  /**
+   *
+   * @param {String} msg
+   * @param {boolean} isDefCmd
+   * @returns {cmd}
+   */
   static getCmd(msg, isDefCmd) {
     if (!msg) return false;
     /**
@@ -69,18 +77,29 @@ export class cmd {
     if (!cmd) return false;
     return cmd;
   }
+  /**
+   *
+   * @param {cmd} command
+   * @param {Context} ctx
+   * @returns
+   */
   static async cantUse(command, ctx) {
-    let _a = command.info.type == "groups" && !groups[ctx.chat.id],
-      _b =
-        command.info.type == "gp" &&
-        !groups[ctx.chat.id] &&
-        ctx.chat.type != "private",
-      _c =
-        (command.info.perm == 1 &&
-          ctx.chat.type != "private" &&
-          !(await isAdmin(ctx, ctx.message.from.id))) ||
-        (command.info.perm == 2 && id == members.xiller);
-    return _a && _b && _c;
+    // Условия разрешений
+    let _lg = // Где
+        (command.info.target == "group" && ctx.chat.type == "group") ||
+        ctx.chat.type == "supergroup",
+      _lp = command.info.target == "private" && ctx.chat.type == "private",
+      _lc = command.info.target == "channel" && ctx.chat.type == "channel",
+      _la = command.info.target == "all",
+      // Если команда для админов, и отправитель админ
+      _pall = command.info.perm == 0,
+      _padmin =
+        command.info.perm == 1 && (await isAdmin(ctx, ctx.message.from.id)),
+      // Если команда хильки
+      _pxiller = command.info.perm == 2 && ctx.message.from.id == members.xiller;
+
+    // Если нет ни одного разрешения, значит нельзя
+    return !(_la || _lc || _lg || _lp) && !(_pall || _padmin || _pxiller);
   }
 }
 
@@ -135,11 +154,7 @@ new cmd(
   {
     name: "start",
     description: "Начало работы с ботом в лс",
-    scopes: [
-      {
-        type: "all_private_chats",
-      },
-    ],
+    type: "private",
   },
   (ctx) => {
     ctx.reply("Кобольдя очнулся");
@@ -151,11 +166,7 @@ new cmd(
   {
     name: "help",
     description: "Список команд",
-    scopes: [
-      {
-        type: "default",
-      },
-    ],
+    type: "all",
   },
   async (ctx) => {
     if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
@@ -185,23 +196,56 @@ new cmd(
 );
 
 import("./cmds.js").then(() => {
-  let o = [],
-    allKmds = [];
+  //  Общие команды группы
+  let groupC = [],
+    // Общие команды в лс
+    privateC = [],
+    // Админские в группах
+    groupAC = [],
+    xiller = [],
+  allKmds = [];
   Object.keys(public_cmds).forEach((e) => {
-    const cmd = public_cmds[e];
-    if (cmd.info.scopes)
-      cmd.info.scopes.forEach((e) =>
-        bot.telegram.setMyCommands(
-          [{ command: cmd.info.name, description: cmd.info.description }],
-          { scope: e }
-        )
-      );
+    /**
+     * @type {cmd}
+     */
+    const cmd = public_cmds[e],
+      m = { command: cmd.info.name, description: cmd.info.description };
+    if (
+      (cmd.info.type == "group" || cmd.info.type == "all") &&
+      cmd.info.perm == 0
+    )
+      groupC.push(m);
+    if (
+      (cmd.info.type == "group" || cmd.info.type == "all") &&
+      cmd.info.perm == 1
+    )
+      groupAC.push(m);
+    if (
+      (cmd.info.type == "private" || cmd.info.type == "all") &&
+      cmd.info.perm == 0
+    )
+      privateC.push(m), xiller.push(m);
+    if (cmd.info.perm == 2) xiller.push(m);
+
     allKmds.push(e);
   });
   Object.keys(private_cmds).forEach((e) => allKmds.push(e));
 
-  if (o[0]) {
-  }
+  if (groupC[0])
+    bot.telegram.setMyCommands(groupC, { scope: { type: "all_group_chats" } });
+  if (groupAC[0])
+    
+    bot.telegram.setMyCommands(groupAC.concat(groupC), {
+      scope: { type: "all_chat_administrators" },
+    });
+  if (privateC[0])
+    bot.telegram.setMyCommands(privateC, {
+      scope: { type: "all_private_chats" },
+    });
+  if (xiller[0])
+    bot.telegram.setMyCommands(xiller.concat(privateC), {
+      scope: { type: "chat", chat_id: members.xiller },
+    });
   if (data.isDev)
     console.log(
       `> Command Кол-во команд: ${allKmds.length}${

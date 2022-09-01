@@ -1,5 +1,5 @@
 export function text_parse(text) {
-  if (!text.map) return { text };
+  if (!text.map) return { newtext: text };
   let newtext = "",
     extra = [],
     symbol = 0;
@@ -66,7 +66,7 @@ export function underline(text) {
   return obj;
 }
 export function url(text, url) {
-  if (!text || url) return "";
+  if (!text || !url) return "";
   /**
    * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
    */
@@ -75,6 +75,22 @@ export function url(text, url) {
     length: text.length,
   };
   ent.url = url;
+  const obj = {
+    text: text,
+    extra: ent,
+  };
+  return obj;
+}
+export function mention(text, user) {
+  if (!text || !user) return "у";
+  /**
+   * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+   */
+  const ent = {
+    type: "text_mention",
+    length: text.length,
+  };
+  ent.user = user
   const obj = {
     text: text,
     extra: ent,

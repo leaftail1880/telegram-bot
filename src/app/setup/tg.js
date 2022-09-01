@@ -33,7 +33,7 @@ export const bot = new Telegraf(process.env.TOKEN);
 export const env = process.env;
 let member = {};
 env.CUSTOM_MEMBERS.split(",").forEach((e) => {
-  member[e.split(":")[0]] = e.split(":")[1];
+  member[e.split(":")[0]] = Number(e.split(":")[1]);
 });
 /**
  * @type {MEMBERS}

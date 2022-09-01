@@ -44,12 +44,14 @@ export async function getGroup(ctx, save = true) {
 }
 
 bot.on("message", async (ctx, next) => {
+  if (ctx.message.from.is_bot) return
   const u = await getUser(ctx, false), user = u.user
   if (ctx.chat.type == "group" || ctx.chat.type == "supergroup") {
     const g = await getGroup(ctx, false), group = g.group
     if (!group.cache.members.includes(user.static.id)) group.cache.members = format.add(group.cache.members, user.static.id), g.saveG = true
     if (g.saveG) await database.set(`Group::${group.static.id}`, group, true);
   }
-  if (u.saveU) await database.set(`User::${user.static.id}`, user, true);
+  user.cache.lastActive = Date.now()
+  database.set(`User::${user.static.id}`, user, true);
   next()
 });

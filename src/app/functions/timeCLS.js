@@ -13,9 +13,8 @@ class times {
    * @returns {Array<Number>}
    */
   ArrrayTime() {
-    const time = Number(String(new Date(Date())).split(" ")[4].split(":")[0]),
-      min = Number(String(new Date(Date())).split(" ")[4].split(":")[1]);
-    return [time, min];
+    const time = new Date(Date())
+    return [time.getHours(), time.getMinutes()];
   }
 }
 export const t = new times();
