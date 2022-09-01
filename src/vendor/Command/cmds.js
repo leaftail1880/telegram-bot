@@ -303,7 +303,7 @@ new cmd(
       const reply = text_parse([bold(hrs), ` ${o}`]);
       return ctx.reply(reply.newtext, { entities: reply.extra });
     }
-    if (!ctx.message.reply_to_message.message_id) {
+    if (!ctx.message?.reply_to_message?.message_id) {
       const text = text_parse([
         bold("Отметь"),
         " сообщение которое хочешь закрепить!",
