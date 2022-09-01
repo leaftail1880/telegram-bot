@@ -1,8 +1,8 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 5, 5],
+export const VERSION = [6, 5, 6],
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
-  Plugins = ["Command", "timeChecker", "html"],
+  Plugins = ["UserDB", "Command", "timeChecker", "html"],
   dbkey = {
     session: "bot_session",
     version: "bot_latest_version",

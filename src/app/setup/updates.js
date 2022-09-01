@@ -17,6 +17,10 @@ function bigger(array, array2, returnArray = true) {
   return returnArray ? array : 0;
 }
 
+/**
+ * Обновляет session
+ * @param {import("../start-stop.js").sessionCache} data
+ */
 export async function updateSession(data) {
   if (!(await database.has(dbkey.session))) {
     await database.set(dbkey.session, 0);
@@ -28,41 +32,45 @@ export async function updateSession(data) {
 }
 
 /**
- * Обновляет data.v, data.versionMSG, data.isLatest, version и session
- * @param {Object} data
+ * Обновляет data.v, data.versionMSG, data.isLatest и version
+ * @param {import("../start-stop.js").sessionCache} data
  */
 export async function updateVisualVersion(data) {
   // Получаем данные
   let session = data.session;
+  /**
+   * @type {Array}
+   */
   const dbversion = await database.get(dbkey.version, true);
+  if (dbversion.splice) dbversion.splice(3, 10)
 
   // Сравниваем версии
   data.isLatest = bigger(
-    [VERSION[0], VERSION[1], VERSION[2], session],
+    [VERSION[0], VERSION[1], VERSION[2]],
     dbversion,
     false
   );
 
   // Если версия новая
   if (data.isLatest) {
-    console.log("⍚ New version! ⍚");
-    console.log(" ");
+    if (data.isDev) {
+      console.log("⍚ New version! ⍚");
+      console.log(" ");
+    } else console.log("> New version!")
     // Прописываем ее в базе данных
-    database.set(
-      dbkey.version,
-      [VERSION[0], VERSION[1], VERSION[2], Number(session)],
-      true
-    );
+    database.set(dbkey.version, [VERSION[0], VERSION[1], VERSION[2]], true);
     data.isLatest = true;
 
     // Обнуляем сессию
-    data.session = 0;
-    database.set(dbkey.session, 0);
+    // data.session = 0;
+    // database.set(dbkey.session, 0);
   }
 
   // Записываем значения
-  data.v = `${VERSION.join(".")}.${session}`;
+  data.v = `${VERSION.join(".")}.x${
+    "0000".substring(0, 4 - `${session}`.length) + session
+  }`;
   data.versionMSG = `v${data.v}${
-    data.isLatest ? ` (Последняя)` : " (Стабильная)"
+    data.isLatest ? ` Релиз` : data.isLatest == 0 ? " Последняя" : " Стабильная"
   }`;
 }

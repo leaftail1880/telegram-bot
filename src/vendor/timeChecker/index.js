@@ -30,5 +30,8 @@ async function check(ctx) {
   }
 }
 
-bot.on("message", (ctx) => check(ctx));
+bot.on("message", (ctx, next) => {
+  check(ctx);
+  next();
+});
 //bot.on("sticker", (ctx) => check(ctx));

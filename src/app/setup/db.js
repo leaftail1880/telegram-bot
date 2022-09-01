@@ -76,7 +76,7 @@ export class db {
   /**
    * Запрашивает данные с датабазы
    * @param {String} key
-   * @returns {String | Boolean | Object}
+   * @returns {Promise<String | Boolean | Object>}
    */
   async get(key, jsonparse = false) {
     if (!this.client) throw new Error("Нет дб");
@@ -84,6 +84,18 @@ export class db {
       value = await this.client.get(key);
     this.logAdd("get", start);
     return jsonparse ? JSON.parse(value) : value;
+  }
+  /**
+   * Запрашивает данные с датабазы
+   * @param {String} key
+   * @returns {Promise<Boolean>}
+   */
+  async del(key) {
+    if (!this.client) throw new Error("Нет дб");
+    const start = Date.now(),
+      value = await this.client.del(key);
+    this.logAdd("del", start);
+    return value;
   }
   /**
    * Устанавливает данные в базу данных

@@ -25,6 +25,7 @@
  * @returns {DBUser}
  */
  export function CreateUser(id, nickname, name, customName = null, tag = null, active = Date.now(), pin = Date.now()) {
+  console.log('New user! Id: ' + id + ' Nickname: ' + nickname)
   return {
     static: {
       id: id,
@@ -64,6 +65,7 @@
  * @returns {DBUgroup}
  */
  export function CreateGroup(id, title, members = [], titleAnimation = null, titleAnimationSpeed = 10, call = Date.now()) {
+  console.log('New group! Id: ' + id + ' Title: ' + title)
   return {
     static: {
       id: id,

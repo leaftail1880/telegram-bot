@@ -66,5 +66,13 @@ class formatter {
     else if (/\d+(?=s)/i.test(value)) return number * 1000;
     else if (/\d+(?=ms|milliseconds?)/i.test(value)) return number;
   }
+  add(array, value) {
+    const a = Array.isArray(array) ? array : [], es = []
+    if (!a.includes(value)) a.push(value)
+    a.forEach(e => {
+      if (!es.includes(e)) es.push(e)
+    })
+    return es
+  }
 }
 export const format = new formatter();

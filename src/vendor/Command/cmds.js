@@ -1,4 +1,4 @@
-import { env } from "../../app/setup/tg.js";
+import { env, members } from "../../app/setup/tg.js";
 import { format } from "../../app/functions/formatterCLS.js";
 import { database } from "../../index.js";
 import { cmd } from "./index.js";
@@ -43,18 +43,19 @@ pre-formatted fixed-width code block written in the Python programming language
 
 */
 
-new cmd({
-  name: 'msg',
-  prefix: 'hide',
-  description: 'Ы',
-  permisson: 0,
-  type: 'hide'
-}, (ctx, args) => {
-  const text = text_parse([
-    'text ', bold('bold text'), ' normal text'
-  ])
-  ctx.reply(text.newtext, {entities: text.extra})
-})
+new cmd(
+  {
+    name: "msg",
+    prefix: "hide",
+    description: "Ы",
+    permisson: 0,
+    type: "hide",
+  },
+  (ctx, args) => {
+    const text = text_parse(["text ", bold("bold text"), " normal text"]);
+    ctx.reply(text.newtext, { entities: text.extra });
+  }
+);
 
 new cmd(
   {
@@ -62,7 +63,11 @@ new cmd(
     prefix: "def",
     description: "Информация о чате",
     permisson: 0,
-    type: "public",
+    scopes: [
+      {
+        type: "default",
+      },
+    ],
   },
   (ctx) => {
     ctx.reply(
@@ -78,11 +83,16 @@ new cmd(
     name: "stop",
     prefix: "hide",
     description: "Информация о чате",
-    permisson: 1,
-    type: "groups",
+    permisson: 2,
+    scopes: [
+      {
+        chat_id: members.xiller,
+        type: "chat",
+      },
+    ],
   },
   (ctx, args) => {
-    SERVISE_stop('Ручная остановка', null, args[0] ?? false, args[1] ?? false)
+    SERVISE_stop("Ручная остановка", null, args[0] ?? false, args[1] ?? false);
   }
 );
 
@@ -92,7 +102,11 @@ new cmd(
     prefix: "def",
     description: "Айди выдает",
     permisson: 0,
-    type: "public",
+    scopes: [
+      {
+        type: "default",
+      },
+    ],
   },
   (ctx) => {
     ctx.reply("Твой айди: " + ctx.message.from.id);
@@ -105,7 +119,11 @@ new cmd(
     prefix: "def",
     description: "Версия бота",
     permisson: 0,
-    type: "public",
+    scopes: [
+      {
+        type: "default",
+      },
+    ],
   },
   async (ctx) => {
     ctx.reply(
@@ -117,10 +135,15 @@ new cmd(
 new cmd(
   {
     name: "db",
-    prefix: "hide",
+    prefix: "def",
     description: "Описание",
-    permisson: 1,
-    type: "public",
+    permisson: 2,
+    scopes: [
+      {
+        chat_id: members.xiller,
+        type: "chat",
+      },
+    ],
   },
   async (ctx, args) => {
     switch (args[0]) {
@@ -131,9 +154,15 @@ new cmd(
         break;
       case "get":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
-        const get = await database.get(args[1]);
+        const get = await database.get(args[1], true);
         console.log(get);
         ctx.reply(format.stringifyEx(get, " "));
+        break;
+      case "del":
+        if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
+        const del = await database.del(args[1]);
+        console.log(del);
+        ctx.reply(del);
         break;
       case "keys":
         const keys = await database.keys();
@@ -146,14 +175,14 @@ new cmd(
           return ctx.reply(
             "Нужно указать ключ и значение (-db set <key> <value>)"
           );
-        const set = await database.set(args[1], args[2]);
+        const set = await database.set(args[1], args[2], true);
         console.log(set);
         ctx.reply("Успешно!");
         break;
       case "help":
       default:
         ctx.reply(
-          "Доступные методы:\n pairs\n get <key>\n set <key> <value>\n help"
+          "Доступные методы:\n pairs\n get <key>\n set <key> <value>\n keys\n del <key>\n help"
         );
     }
   }
@@ -162,24 +191,35 @@ new cmd(
 new cmd(
   {
     name: "log",
-    prefix: "hide",
+    prefix: "def",
     description: "Описание",
-    permisson: 1,
-    type: "public",
+    permisson: 2,
+    scopes: [
+      {
+        chat_id: members.xiller,
+        type: "chat",
+      },
+    ],
   },
   async (ctx, args) => {
     switch (args[0]) {
       case "average":
         const a = await database.logGetAverageOperationsTime();
         console.log(a);
-        ctx.reply(`Cредняя скорость ответа сервера для методов:\n${Object.keys(a).map(e => ` ${e}: ${a[e]}`).join('\n')}`);
+        ctx.reply(
+          `Cредняя скорость ответа сервера для методов:\n${Object.keys(a)
+            .map((e) => ` ${e}: ${a[e]}`)
+            .join("\n")}`
+        );
         break;
       case "save":
-        database.logSave()
-        ctx.reply('Успешно сохранено в кэше '+database.log.length+' строчек лога.')
+        database.logSave();
+        ctx.reply(
+          "Успешно сохранено в кэше " + database.log.length + " строчек лога."
+        );
         break;
       case "log":
-        const log = database.logFormat().join('\n');
+        const log = database.logFormat().join("\n");
         console.log(log);
         ctx.reply(log);
         break;
@@ -195,8 +235,7 @@ new cmd(
     name: "env",
     prefix: "hide",
     description: "В консоль спамит (но это полезный спам!)",
-    permisson: 1,
-    type: "public",
+    permisson: 2,
   },
   () => {
     const e = format.stringifyEx(env, " ");

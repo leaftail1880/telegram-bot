@@ -6,12 +6,7 @@ import { data } from "../../app/start-stop.js";
 
 const public_cmds = {},
   private_cmds = {},
-  hprefixes = [".", "-", "$"],
-  types = {
-    public: "public",
-    groups: "groups",
-    gp: "gp",
-  };
+  hprefixes = [".", "-", "$"];
 export class cmd {
   /**
    * Создает команду
@@ -20,20 +15,16 @@ export class cmd {
    * @param {String} info.prefix def (/) || hide (.-$)
    * @param {String} info.description Описание
    * @param {Number} info.permisson 0 - все, 1 - админы
-   * @param {String} info.type public - Доступна всем | groups - Только добавленные группы | gp - Группы и ЛС
+   * @param {Array<import("telegraf/typings/core/types/typegram.js").BotCommandScope>} info.scopes
    * @param {function(Context, Array)} callback
    */
   constructor(info, callback) {
     if (!info.name) return;
     let prefix,
-      CMDtype = "public",
       Ptype = "def";
 
     // Определение префикса
     if (info.prefix == "hide") Ptype = "hide";
-
-    // Определение типа команды
-    if (types[info.type]) CMDtype = types[info.type];
 
     // Регистрация инфы
     this.info = {
@@ -43,12 +34,12 @@ export class cmd {
         type: Ptype,
         pref: prefix,
       },
-      type: CMDtype,
+      scopes: info.scopes,
       perm: info.permisson ?? 0,
     };
     this.callback = callback;
 
-    if (CMDtype == types.public && Ptype == "def") {
+    if (info.scopes && Ptype == "def") {
       public_cmds[info.name] = this;
     } else {
       private_cmds[info.name] = this;
@@ -93,25 +84,25 @@ export class cmd {
   }
 }
 
-bot.on("text", async (ctx) => {
+bot.on("text", async (ctx, next) => {
   /**
    * @type {String}
    */
   const t = ctx.message.text;
-  if (!t) return;
+  if (!t) return next();
   let command;
   if (t.startsWith("/")) {
     command = cmd.getCmd(t.split(" ")[0].substring(1), true);
-    if (!command) return;
+    if (!command) return next();
   } else {
     if (
       !t ||
       !hprefixes.find((e) => t.startsWith(e)) ||
       !t.split(" ")[0]?.substring(1)
     )
-      return;
+      return next();
     command = cmd.getCmd(t.split(" ")[0].substring(1));
-    if (!command) return;
+    if (!command) return next();
     if (await cmd.cantUse(command, ctx))
       return ctx.reply(
         "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
@@ -131,58 +122,86 @@ bot.on("text", async (ctx) => {
     );
   } catch (e) {
     console.warn(
-      `[ERROR][Cmd][${
-        command?.info?.name ?? ctx.message.text.split(" ")[0]
-      }] ${e}`
+      `ERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
     );
   }
+  next();
 });
 
 /**======================ss
  *    Приветствие
  *========================**/
-new cmd({ name: "start", description: "Начало работы с ботом в лс" }, (ctx) => {
-  ctx.reply("Кобольдя очнулся");
-});
+new cmd(
+  {
+    name: "start",
+    description: "Начало работы с ботом в лс",
+    scopes: [
+      {
+        type: "all_private_chats",
+      },
+    ],
+  },
+  (ctx) => {
+    ctx.reply("Кобольдя очнулся");
+  }
+);
 /*========================*/
 
-new cmd({ name: "help", description: "Список команд" }, async (ctx) => {
-  if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
-    return ctx.reply("А команд то и нет");
-  let c = false,
-    p = false,
-    a = [];
+new cmd(
+  {
+    name: "help",
+    description: "Список команд",
+    scopes: [
+      {
+        type: "default",
+      },
+    ],
+  },
+  async (ctx) => {
+    if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
+      return ctx.reply("А команд то и нет");
+    let c = false,
+      p = false,
+      a = [];
 
-  Object.values(public_cmds).forEach((e) => {
-    if (!c) a.push(`Доступные везде команды:\n`), (c = true);
-    a.push(`  /${e.info.name}`);
-    a.push(italic(` - ${e.info.description}\n`));
-  });
-
-  Object.values(private_cmds)
-    .filter(async (e) => !(await cmd.cantUse(e, ctx)))
-    .forEach((e) => {
-      if (!p) a.push(`\nДоступные вам в этом чате команды:\n`), (p = true);
-      a.push(`  `);
-      a.push(bold(`-${e.info.name}`));
+    Object.values(public_cmds).forEach((e) => {
+      if (!c) a.push(`Доступные везде команды:\n`), (c = true);
+      a.push(`  /${e.info.name}`);
       a.push(italic(` - ${e.info.description}\n`));
     });
-  let o = text_parse(a);
-  if (!o.newtext) return ctx.reply("А доступных команд то и нет");
-  ctx.reply(o.newtext, { entities: o.extra });
-});
+
+    Object.values(private_cmds)
+      .filter(async (e) => !(await cmd.cantUse(e, ctx)))
+      .forEach((e) => {
+        if (!p) a.push(`\nДоступные вам в этом чате команды:\n`), (p = true);
+        a.push(`  `);
+        a.push(bold(`-${e.info.name}`));
+        a.push(italic(` - ${e.info.description}\n`));
+      });
+    let o = text_parse(a);
+    if (!o.newtext) return ctx.reply("А доступных команд то и нет");
+    ctx.reply(o.newtext, { entities: o.extra });
+  }
+);
 
 import("./cmds.js").then(() => {
   let o = [],
     allKmds = [];
   Object.keys(public_cmds).forEach((e) => {
-    o.push({ command: e, description: public_cmds[e].info.description });
+    const cmd = public_cmds[e];
+    if (cmd.info.scopes)
+      cmd.info.scopes.forEach((e) =>
+        bot.telegram.setMyCommands(
+          [{ command: cmd.info.name, description: cmd.info.description }],
+          { scope: e }
+        )
+      );
     allKmds.push(e);
   });
   Object.keys(private_cmds).forEach((e) => allKmds.push(e));
-  o = o.filter((e) => e.command != "start" && e.command != "help");
 
-  if (o[0]) bot.telegram.setMyCommands(o);
+  if (o[0]) {
+  }
   if (data.isDev)
     console.log(
       `> Command Кол-во команд: ${allKmds.length}${

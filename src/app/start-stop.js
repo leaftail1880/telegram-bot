@@ -8,7 +8,7 @@ import { updateSession, updateVisualVersion } from "./setup/updates.js";
 /**
  * @typedef {Object} sessionCache
  * @property {String} v 6.3.3
- * @property {Boolean} isLatest true | false | 'empty array'
+ * @property {Boolean} isLatest true | false | 0 | 'empty array'
  * @property {String} versionMSG v6.3.3 (Init)
  * @property {Number} session 0
  * @property {Number} start_time 1224214
