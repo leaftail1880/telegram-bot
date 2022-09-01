@@ -82,8 +82,14 @@ export class db {
     if (!this.client) throw new Error("Нет дб");
     const start = Date.now(),
       value = await this.client.get(key);
+    let ret;
+    try {
+      ret = jsonparse ? JSON.parse(value) : value;
+    } catch (error) {
+      ret = value;
+    }
     this.logAdd("get", start);
-    return jsonparse ? JSON.parse(value) : value;
+    return ret;
   }
   /**
    * Запрашивает данные с датабазы

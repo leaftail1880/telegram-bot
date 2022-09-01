@@ -286,7 +286,7 @@ new cmd(
     const g = (await getGroup(ctx, true)).group,
       u = (await getUser(ctx, false)).user;
     let lp = 0;
-    if (typeof g.cache?.lastPin == "object") {
+    if (typeof g?.cache?.lastPin == "object") {
       lp = g.cache?.lastPin[u.static.id];
     } else g.cache.lastPin = {};
     const time = Date.now() - lp;
