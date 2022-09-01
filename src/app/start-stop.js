@@ -136,7 +136,7 @@ export async function SERVISE_start() {
   if (data.isDev) console.log(" ");
   data.updateTimer = setInterval(async () => {
     const query = await database.get(dbkey.request, true);
-    if (query.map) {
+    if (query?.map) {
       const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
       if (q || q == 0)
         return await database.set(dbkey.request, "terminate_you");
@@ -215,6 +215,7 @@ export async function SERVISE_freeze() {
     const answer = await database.get(dbkey.request);
     if (answer === "terminate_you") {
       clearInterval(timeout);
+      await database.del(dbkey.request)
       return SERVISE_stop(
         "Terminated by new version (Active: " + data.versionMSG + ")",
         null,
