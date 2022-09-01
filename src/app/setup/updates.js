@@ -6,7 +6,7 @@ import { database } from "../../index.js";
  * @param {Array<Number>} array
  * @param {Array<Number>} array2
  */
-function bigger(array, array2, returnArray = true) {
+export function bigger(array, array2, returnArray = true) {
   if (!array || !array2) return "empty array";
   for (let a = 0; a <= Math.max(array.length, array2.length); a++) {
     const one = array[a] ?? 0,
