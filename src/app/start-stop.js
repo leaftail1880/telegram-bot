@@ -138,12 +138,12 @@ export async function SERVISE_start() {
     const query = await database.get(dbkey.request, true);
     if (query?.map) {
       const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
-      if (q || q == 0)
+      if (q)
         return await database.set(dbkey.request, "terminate_you");
       if (!q) {
         await database.set(dbkey.request, "terminate_me");
         clearInterval(data.updateTimer);
-        SERVISE_stop(`Terminated (${data.versionMSG})`, true, true);
+        SERVISE_stop(`${data.query} terminated (${data.versionMSG})`, true, true);
       }
     }
   }, 15000);
@@ -220,7 +220,7 @@ export async function SERVISE_freeze() {
         "Terminated by new version (Active: " + data.versionMSG + ")",
         null,
         true,
-        true
+        true, false, false
       );
     }
     let times = 0;
