@@ -66,12 +66,12 @@ export class db {
   }
   async logGetFromCache() {
     if (!this.client) throw new Error("Нет дб");
-    const val = await this.getValues((e) => e.startsWith("cache::log:"));
+    const val = await this.getValues((e) => e.startsWith("Cache::log:"));
     return val.map((e) => this.logParse(e));
   }
 
   async logSave(name = Date.now()) {
-    await this.set(`cache::log:${name}`, this.logFormat(), true);
+    await this.set(`Cache::log:${name}`, this.logFormat(), true);
   }
   /**
    * Запрашивает данные с датабазы

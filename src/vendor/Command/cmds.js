@@ -92,8 +92,11 @@ new cmd(
     type: "all",
   },
   async (ctx) => {
+    const text = text_parse([
+      `Кобольдя `, bold(data.versionMSG), `\nРежим: `, bold(env.whereImRunning)
+    ])
     ctx.reply(
-      `Сейчас запущен Кобольдя ${data.versionMSG}\nРежим: ${env.whereImRunning}`
+      text.newtext, {entities: text.extra}
     );
   }
 );

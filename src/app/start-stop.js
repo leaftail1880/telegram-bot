@@ -4,6 +4,7 @@ import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./functions/formatterCLS.js";
 import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
+import { bold, text_parse } from "./functions/textFNC.js";
 
 /**
  * @typedef {Object} sessionCache
@@ -143,7 +144,7 @@ export async function SERVISE_start() {
       if (!q) {
         await database.set(dbkey.request, "terminate_me");
         clearInterval(data.updateTimer);
-        SERVISE_stop(`Terminated (${data.versionMSG})`, true, true);
+        SERVISE_stop(`Terminated by self (${data.versionMSG})`, true, true);
       }
     }
   }, 15000);
@@ -160,22 +161,22 @@ export async function SERVISE_stop(
   if (data.started && sendMessage)
     await bot.telegram.sendMessage(
       members.xiller,
-      `☒ ${reason ? `${reason}.` : "Остановка."}${
+      `⌦ ${reason ? `${reason}.` : "Остановка."}${
         extra
-          ? `\n(${
+          ? `\n${
               typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
-            }) `
+            } `
           : " "
       }(${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
     ),
       console.log(
-        `☒ ${reason ? `${reason}.` : ""}${
+        `⌦ ${reason ? `${reason}.` : ""}${
           extra
-            ? `\n(${
+            ? `\n${
                 typeof extra == "object"
                   ? format.stringifyEx(extra, " ")
                   : extra
-              }) `
+              } `
             : ""
         } (${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
       );
@@ -188,9 +189,35 @@ export async function SERVISE_stop(
     : reload
     ? ""
     : setTimeout(() => {
-        console.log("☒ End.");
+        console.log("⌦ End.");
         process.exit(0);
       }, 12000000);
+}
+
+export function SERVISE_error(error, extra = null) {
+  if (data.started) {
+    const text = text_parse([
+      `✕ `,
+      bold(error),
+      extra
+        ? `\n${
+            typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
+          } `
+        : "",
+    ]);
+    bot.telegram.sendMessage(members.xiller, text.newtext, {
+      entities: text.extra,
+    });
+  }
+  console.log(
+    `✕ ${error}${
+      extra
+        ? `\n${
+            typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
+          } `
+        : ""
+    }`
+  );
 }
 
 export async function SERVISE_freeze() {
