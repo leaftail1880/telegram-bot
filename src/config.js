@@ -1,6 +1,6 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 5, 12],
+export const VERSION = [6, 5, 15],
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   Plugins = ["UserDB", "Command", "timeChecker", "html", "Groups"],
   dbkey = {
@@ -9,10 +9,10 @@ export const VERSION = [6, 5, 12],
     request: "bot_request"
   },
   MEMBERS = {
-    // .
+    // dot
     dot: {
       msk: 2,
-      start: ["00", "00"],
+      start: ["02", "00"],
       end: ["05", "00"],
     },
     // Xiller
