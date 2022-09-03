@@ -3,25 +3,35 @@ import { MEMBERS } from "../../config.js";
 import { t } from "../../app/functions/timeCLS.js";
 import { Context } from "telegraf";
 
-export function c(ID) {
-  let set = MEMBERS[Object.keys(members).find(e => members[e] == ID)]
-  if (!set) return //set = MEMBERS.default
-  let
-    time = t.ArrrayTime(),
-    ss = Number(`${set.start[0]}${set.start[1]}`),
-    ee = Number(`${set.end[0]}${set.end[1]}`), usd = env.local ? 0 : 3;
-  time[0] = time[0] + usd + set.msk
-  if (time[0] >= 24) time[0] = time[0] - 24;
-  if (`${time[1]}`.length < 2) time[1] = "0" + time[1];
-  time = Number(`${time[0]}${time[1]}`);
-  let q = ss != 0 && time >= ss;
-  if (q || time <= ee) return true;
+export function c(ID, Ttime) {
+  let set = MEMBERS[Object.keys(members).find((e) => members[e] == ID)];
+  if (!set) set = MEMBERS.default;
+  let MessageTime = Ttime ?? t.ArrrayTime(),
+    StartTime = Number(`${set.start[0]}${set.start[1]}`),
+    EndTime = Number(`${set.end[0]}${set.end[1]}`),
+    GMT = env.local ? 0 : 3;
+  MessageTime[0] = MessageTime[0] + GMT + set.GMT;
+  if (MessageTime[0] >= 24) MessageTime[0] = MessageTime[0] - 24;
+  if (`${MessageTime[1]}`.length < 2) MessageTime[1] = "0" + MessageTime[1];
+  MessageTime = Number(`${MessageTime[0]}${MessageTime[1]}`);
+  const qStart = (MessageTime <= StartTime || StartTime <= 600), qEnd = MessageTime >= EndTime, q = qStart && qEnd  
+  if (!q) return true;
 }
 
 /**
- * 
- * @param {Context} ctx 
- * @returns 
+ *
+ * @param {Context} ctx
+ * @returns
+ */
+function Ttime(ctx) {
+  const time = new Date(ctx.message.date * 1000);
+  return [time.getHours(), time.getMinutes()];
+}
+
+/**
+ *
+ * @param {Context} ctx
+ * @returns
  */
 async function check(ctx) {
   try {
@@ -32,7 +42,11 @@ async function check(ctx) {
     );
     if (e.status == "administrator" || e.status == "creator") ca = true;
     if (ctx.message.text && ctx.message.text.startsWith("!") && ca) return;
-    if (c(ctx.message.from.id)) ctx.deleteMessage(ctx.message.message_id), console.log(`[Delete] ${ctx.message.from.username} ${ctx.message.text}`);
+    if (c(ctx.message.from.id, Ttime(ctx)))
+      ctx.deleteMessage(ctx.message.message_id),
+        console.log(
+          `[Delete] ${ctx.message.from.username} ${ctx.message.text}`
+        );
   } catch (e) {
     console.warn(e);
   }

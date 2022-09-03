@@ -12,8 +12,11 @@ setInterval(async () => {
       const id = Number(group.cache.pin.split("::")[0]),
         date = Number(group.cache.pin.split("::")[1]);
       if (!date || !id) return;
-      if (date + cooldown <= Date.now()) //
-        bot.telegram.unpinChatMessage(group.static.id, id);
+      if (date + cooldown <= Date.now()) {
+        
+      } //
+        const result = await bot.telegram.unpinChatMessage(group.static.id, id);
+        
     }
   });
 }, 5000);

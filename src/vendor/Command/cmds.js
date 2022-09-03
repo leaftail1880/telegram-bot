@@ -1,4 +1,4 @@
-import { env, members } from "../../app/setup/tg.js";
+import { bot, env, members } from "../../app/setup/tg.js";
 import { format } from "../../app/functions/formatterCLS.js";
 import { database } from "../../index.js";
 import { cmd } from "./index.js";
@@ -26,37 +26,6 @@ new cmd({
   
 })
 */
-
-new cmd(
-  {
-    name: "msg",
-    prefix: "hide",
-    description: "Ы",
-    permisson: 0,
-    type: "hide",
-  },
-  (ctx, _args) => {
-    const text = text_parse(["text ", bold("bold text"), " normal text"]);
-    ctx.reply(text.newtext, { entities: text.extra });
-  }
-);
-
-new cmd(
-  {
-    name: "chat",
-    prefix: "def",
-    description: "Информация о чате",
-    permisson: 0,
-    type: "group",
-  },
-  (ctx) => {
-    ctx.reply(
-      `Id: ${ctx.chat.id}\nTitle: ${ctx.chat.title ?? "Пустой"}\nType: ${
-        ctx.chat.type
-      }`
-    );
-  }
-);
 
 new cmd(
   {
@@ -93,11 +62,12 @@ new cmd(
   },
   async (ctx) => {
     const text = text_parse([
-      `Кобольдя `, bold(data.versionMSG), `\nРежим: `, bold(env.whereImRunning)
-    ])
-    ctx.reply(
-      text.newtext, {entities: text.extra}
-    );
+      `Кобольдя `,
+      bold(data.versionMSG),
+      `\nРежим: `,
+      bold(env.whereImRunning),
+    ]);
+    ctx.reply(text.newtext, { entities: text.extra });
   }
 );
 
@@ -130,8 +100,7 @@ new cmd(
       case "keys":
         const keys = await database.keys();
         console.log(keys);
-
-        ctx.reply("Ключи: " + keys.join(", "));
+        ctx.reply("Ключи: " + keys.sort().join("\n"));
         break;
       case "set":
         if (!args[1] || !args[2])
@@ -276,7 +245,7 @@ new cmd(
   }
 );
 
-export const cooldown = 5 * 3.6e6
+export const cooldown = 5 * 3.6e6;
 new cmd(
   {
     name: "pin",
@@ -321,7 +290,7 @@ new cmd(
       try {
         await ctx.unpinChatMessage(Number(g.cache.pin.split("::")[0]));
       } catch (error) {
-        console.warn(error)
+        console.warn(error);
       }
 
     ctx.pinChatMessage(ctx.message.reply_to_message.message_id, {
@@ -332,3 +301,76 @@ new cmd(
     await database.set(`Group::${g.static.id}`, g, true);
   }
 );
+
+// new cmd(
+//   {
+//     name: "animtitle",
+//     prefix: "hide",
+//     description: " ы",
+//     permisson: 1,
+//     type: "group",
+//   },
+//   async (ctx, args) => {
+//     if (!args || !args[0] || !args[1] || Number(args[0]) == NaN)
+//       return ctx.reply("Че?");
+//     const group = (await getGroup(ctx, true)).group,
+//       oldtitle = `${group.cache.titleAnimationSpeed ?? 0} ${
+//         group.cache?.titleAnimation?.join(" ") ?? group.static.title
+//       }`,
+//       anims = [];
+//     args.forEach((e) => anims.push(e));
+//     anims.shift();
+//     group.cache.titleAnimationSpeed = Number(args[0]);
+//     group.cache.titleAnimation = anims;
+//     ctx.reply(
+//       `Сменена анимация имени группы:\n ${anims.join("\n ")}\n\nСкорость: ${
+//         args[0]
+//       } сек.\n\nВернуть старую: -animtitle ${oldtitle}`
+//     );
+//     await database.set(`Group::${group.static.id}`, group, true);
+//     SetAnimations();
+//   }
+// );
+
+// new cmd(
+//   {
+//     name: "animreload",
+//     prefix: "hide",
+//     description: " ы",
+//     permisson: 1,
+//     type: "group",
+//   },
+//   async (ctx, args) => {
+//     ctx.reply("Успешно!");
+//     SetAnimations();
+//   }
+// );
+
+new cmd(
+  {
+    name: "newoc",
+    prefix: "def",
+    description: "Как зарегать",
+    permisson: 0,
+    type: "private",
+  },
+  async (ctx, args) => {
+    // if (!ctx.message?.reply_to_message?.message_id)
+    //   return ctx.reply("Отметь файл с изображением!", {
+    //     reply_to_message_id: ctx.message.message_id,
+    //     allow_sending_without_reply: true,
+    //   });
+    // const id = ctx.message?.reply_to_message?.message_id, msg = await ctx.telegram.
+    ctx.reply('Что бы зарегистрировать ОС, отправь мне файл (именно файл, а не фото!) с референсом персонажа, и подписью в формате <Имя персонажа> <Описание>\n  Примеры подписей:\n Листохвост Известный кобольдя\n "Ре На" Рандомное имя придуманное что бы показать как делать имена с пробелами')
+  }
+);
+
+new cmd({
+  name: 'oc',
+  prefix: 'def',
+  description: 'Выдает список OC',
+  permisson: 0,
+  type: 'all'
+}, (ctx, args) => {
+  
+})
