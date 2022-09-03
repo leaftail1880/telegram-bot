@@ -13,15 +13,54 @@ export class Change {
    */
   constructor(version, changes) {
     changelog.push(`<h4>v${version}</h4>`);
-    changes.forEach((c) => changelog.push(`<section>- ${c}</section>`));
-    changes.push('<br />')
+    changelog.push(`<ul><li>${changes.join("</li><li>")}</li></ul>`);
+    changelog.push("<br/>");
   }
 }
 
 import("./changelog.js").then(async () => {
-  const html = await import(".test.html")
-   data.versionMSG, changelog.join(" ")
-   html
+  const html2 = `
+  <!DOCTYPE html>
 
-  app.get("/", (_req, res) => res.type("html").send(html));
+<html>
+  <head>
+    <!-- Open Graph Generated: a.pr-cy.ru -->
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Кобольдя" />
+    <meta
+      property="og:description"
+      content="Текущее состояние, версия и список изменений"
+    />
+    <meta property="og:url" content="https://xiller-tg-bot.onrender.com/" />
+    <!-- Open Graph: Article -->
+    <style>
+      body {
+        color: white;
+        background-color: black;
+        padding: 2%;
+      }
+      li {
+        list-style-type: "- ";
+        right: 3%;
+        bottom: 10px;
+      }
+      h4 {
+        left: 1%;
+      }
+      h3 {
+        top: 0px;
+      }
+    </style>
+    <title>Кобольдя</title>
+  </head>
+  <body>
+    <h3>Состояние:</h3>
+    <p>Бот работает стабильно! Версия: <strong>${data.versionMSG}</strong></p>
+    <br>
+    <h3>Список изменений:</h3>
+    ${changelog.join(" ")}
+  </body>
+</html>
+  `;
+  app.get("/", (_req, res) => res.type("html").send(html2));
 });
