@@ -18,29 +18,10 @@ export class Change {
   }
 }
 
-import("./changelog.js").then(() => {
-  const html = `
-  <!DOCTYPE html>
-  
-  <!-- Open Graph Generated: a.pr-cy.ru -->
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="Кобольдя">
-  <meta property="og:description" content="Текущее состояние, версия и список изменений">
-  <meta property="og:url" content="https://xiller-tg-bot.onrender.com/">
-  <!-- Open Graph: Article -->
-  
-  <html>
-    <head>
-      <title>Кобольдя</title>
-    </head>
-    <body>
-      <h3>Состояние:</h3>
-      <section>Бот работает стабильно! Версия: ${data.versionMSG}</section>
-      <br />
-      ${changelog.join(" ")}
-    </body>
-  </html>
-  `;
+import("./changelog.js").then(async () => {
+  const html = await import(".test.html")
+   data.versionMSG, changelog.join(" ")
+   html
 
   app.get("/", (_req, res) => res.type("html").send(html));
 });

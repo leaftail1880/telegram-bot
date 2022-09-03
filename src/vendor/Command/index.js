@@ -86,11 +86,11 @@ export class cmd {
   static async cantUse(command, ctx) {
     // Условия разрешений
     let _lg = // Где
-        (command.info.target == "group" && ctx.chat.type == "group") ||
-        ctx.chat.type == "supergroup",
-      _lp = command.info.target == "private" && ctx.chat.type == "private",
-      _lc = command.info.target == "channel" && ctx.chat.type == "channel",
-      _la = command.info.target == "all",
+        command.info.type == "group" && (ctx.chat.type == "group" ||
+        ctx.chat.type == "supergroup"),
+      _lp = command.info.type == "private" && ctx.chat.type == "private",
+      _lc = command.info.type == "channel" && ctx.chat.type == "channel",
+      _la = command.info.type == "all",
       // Если команда для админов, и отправитель админ
       _pall = command.info.perm == 0,
       _padmin =
