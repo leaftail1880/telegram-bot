@@ -64,13 +64,12 @@ new cmd(
     ctx.reply(
       ...new Xitext()
         .Text(`Кобольдя `)
-        ._Group(data.versionMSG.split(" ")[0])
-        .Bold()
-        .Underline()
-        ._Group()
+        .Underline(data.versionMSG.split(" ")[0])
+        .Text(' ')
         .Italic(data.versionMSG.split(" ")[1])
         .Text(`\nРежим: `)
         .Bold(env.whereImRunning)
+        ._Build()
     );
   }
 );

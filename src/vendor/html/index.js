@@ -35,8 +35,13 @@ import("./changelog.js").then(async () => {
     <!-- Open Graph: Article -->
     <style>
       body {
-        color: white;
-        background-color: black;
+        background: rgb(25, 77, 142);
+        background: linear-gradient(
+          304deg,
+          rgba(25, 77, 142, 1) 0%,
+          rgba(26, 7, 32, 1) 100%
+        );
+        color: rgb(228, 213, 236);
         padding: 2%;
       }
       li {

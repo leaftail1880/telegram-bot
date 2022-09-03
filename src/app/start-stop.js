@@ -151,6 +151,7 @@ export async function SERVISE_start() {
       if (q) return await database.set(dbkey.request, "terminate_you");
       if (!q) {
         await database.set(dbkey.request, "terminate_me");
+        await database.client.quit()
         clearInterval(data.updateTimer);
         SERVISE_stop(`${data.versionMSG} terminated by self`, true, false);
       }
@@ -168,7 +169,7 @@ export async function SERVISE_stop(
 ) {
   if (data.started && sendMessage) {
     const text = new Xitext()
-      ._Group("⌦ ")
+      ._Group("> ")
       .Url(null, "https://dashboard.render.com")
       .Bold()
       ._Group()
@@ -247,11 +248,12 @@ export async function SERVISE_freeze() {
     if (answer === "terminate_you") {
       clearInterval(timeout);
       await database.del(dbkey.request);
+      await database.client.quit()
       return SERVISE_stop(
         "🌑 Terminated by new version (Active: " + data.versionMSG + ")",
         null,
         true,
-        false,
+        true,
         false,
         false
       );
