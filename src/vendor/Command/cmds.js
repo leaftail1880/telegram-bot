@@ -1,11 +1,11 @@
-import { bot, env, members } from "../../app/setup/tg.js";
-import { format } from "../../app/functions/formatterCLS.js";
+import { env } from "../../app/setup/tg.js";
+import { format } from "../../app/class/formatterCLS.js";
 import { database } from "../../index.js";
 import { cmd } from "./index.js";
 import { data, SERVISE_stop } from "../../app/start-stop.js";
-import { bold, mention, text_parse } from "../../app/functions/textFNC.js";
 import { getGroup, getUser } from "../UserDB/index.js";
 import { c } from "../timeChecker/index.js";
+import { Xitext } from "../../app/class/XitextCLS.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -60,14 +60,18 @@ new cmd(
     permisson: 0,
     type: "all",
   },
-  async (ctx) => {
-    const text = text_parse([
-      `Кобольдя `,
-      bold(data.versionMSG),
-      `\nРежим: `,
-      bold(env.whereImRunning),
-    ]);
-    ctx.reply(text.newtext, { entities: text.extra });
+  (ctx) => {
+    ctx.reply(
+      ...new Xitext()
+        .Text(`Кобольдя `)
+        ._Group(data.versionMSG.split(" ")[0])
+        .Bold()
+        .Underline()
+        ._Group()
+        .Italic(data.versionMSG.split(" ")[1])
+        .Text(`\nРежим: `)
+        .Bold(env.whereImRunning)
+    );
   }
 );
 
@@ -193,8 +197,15 @@ new cmd(
       } else if (hrs == "2" || hrs == "3" || hrs == "4") {
         sec = `секунды`;
       }
-      const reply = text_parse([`Подожди еще `, bold(hrs), ` ${sec}`]);
-      return ctx.reply(reply.newtext, { entities: reply.extra });
+      return ctx.reply(
+        ...new Xitext()
+          .Text(`Подожди еще `)
+          ._Group(hrs)
+          .Bold()
+          .Underline()
+          .Text(` ${sec}`)
+          ._Build()
+      );
     }
     if (!group.members[1]) return ctx.reply("Некого созывать!");
     for (const e of group.members) {
@@ -210,12 +221,11 @@ new cmd(
     if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
     group.lastCall = Date.now();
     mbs.forEach((e) => {
-      const text = text_parse([
-        mention(e.name ?? e.user.username, e.user),
-        " ",
-        args[0] ? args.join(" ") : "Созыв!",
-      ]);
-      ctx.reply(text.newtext, { entities: text.extra });
+      const text = new Xitext()
+        .Mention(e.name ?? e.user.username, e.user)
+        .Text(" ")
+        .Text(args[0] ? args.join(" ") : "Созыв!");
+      ctx.reply(...text._Build());
     });
     await database.set(`Group::${g.static.id}`, g, true);
   }
@@ -272,18 +282,17 @@ new cmd(
       } else {
         o = `часов осталось`;
       }
-      const reply = text_parse([bold(hrs), ` ${o}`]);
-      return ctx.reply(reply.newtext, { entities: reply.extra });
+      const reply = new Xitext().Bold(hrs).Text(` ${o}`);
+      return ctx.reply(...reply._Build());
     }
     if (!ctx.message?.reply_to_message?.message_id) {
-      const text = text_parse([
-        bold("Отметь"),
-        " сообщение которое хочешь закрепить!",
-      ]);
-      return ctx.reply(text.newtext, {
+      const text = new Xitext()
+        .Bold("Отметь")
+        .Text(" сообщение которое хочешь закрепить!");
+      return ctx.reply(text._text, {
         reply_to_message_id: ctx.message.from.id,
         allow_sending_without_reply: true,
-        entities: text.extra,
+        entities: text._entities,
       });
     }
     if (g.cache.pin)
@@ -361,16 +370,19 @@ new cmd(
     //     allow_sending_without_reply: true,
     //   });
     // const id = ctx.message?.reply_to_message?.message_id, msg = await ctx.telegram.
-    ctx.reply('Что бы зарегистрировать ОС, отправь мне файл (именно файл, а не фото!) с референсом персонажа, и подписью в формате <Имя персонажа> <Описание>\n  Примеры подписей:\n Листохвост Известный кобольдя\n "Ре На" Рандомное имя придуманное что бы показать как делать имена с пробелами')
+    ctx.reply(
+      'Что бы зарегистрировать ОС, отправь мне файл (именно файл, а не фото!) с референсом персонажа, и подписью в формате <Имя персонажа> <Описание>\n  Примеры подписей:\n Листохвост Известный кобольдя\n "Ре На" Рандомное имя придуманное что бы показать как делать имена с пробелами'
+    );
   }
 );
 
-new cmd({
-  name: 'oc',
-  prefix: 'def',
-  description: 'Выдает список OC',
-  permisson: 0,
-  type: 'all'
-}, (ctx, args) => {
-  
-})
+new cmd(
+  {
+    name: "oc",
+    prefix: "def",
+    description: "Выдает список OC",
+    permisson: 0,
+    type: "all",
+  },
+  (ctx, args) => {}
+);

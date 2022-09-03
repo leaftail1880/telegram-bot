@@ -4,7 +4,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node test.js",
-    "dev": "node app.js"
+    "STARTBOT": "node app.js"
   },
   "keywords": [],
   "author": "",

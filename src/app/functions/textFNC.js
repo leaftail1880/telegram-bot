@@ -36,7 +36,7 @@ export function bold(text) {
   return obj;
 }
 export function italic(text) {
-  if (!text) return "";
+  if (!text || !`${text}`) return "";
   /**
    * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
    */
@@ -51,7 +51,7 @@ export function italic(text) {
   return obj;
 }
 export function underline(text) {
-  if (!text) return "";
+  if (!text || !`${text}`) return "";
   /**
    * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
    */
@@ -90,7 +90,7 @@ export function mention(text, user) {
     type: "text_mention",
     length: text.length,
   };
-  ent.user = user
+  ent.user = user;
   const obj = {
     text: text,
     extra: ent,

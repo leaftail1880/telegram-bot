@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
+import { Xitext } from "../../app/class/XitextCLS.js";
 import { isAdmin } from "../../app/functions/checkFNC.js";
-import { bold, italic, text_parse } from "../../app/functions/textFNC.js";
-import { bot, groups, members } from "../../app/setup/tg.js";
+import { bot, members } from "../../app/setup/tg.js";
 import { data } from "../../app/start-stop.js";
 
 const public_cmds = {},
@@ -86,8 +86,8 @@ export class cmd {
   static async cantUse(command, ctx) {
     // Условия разрешений
     let _lg = // Где
-        command.info.type == "group" && (ctx.chat.type == "group" ||
-        ctx.chat.type == "supergroup"),
+        command.info.type == "group" &&
+        (ctx.chat.type == "group" || ctx.chat.type == "supergroup"),
       _lp = command.info.type == "private" && ctx.chat.type == "private",
       _lc = command.info.type == "channel" && ctx.chat.type == "channel",
       _la = command.info.type == "all",
@@ -96,7 +96,8 @@ export class cmd {
       _padmin =
         command.info.perm == 1 && (await isAdmin(ctx, ctx.message.from.id)),
       // Если команда хильки
-      _pxiller = command.info.perm == 2 && ctx.message.from.id == members.xiller;
+      _pxiller =
+        command.info.perm == 2 && ctx.message.from.id == members.xiller;
 
     // Если нет ни одного разрешения, значит нельзя
     return !(_la || _lc || _lg || _lp) && !(_pall || _padmin || _pxiller);
@@ -133,17 +134,26 @@ bot.on("text", async (ctx, next) => {
       .match(/"[^"]+"|[^\s]+/g)
       .map((e) => e.replace(/"(.+)"/, "$1").toString());
     a.shift();
-    command.callback(ctx, a);
+    try {
+      const ret = command.callback(ctx, a);
+      if (ret?.catch)
+        ret.catch((e) => {
+          console.warn(
+            `PERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
+          );
+        });
+    } catch (error) {
+      console.warn(
+        `ERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
+      );
+    }
+
     console.log(
       `${ctx.message.from.username ?? ctx.message.from.id}: ${t} (${
         command.info.name
       })`
     );
-  } catch (e) {
-    console.warn(
-      `ERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
-    );
-  }
+  } catch (e) {}
   next();
 });
 
@@ -173,25 +183,24 @@ new cmd(
       return ctx.reply("А команд то и нет");
     let c = false,
       p = false,
-      a = [];
+      a = new Xitext();
 
     Object.values(public_cmds).forEach((e) => {
-      if (!c) a.push(`Доступные везде команды:\n`), (c = true);
-      a.push(`  /${e.info.name}`);
-      a.push(italic(` - ${e.info.description}\n`));
+      if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
+      a.Text(`  /${e.info.name}`);
+      a.Italic(` - ${e.info.description}\n`);
     });
 
     Object.values(private_cmds)
       .filter(async (e) => !(await cmd.cantUse(e, ctx)))
       .forEach((e) => {
-        if (!p) a.push(`\nДоступные вам в этом чате команды:\n`), (p = true);
-        a.push(`  `);
-        a.push(bold(`-${e.info.name}`));
-        a.push(italic(` - ${e.info.description}\n`));
+        if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
+        a.Text(`  `);
+        a.Mono(`-${e.info.name}`);
+        a.Italic(` - ${e.info.description}\n`);
       });
-    let o = text_parse(a);
-    if (!o.newtext) return ctx.reply("А доступных команд то и нет");
-    ctx.reply(o.newtext, { entities: o.extra });
+    if (!a._text) return ctx.reply("А доступных команд то и нет");
+    ctx.reply(...a._Build());
   }
 );
 
@@ -203,7 +212,7 @@ import("./cmds.js").then(() => {
     // Админские в группах
     groupAC = [],
     xiller = [],
-  allKmds = [];
+    allKmds = [];
   Object.keys(public_cmds).forEach((e) => {
     /**
      * @type {cmd}
@@ -234,7 +243,6 @@ import("./cmds.js").then(() => {
   if (groupC[0])
     bot.telegram.setMyCommands(groupC, { scope: { type: "all_group_chats" } });
   if (groupAC[0])
-    
     bot.telegram.setMyCommands(groupAC.concat(groupC), {
       scope: { type: "all_chat_administrators" },
     });

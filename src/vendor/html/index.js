@@ -41,11 +41,11 @@ import("./changelog.js").then(async () => {
       }
       li {
         list-style-type: "- ";
-        right: 3%;
+        right: 10px;
         bottom: 10px;
       }
       h4 {
-        left: 1%;
+        left: 10px;
       }
       h3 {
         top: 0px;

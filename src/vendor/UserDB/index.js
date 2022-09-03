@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import { format } from "../../app/functions/formatterCLS.js";
+import { format } from "../../app/class/formatterCLS.js";
 import { CreateGroup, CreateUser } from "../../app/models.js";
 import { bot } from "../../app/setup/tg.js";
 import { database } from "../../index.js";

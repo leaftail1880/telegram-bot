@@ -2,9 +2,9 @@ import { dbkey, Plugins, PORT, VERSION } from "../config.js";
 import { app, bot, env, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
-import { format } from "./functions/formatterCLS.js";
+import { format } from "./class/formatterCLS.js";
 import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
-import { bold, text_parse } from "./functions/textFNC.js";
+import { Xitext } from "./class/XitextCLS.js";
 
 /**
  * @typedef {Object} sessionCache
@@ -96,9 +96,18 @@ export async function SERVISE_start() {
   data.started = true;
   bot.telegram.sendMessage(
     members.xiller,
-    `⌬ Кобольдя ${data.versionMSG} (${
-      (Date.now() - data.start_time) / 1000
-    } сек)`
+    ...new Xitext()
+      .Text(`⌬ Кобольдя `)
+      ._Group(data.versionMSG.split(" ")[0])
+      .Mono()
+      .Underline()
+      ._Group()
+      .Text(' ')
+      .Italic(data.versionMSG.split(" ")[1])
+      .Text(" (")
+      .Bold((Date.now() - data.start_time) / 1000)
+      .Text(" сек)")
+      ._Build()
   );
 
   /**======================
@@ -139,15 +148,14 @@ export async function SERVISE_start() {
     const query = await database.get(dbkey.request, true);
     if (query?.map) {
       const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
-      if (q)
-        return await database.set(dbkey.request, "terminate_you");
+      if (q) return await database.set(dbkey.request, "terminate_you");
       if (!q) {
         await database.set(dbkey.request, "terminate_me");
         clearInterval(data.updateTimer);
-        SERVISE_stop(`${data.query} terminated by self (${data.versionMSG})`, true, true);
+        SERVISE_stop(`${data.versionMSG} terminated by self`, true, false);
       }
     }
-  }, 15000);
+  }, 10000);
 }
 
 export async function SERVISE_stop(
@@ -158,28 +166,30 @@ export async function SERVISE_stop(
   reload = false,
   sendMessage = true
 ) {
-  if (data.started && sendMessage)
-    await bot.telegram.sendMessage(
-      members.xiller,
-      `⌦ ${reason ? `${reason}.` : "Остановка."}${
+  if (data.started && sendMessage) {
+    const text = new Xitext()
+      ._Group("⌦ ")
+      .Url(null, "https://dashboard.render.com")
+      .Bold()
+      ._Group()
+      .Mono(reason ? `${reason}.` : "Остановка.")
+      .Text(
         extra
           ? `\n${
               typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
             } `
-          : " "
-      }(${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
-    ),
-      console.log(
-        `⌦ ${reason ? `${reason}.` : ""}${
-          extra
-            ? `\n${
-                typeof extra == "object"
-                  ? format.stringifyEx(extra, " ")
-                  : extra
-              } `
-            : ""
-        } (${stopApp ? "app " : ""}${stopBot ? "bot" : ""})`
-      );
+          : " ",
+        "("
+      )
+      ._Group(stopApp ? "app " : "")
+      .Bold()
+      .Underline()
+      ._Group()
+      .Italic(stopBot ? "bot" : "")
+      .Text(")");
+    await bot.telegram.sendMessage(members.xiller, ...text._Build());
+    console.log(text._text);
+  }
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;
     bot.stop(reason);
@@ -195,29 +205,23 @@ export async function SERVISE_stop(
 }
 
 export function SERVISE_error(error, extra = null) {
-  if (data.started) {
-    const text = text_parse([
-      `✕ `,
-      bold(error),
-      extra
-        ? `\n${
-            typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
-          } `
-        : "",
-    ]);
-    bot.telegram.sendMessage(members.xiller, text.newtext, {
-      entities: text.extra,
-    });
-  }
-  console.log(
-    `✕ ${error}${
+  const text = new Xitext()
+    ._Group("✕ ")
+    .Bold()
+    .Url(null, "https://dashboard.render.com")
+    ._Group()
+    .Bold(error)
+    .Text(
       extra
         ? `\n${
             typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
           } `
         : ""
-    }`
-  );
+    );
+  if (data.started) {
+    bot.telegram.sendMessage(members.xiller, ...text._Build());
+  }
+  console.log(text._text);
 }
 
 export async function SERVISE_freeze() {
@@ -225,9 +229,9 @@ export async function SERVISE_freeze() {
   if (data.started)
     await bot.telegram.sendMessage(
       members.xiller,
-      `Бот ${data.versionMSG} заморожен`
+      `❄️ Бот ${data.versionMSG} заморожен`
     ),
-      console.log(`Бот ${data.versionMSG} заморожен`);
+      console.log(`❄️ Бот ${data.versionMSG} заморожен`);
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
@@ -242,12 +246,14 @@ export async function SERVISE_freeze() {
     const answer = await database.get(dbkey.request);
     if (answer === "terminate_you") {
       clearInterval(timeout);
-      await database.del(dbkey.request)
+      await database.del(dbkey.request);
       return SERVISE_stop(
-        "Terminated by new version (Active: " + data.versionMSG + ")",
+        "🌑 Terminated by new version (Active: " + data.versionMSG + ")",
         null,
         true,
-        true, false, false
+        false,
+        false,
+        false
       );
     }
     let times = 0;
@@ -268,13 +274,16 @@ export async function SERVISE_freeze() {
 
       data.stopped = false;
       data.started = true;
-      bot.telegram.sendMessage(
-        members.xiller,
-        `⌬ Кобольдя ${data.versionMSG} перезапущен (${
-          (Date.now() - data.start_time) / 1000
-        } сек)`
-      );
-      console.log(`${data.versionMSG} перезапущен`);
+      console.log(`${data.versionMSG} вновь запущен`);
+      const text = new Xitext()
+        .Text(`⌬ Кобольдя `)
+        .Mono(data.versionMSG.split(" ")[0])
+        .Text(' ')
+        .Italic(data.versionMSG.split(" ")[1])
+        .Text(" вновь запущен (")
+        .Italic((Date.now() - data.start_time) / 1000)
+        .Text(" сек)");
+      bot.telegram.sendMessage(members.xiller, ...text._Build());
       clearInterval(timeout);
       database.del(dbkey.request);
       return;
@@ -298,14 +307,23 @@ export async function SERVISE_freeze() {
       data.started = true;
       bot.telegram.sendMessage(
         members.xiller,
-        `⌬ Кобольдя ${data.versionMSG} запущен (${
-          (Date.now() - data.start_time) / 1000
-        } сек)`
+        ...new Xitext()
+          .Text(`⌬ Кобольдя `)
+          ._Group(data.versionMSG.split(" ")[0])
+          .Mono()
+          .Underline()
+          ._Group()
+          .Text(' ')
+          .Italic(data.versionMSG.split(" ")[1])
+          .Text(" разморожен за ")
+          .Bold((Date.now() - data.start_time) / 1000)
+          .Text(" сек")
+          ._Build()
       );
-      console.log(`${data.versionMSG} запущен`);
+      console.log(`${data.versionMSG} разморожен`);
       clearInterval(timeout);
       database.del(dbkey.request);
       return;
     }
-  }, 15000);
+  }, 5000);
 }

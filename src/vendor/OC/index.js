@@ -1,30 +1,37 @@
-import { bot, members } from "../../app/setup/tg.js";
+import { Button, Xitext } from "../../app/class/XitextCLS.js";
+import { bot } from "../../app/setup/tg.js";
 
 bot.on("document", (ctx, next) => {
   if (ctx.chat.type != "private") return next();
   if (!ctx.message?.caption)
     return ctx.reply("Подпиши OC в формате <Имя> <Описание>");
-  ctx.reply("s", {
-    reply_markup: {
-      inline_keyboard: [
+  ctx.reply(
+    ...new Xitext()
+      .Text("Тут ")
+      ._Group("много")
+      .Bold()
+      .Italic()
+      .Underline()
+      .Text(" кнопок!")
+      .InlineKeyboard(
         [
-          {
-            text: "ы",
-            callback_data: "18",
-          },
-          {
-            text: "ы1",
-            callback_data: "18",
-          },
+          new Button('Кнопочка').data('Ы'),
+          new Button('Кнопочка').data('Ы'),
+          new Button('Кнопочка').data('Ы')
         ],
         [
-          {
-            text: "ы2",
-            callback_data: "18",
-          },
-        ],
-      ],
-    },
-  });
+          new Button('Кнопочка').data('Ы'),
+          new Button('Кнопочка').data('Ы'),
+          new Button('Кнопочка').data('Ы')
+        ]
+      )
+      ._Build()
+  );
   next();
 });
+
+bot.on("callback_query", (ctx, next) => {
+  ctx.reply(`Query: ${ctx.callbackQuery}`)
+  ctx.answerCbQuery('Ы')
+  next()
+})
