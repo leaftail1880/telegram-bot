@@ -1,263 +1,393 @@
-import { Context } from "telegraf";
+import { env } from "../../app/setup/tg.js";
+import { format } from "../../app/class/formatterCLS.js";
+import { database } from "../../index.js";
+import { cmd } from "../../app/class/cmdCLS.js";
+import { data, SERVISE_stop } from "../../app/start-stop.js";
+import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
+import { c } from "../timeChecker/index.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
-import { isAdmin } from "../../app/functions/checkFNC.js";
-import { bot, members } from "../../app/setup/tg.js";
-import { data } from "../../app/start-stop.js";
 
-const public_cmds = {},
-  private_cmds = {},
-  hprefixes = [".", "-", "$"];
-/**
- * @typedef {String} CommandType
- * @property {String} group
- * @property {String} private
- * @property {String} all
- */
+/**================================================================================================
+ *                                           КОМАНДЫ
+ *  Все самые основные команды бота
+ *
+ *
+ *
+ *================================================================================================**/
+/*
 
-export class cmd {
-  /**
-   * Создает команду
-   * @param {Object} info
-   * @param {String} info.name Имя
-   * @param {String} info.prefix def (/) || hide (.-$)
-   * @param {String} info.description Описание
-   * @param {Number} info.permisson 0 - все, 1 - админы
-   * @param {CommandType} info.type all | group | private
-   * @param {function(Context, Array)} callback
-   */
-  constructor(info, callback) {
-    if (!info.name) return;
-    let type = "def";
+new cmd({
+  name: '',
+  prefix: 'def',
+  description: 'Описание',
+  permisson: 0,
+  type: 'all'
+}, (ctx, args) => {
+  
+})
+*/
 
-    // Определение префикса
-    if (info.prefix == "hide") type = "hide";
-
-    // Регистрация инфы
-    this.info = {
-      name: info.name,
-      description: info.description ?? "Пусто",
-      type: info.type,
-      perm: info.permisson ?? 0,
-    };
-    this.callback = callback;
-
-    if (info.type && type == "def") {
-      public_cmds[info.name] = this;
-    } else {
-      private_cmds[info.name] = this;
-    }
-  }
-  /**
-   *
-   * @param {String} msg
-   * @param {boolean} isDefCmd
-   * @returns {cmd}
-   */
-  static getCmd(msg, isDefCmd) {
-    if (!msg) return false;
-    /**
-     * @type {cmd}
-     */
-    let cmd;
-    if (isDefCmd) {
-      cmd =
-        public_cmds[
-          Object.keys(public_cmds).find(
-            (e) => e == msg || e == msg.split("@")[0]
-          )
-        ];
-    } else {
-      cmd =
-        private_cmds[
-          Object.keys(private_cmds).find(
-            (e) => e == msg || e == msg.split("@")[0]
-          )
-        ];
-    }
-    if (!cmd) return false;
-    return cmd;
-  }
-  /**
-   *
-   * @param {cmd} command
-   * @param {Context} ctx
-   * @returns
-   */
-  static async cantUse(command, ctx) {
-    // Условия разрешений
-    let _lg = // Где
-        command.info.type == "group" &&
-        (ctx.chat.type == "group" || ctx.chat.type == "supergroup"),
-      _lp = command.info.type == "private" && ctx.chat.type == "private",
-      _lc = command.info.type == "channel" && ctx.chat.type == "channel",
-      _la = command.info.type == "all",
-      // Если команда для админов, и отправитель админ
-      _pall = command.info.perm == 0,
-      _padmin =
-        command.info.perm == 1 && (await isAdmin(ctx, ctx.message.from.id)),
-      // Если команда хильки
-      _pxiller =
-        command.info.perm == 2 && ctx.message.from.id == members.xiller;
-
-    // Если нет ни одного разрешения, значит нельзя
-    return !(_la || _lc || _lg || _lp) && !(_pall || _padmin || _pxiller);
-  }
-}
-
-bot.on("text", async (ctx, next) => {
-  /**
-   * @type {String}
-   */
-  const t = ctx.message.text;
-  if (!t) return next();
-  let command;
-  if (t.startsWith("/")) {
-    command = cmd.getCmd(t.split(" ")[0].substring(1), true);
-    if (!command) return next();
-  } else {
-    if (
-      !t ||
-      !hprefixes.find((e) => t.startsWith(e)) ||
-      !t.split(" ")[0]?.substring(1)
-    )
-      return next();
-    command = cmd.getCmd(t.split(" ")[0].substring(1));
-    if (!command) return next();
-    if (await cmd.cantUse(command, ctx))
-      return ctx.reply(
-        "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
-      );
-  }
-
-  try {
-    const a = t
-      .match(/"[^"]+"|[^\s]+/g)
-      .map((e) => e.replace(/"(.+)"/, "$1").toString());
-    a.shift();
-    try {
-      const ret = command.callback(ctx, a);
-      if (ret?.catch)
-        ret.catch((e) => {
-          console.warn(
-            `PERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
-          );
-        });
-    } catch (error) {
-      console.warn(
-        `ERR! ${command?.info?.name ?? ctx.message.text.split(" ")[0]} ${e}`
-      );
-    }
-
-    console.log(
-      `${ctx.message.from.username ?? ctx.message.from.id}: ${t} (${
-        command.info.name
-      })`
-    );
-  } catch (e) {}
-  next();
-});
-
-/**======================ss
- *    Приветствие
- *========================**/
 new cmd(
   {
-    name: "start",
-    description: "Начало работы с ботом в лс",
-    type: "private",
+    name: "stop",
+    prefix: "hide",
+    description: "Информация о чате",
+    permisson: 2,
   },
-  (ctx) => {
-    ctx.reply("Кобольдя очнулся");
+  (_a, args) => {
+    SERVISE_stop("Ручная остановка", null, args[0] ?? false, args[1] ?? false);
   }
 );
-/*========================*/
 
 new cmd(
   {
-    name: "help",
-    description: "Список команд",
+    name: "reg",
+    prefix: "def",
+    description: "Айди выдает",
+    permisson: 0,
+    type: "group",
+  },
+  (ctx) => {
+    ctx.reply("Твой айди: " + ctx.message.from.id);
+  }
+);
+
+new cmd(
+  {
+    name: "version",
+    prefix: "def",
+    description: "Версия бота",
+    permisson: 0,
+    type: "all",
+  },
+  (ctx) => {
+    ctx.reply(
+      ...new Xitext()
+        .Text(`Кобольдя `)
+        .Underline(data.versionMSG.split(" ")[0])
+        .Text(" ")
+        .Italic(data.versionMSG.split(" ")[1])
+        .Text(`\nРежим: `)
+        .Bold(env.whereImRunning)
+        ._Build()
+    );
+  }
+);
+
+new cmd(
+  {
+    name: "db",
+    prefix: "def",
+    description: "Описание",
+    permisson: 2,
+  },
+  async (ctx, args) => {
+    switch (args[0]) {
+      case "pairs":
+        const a = await database.getPairs();
+        console.log(a);
+        ctx.reply(format.stringifyEx(a, " "));
+        break;
+      case "get":
+        if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
+        const get = await database.get(args[1], true);
+        console.log(get);
+        ctx.reply(format.stringifyEx(get, " "));
+        break;
+      case "del":
+        if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
+        const del = await database.del(args[1]);
+        console.log(del);
+        ctx.reply(del);
+        break;
+      case "keys":
+        const keys = await database.keys(),
+          text = new Xitext().Text("Ключи:");
+        keys.sort().forEach((e) => {
+          text.Text("\n");
+          text.Mono(e);
+        });
+        console.log(keys.sort());
+        ctx.reply(...text._Build());
+        break;
+      case "set":
+        if (!args[1] || !args[2])
+          return ctx.reply(
+            "Нужно указать ключ и значение (-db set <key> <value>)"
+          );
+        const set = await database.set(args[1], args[2], true);
+        console.log(set);
+        ctx.reply("Успешно!");
+        break;
+      case "help":
+      default:
+        ctx.reply(
+          ...new Xitext()
+            .Text("Доступные методы:")
+            .Mono("\n pairs")
+            .Mono("\n get ")
+            .Text(" <key>")
+            .Mono("\n set")
+            .Text(" <key> <value>")
+            .Mono("\n del")
+            .Text(" <key>")
+            .Mono("\n keys")
+            ._Build()
+        );
+    }
+  }
+);
+
+new cmd(
+  {
+    name: "log",
+    prefix: "hide",
+    description: "Описание",
+    permisson: 2,
+  },
+  async (ctx, args) => {
+    switch (args[0]) {
+      case "average":
+        const a = await database.logGetAverageOperationsTime();
+        console.log(a);
+        ctx.reply(
+          `Cредняя скорость ответа сервера для методов:\n${Object.keys(a)
+            .map((e) => ` ${e}: ${a[e]}`)
+            .join("\n")}`
+        );
+        break;
+      case "save":
+        database.logSave();
+        ctx.reply(
+          "Успешно сохранено в кэше " + database.log.length + " строчек лога."
+        );
+        break;
+      case "log":
+        const log = database.logFormat().join("\n");
+        console.log(log);
+        ctx.reply(log);
+        break;
+      default:
+        ctx.reply("Доступные методы:\n average\n save\n log");
+        break;
+    }
+  }
+);
+
+new cmd(
+  {
+    name: "env",
+    prefix: "hide",
+    description: "В консоль спамит (но это полезный спам!)",
+    permisson: 2,
+  },
+  () => {
+    const e = format.stringifyEx(env, " ");
+    console.log(e);
+  }
+);
+
+new cmd(
+  {
+    name: "call",
+    prefix: "def",
+    description: "Созывает",
+    permisson: 1,
+    type: "group",
+  },
+  async (ctx, args) => {
+    /**
+     * @type {Array<import("telegraf/typings/core/types/typegram.js").ChatMember>}
+     */
+    const all = [],
+      g = (await getGroup(ctx, true)).group,
+      group = g.cache;
+    const time = Date.now() - group.lastCall;
+    if (time <= 60000) {
+      let sec = "секунд",
+        hrs = `${time * 1000}`;
+      if (hrs.endsWith("1") && hrs != "11") {
+        sec = "секунду";
+      } else if (hrs == "2" || hrs == "3" || hrs == "4") {
+        sec = `секунды`;
+      }
+      return ctx.reply(
+        ...new Xitext()
+          .Text(`Подожди еще `)
+          ._Group(hrs)
+          .Bold()
+          .Underline()
+          .Text(` ${sec}`)
+          ._Build()
+      );
+    }
+    if (!group.members[1]) return ctx.reply("Некого созывать!");
+    for (const e of group.members) {
+      const obj = await ctx.telegram.getChatMember(ctx.chat.id, e);
+      obj.name =
+        (await database.get(`User::${e}`, true)).cache.nickname ??
+        `${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""}`;
+      all.push(obj);
+    }
+    const mbs = all.filter(
+      (e) => e.status != "kicked" && e.status != "left" && !c(e.user.id)
+    );
+    if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
+    group.lastCall = Date.now();
+    mbs.forEach((e) => {
+      const text = new Xitext()
+        .Mention(e.name ?? e.user.username, e.user)
+        .Text(" ")
+        .Text(args[0] ? args.join(" ") : "Созыв!");
+      ctx.reply(...text._Build());
+    });
+    await database.set(`Group::${g.static.id}`, g, true);
+  }
+);
+
+new cmd(
+  {
+    name: "ник",
+    prefix: "hide",
+    description: "Задает ник при сборе",
+    permisson: 0,
+    type: "group",
+  },
+  async (ctx, args) => {
+    const user = (await getUser(ctx, false)).user,
+      name = user.cache.nickname;
+    if (!args[0])
+      return ctx.reply(name ?? "Пустой", {
+        reply_to_message_id: ctx.message.message_id,
+      });
+    ctx.reply(`Ник '${name ?? "Пустой"}' сменен на '${args.join(" ")}'`, {
+      reply_to_message_id: ctx.message.message_id,
+      allow_sending_without_reply: true,
+    });
+    user.cache.nickname = args.join(" ");
+    database.set("User::" + ctx.message.from.id, user, true);
+  }
+);
+
+export const cooldown = 5 * 3.6e6;
+new cmd(
+  {
+    name: "pin",
+    prefix: "def",
+    description: "Закрепляет на 5 часов",
+    permisson: 0,
     type: "all",
   },
   async (ctx) => {
-    if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
-      return ctx.reply("А команд то и нет");
-    let c = false,
-      p = false,
-      a = new Xitext();
-
-    Object.values(public_cmds).forEach((e) => {
-      if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
-      a.Text(`  /${e.info.name}`);
-      a.Italic(` - ${e.info.description}\n`);
-    });
-
-    Object.values(private_cmds)
-      .filter(async (e) => !(await cmd.cantUse(e, ctx)))
-      .forEach((e) => {
-        if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
-        a.Text(`  `);
-        a.Mono(`-${e.info.name}`);
-        a.Italic(` - ${e.info.description}\n`);
+    const g = (await getGroup(ctx, true)).group,
+      u = (await getUser(ctx, false)).user;
+    let lp = 0;
+    if (typeof g?.cache?.lastPin == "object") {
+      lp = g.cache?.lastPin[u.static.id];
+    } else g.cache.lastPin = {};
+    const time = Date.now() - lp;
+    if (time <= cooldown) {
+      const hrs = `${Math.ceil(time / 3.6e6)}`;
+      let o;
+      if (hrs.endsWith("1") && hrs != "11") {
+        o = "час cостался!";
+      } else if (hrs.endsWith("2") || hrs.endsWith("3") || hrs.endsWith("4")) {
+        o = `часa осталось`;
+      } else {
+        o = `часов осталось`;
+      }
+      const reply = new Xitext().Bold(hrs).Text(` ${o}`);
+      return ctx.reply(...reply._Build());
+    }
+    if (!ctx.message?.reply_to_message?.message_id) {
+      const text = new Xitext()
+        .Bold("Отметь")
+        .Text(" сообщение которое хочешь закрепить!");
+      return ctx.reply(text._text, {
+        reply_to_message_id: ctx.message.from.id,
+        allow_sending_without_reply: true,
+        entities: text._entities,
       });
-    if (!a._text) return ctx.reply("А доступных команд то и нет");
-    ctx.reply(...a._Build());
+    }
+    if (g.cache.pin)
+      try {
+        await ctx.unpinChatMessage(Number(g.cache.pin.split("::")[0]));
+      } catch (error) {
+        console.warn(error);
+      }
+
+    ctx.pinChatMessage(ctx.message.reply_to_message.message_id, {
+      disable_notification: true,
+    });
+    g.cache.lastPin[u.static.id] = Date.now();
+    g.cache.pin = `${ctx.message.reply_to_message.message_id}::${Date.now()}`;
+    await database.set(`Group::${g.static.id}`, g, true);
   }
 );
 
-import("./cmds.js").then(() => {
-  //  Общие команды группы
-  let groupC = [],
-    // Общие команды в лс
-    privateC = [],
-    // Админские в группах
-    groupAC = [],
-    xiller = [],
-    allKmds = [];
-  Object.keys(public_cmds).forEach((e) => {
-    /**
-     * @type {cmd}
-     */
-    const cmd = public_cmds[e],
-      m = { command: cmd.info.name, description: cmd.info.description };
-    if (
-      (cmd.info.type == "group" || cmd.info.type == "all") &&
-      cmd.info.perm == 0
-    )
-      groupC.push(m);
-    if (
-      (cmd.info.type == "group" || cmd.info.type == "all") &&
-      cmd.info.perm == 1
-    )
-      groupAC.push(m);
-    if (
-      (cmd.info.type == "private" || cmd.info.type == "all") &&
-      cmd.info.perm == 0
-    )
-      privateC.push(m), xiller.push(m);
-    if (cmd.info.perm == 2) xiller.push(m);
+// new cmd(
+//   {
+//     name: "animtitle",
+//     prefix: "hide",
+//     description: " ы",
+//     permisson: 1,
+//     type: "group",
+//   },
+//   async (ctx, args) => {
+//     if (!args || !args[0] || !args[1] || Number(args[0]) == NaN)
+//       return ctx.reply("Че?");
+//     const group = (await getGroup(ctx, true)).group,
+//       oldtitle = `${group.cache.titleAnimationSpeed ?? 0} ${
+//         group.cache?.titleAnimation?.join(" ") ?? group.static.title
+//       }`,
+//       anims = [];
+//     args.forEach((e) => anims.push(e));
+//     anims.shift();
+//     group.cache.titleAnimationSpeed = Number(args[0]);
+//     group.cache.titleAnimation = anims;
+//     ctx.reply(
+//       `Сменена анимация имени группы:\n ${anims.join("\n ")}\n\nСкорость: ${
+//         args[0]
+//       } сек.\n\nВернуть старую: -animtitle ${oldtitle}`
+//     );
+//     await database.set(`Group::${group.static.id}`, group, true);
+//     SetAnimations();
+//   }
+// );
 
-    allKmds.push(e);
-  });
-  Object.keys(private_cmds).forEach((e) => allKmds.push(e));
+// new cmd(
+//   {
+//     name: "animreload",
+//     prefix: "hide",
+//     description: " ы",
+//     permisson: 1,
+//     type: "group",
+//   },
+//   async (ctx, args) => {
+//     ctx.reply("Успешно!");
+//     SetAnimations();
+//   }
+// );
 
-  if (groupC[0])
-    bot.telegram.setMyCommands(groupC, { scope: { type: "all_group_chats" } });
-  if (groupAC[0])
-    bot.telegram.setMyCommands(groupAC.concat(groupC), {
-      scope: { type: "all_chat_administrators" },
-    });
-  if (privateC[0])
-    bot.telegram.setMyCommands(privateC, {
-      scope: { type: "all_private_chats" },
-    });
-  if (xiller[0])
-    bot.telegram.setMyCommands(xiller.concat(privateC), {
-      scope: { type: "chat", chat_id: members.xiller },
-    });
-  if (data.isDev)
-    console.log(
-      `> Command Кол-во команд: ${allKmds.length}${
-        allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
-      }`
-    );
-});
+// new cmd(
+//   {
+//     name: "newoc",
+//     prefix: "def",
+//     description: "Как зарегать",
+//     permisson: 0,
+//     type: "private",
+//   },
+//   async (ctx, args) => {
+//     // if (!ctx.message?.reply_to_message?.message_id)
+//     //   return ctx.reply("Отметь файл с изображением!", {
+//     //     reply_to_message_id: ctx.message.message_id,
+//     //     allow_sending_without_reply: true,
+//     //   });
+//     // const id = ctx.message?.reply_to_message?.message_id, msg = await ctx.telegram.
+//     ctx.reply(
+//       'Что бы зарегистрировать ОС, отправь мне файл (именно файл, а не фото!) с референсом персонажа, и подписью в формате <Имя персонажа> <Описание>\n  Примеры подписей:\n Листохвост Известный кобольдя\n "Ре На" Рандомное имя придуманное что бы показать как делать имена с пробелами'
+//     );
+//   }
+// );
+
+

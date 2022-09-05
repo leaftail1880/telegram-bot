@@ -6,6 +6,7 @@
  * @property {String} static.name
  * @property {Object} cache
  * @property {String} cache.nickname
+ * @property {String} cache.session
  * @property {String} cache.tag
  * @property {Number} cache.lastActive
 
@@ -41,6 +42,7 @@ export function CreateUser(
     cache: {
       nickname: customName,
       tag: tag,
+      session: null,
       lastActive: active,
     },
   };

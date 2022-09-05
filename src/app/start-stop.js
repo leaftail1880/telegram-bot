@@ -5,6 +5,8 @@ import { database } from "../index.js";
 import { format } from "./class/formatterCLS.js";
 import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
 import { Xitext } from "./class/XitextCLS.js";
+import { loadCMDS } from "./class/cmdCLS.js";
+import { loadQuerys } from "./class/queryCLS.js";
 
 /**
  * @typedef {Object} sessionCache
@@ -128,6 +130,10 @@ export async function SERVISE_start() {
       ? console.log(`> ${plugin} (${Date.now() - start} ms)`)
       : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
+  // Инициализация команд и списков
+  loadCMDS()
+  loadQuerys()
+  
   if (data.isDev) {
     console.log(" ");
     console.log("Done.");

@@ -34,6 +34,7 @@ export class Xitext {
   _Group(text) {
     if (!text) {
       this.group = false;
+      this.offset = this.offset + this.prev.length ?? 0
       this.prev = null;
     } else {
       this.group = true;

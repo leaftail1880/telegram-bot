@@ -1,18 +1,16 @@
 import { Context } from "telegraf";
-import { format } from "../../app/class/formatterCLS.js";
-import { CreateGroup, CreateUser } from "../../app/models.js";
-import { bot } from "../../app/setup/tg.js";
+import { CreateGroup, CreateUser } from "../models.js";
 import { database } from "../../index.js";
 
 /**
  * @typedef {Object} getUser
- * @property {import("../../app/models.js").DBUser} user
+ * @property {import("../models.js").DBUser} user
  * @property {Boolean} saveU
  */
 
 /**
  * @typedef {Object} getGroup
- * @property {import("../../app/models.js").DBUgroup} group
+ * @property {import("../models.js").DBUgroup} group
  * @property {Boolean} saveG
  */
 
@@ -55,7 +53,7 @@ export async function getGroup(ctx, save = true) {
 
 /**
  *
- * @returns {Promise<Array<import("../../app/models.js").DBUgroup>>}
+ * @returns {Promise<Array<import("../models.js").DBUgroup>>}
  */
 export async function getRegisteredGroups() {
   let groups = [];
@@ -67,19 +65,3 @@ export async function getRegisteredGroups() {
   return groups;
 }
 
-bot.on("message", async (ctx, next) => {
-  if (ctx.message.from.is_bot) return;
-  const u = await getUser(ctx, false),
-    user = u.user;
-  if (ctx.chat.type == "group" || ctx.chat.type == "supergroup") {
-    const g = await getGroup(ctx, false),
-      group = g.group;
-    if (!group.cache.members.includes(user.static.id))
-      (group.cache.members = format.add(group.cache.members, user.static.id)),
-        (g.saveG = true);
-    if (g.saveG) database.set(`Group::${group.static.id}`, group, true);
-  }
-  user.cache.lastActive = Date.now();
-  database.set(`User::${user.static.id}`, user, true);
-  next();
-});

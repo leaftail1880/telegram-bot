@@ -1,3 +1,4 @@
+import { Context } from "telegraf";
 import { bot } from "../setup/tg.js";
 
 class formatter {
@@ -67,12 +68,24 @@ class formatter {
     else if (/\d+(?=ms|milliseconds?)/i.test(value)) return number;
   }
   add(array, value) {
-    const a = Array.isArray(array) ? array : [], es = []
-    if (!a.includes(value)) a.push(value)
-    a.forEach(e => {
-      if (!es.includes(e)) es.push(e)
-    })
-    return es
+    const a = Array.isArray(array) ? array : [],
+      es = [];
+    if (!a.includes(value)) a.push(value);
+    a.forEach((e) => {
+      if (!es.includes(e)) es.push(e);
+    });
+    return es;
   }
 }
 export const format = new formatter();
+
+export const d = {
+  user: (id) => `User::${id}`,
+  pn: (prefix, name) => `${prefix}::${name}`,
+  group: (id) => `Group::${id}`,
+  session: (name, stage) => `${name}::${stage}`,
+  getName: (ctx) =>
+    `${ctx?.from?.first_name}${
+      ctx?.from?.last_name ? ` ${ctx.from.last_name}` : ""
+    }` ?? ctx?.from?.username ?? 'пуст',
+};

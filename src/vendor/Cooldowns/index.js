@@ -1,6 +1,6 @@
 import { bot } from "../../app/setup/tg.js";
 import { database } from "../../index.js";
-import { cooldown } from "../Command/cmds.js";
+import { cooldown } from "../Command/index.js";
 
 setInterval(async () => {
   const groups = (await database.keys((e) => e.startsWith("Group::")))
