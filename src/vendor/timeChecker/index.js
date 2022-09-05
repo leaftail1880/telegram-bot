@@ -15,7 +15,7 @@ export function c(ID, Ttime) {
   if (`${MessageTime[1]}`.length < 2) MessageTime[1] = "0" + MessageTime[1];
   MessageTime = Number(`${MessageTime[0]}${MessageTime[1]}`);
   const qStart = (MessageTime <= StartTime || StartTime <= 600), qEnd = MessageTime >= EndTime, q = qStart && qEnd  
-  if (!q) return true;
+  return false;
 }
 
 /**
