@@ -1,5 +1,6 @@
 import { cmd } from "../../app/class/cmdCLS.js";
 import { format } from "../../app/class/formatterCLS.js";
+import { Query } from "../../app/class/queryCLS.js";
 import { ssn } from "../../app/class/sessionCLS.js";
 import { Button, Xitext } from "../../app/class/XitextCLS.js";
 import { bot } from "../../app/setup/tg.js";
@@ -29,6 +30,50 @@ new cmd(
     );
   }
 );
+
+new Query(
+  {
+    name: "reg",
+    prefix: "OC",
+    session: 0,
+    message: 'hel'
+  }, (ctx) => {
+
+  }
+)
+
+new Query(
+  {
+    name: "reg",
+    prefix: "OC",
+    session: 1,
+    message: 'hel'
+  }, (ctx) => {
+    
+  }
+)
+
+new Query(
+  {
+    name: "reg",
+    prefix: "OC",
+    session: 2,
+    message: 'hel'
+  }, (ctx) => {
+    
+  }
+)
+
+new Query(
+  {
+    name: "find",
+    prefix: "OC",
+    session: 0,
+    message: 'hel'
+  }, (ctx) => {
+    
+  }
+)
 
 bot.on("document", async (ctx, next) => {
   if (ctx.chat.type != "private" || (await ssn.OC.Q(ctx.from.id)) != 0)
