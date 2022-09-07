@@ -31,7 +31,8 @@ new cmd(
   {
     name: "stop",
     prefix: "hide",
-    description: "Информация о чате",
+    hide: true,
+    description: "Bot App",
     permisson: 2,
   },
   (_a, args) => {
@@ -39,18 +40,18 @@ new cmd(
   }
 );
 
-new cmd(
-  {
-    name: "reg",
-    prefix: "def",
-    description: "Айди выдает",
-    permisson: 0,
-    type: "group",
-  },
-  (ctx) => {
-    ctx.reply("Твой айди: " + ctx.message.from.id);
-  }
-);
+// new cmd(
+//   {
+//     name: "reg",
+//     prefix: "def",
+//     description: "Айди выдает",
+//     permisson: 0,
+//     type: "group",
+//   },
+//   (ctx) => {
+//     ctx.reply("Твой айди: " + ctx.message.from.id);
+//   }
+// );
 
 new cmd(
   {
@@ -78,6 +79,7 @@ new cmd(
   {
     name: "db",
     prefix: "def",
+    hide: true,
     description: "Описание",
     permisson: 2,
   },
@@ -141,7 +143,7 @@ new cmd(
 new cmd(
   {
     name: "log",
-    prefix: "hide",
+    hide: true,
     description: "Описание",
     permisson: 2,
   },
@@ -177,7 +179,7 @@ new cmd(
 new cmd(
   {
     name: "env",
-    prefix: "hide",
+    hide: true,
     description: "В консоль спамит (но это полезный спам!)",
     permisson: 2,
   },
@@ -248,7 +250,7 @@ new cmd(
 new cmd(
   {
     name: "ник",
-    prefix: "hide",
+    hide: true,
     description: "Задает ник при сборе",
     permisson: 0,
     type: "group",

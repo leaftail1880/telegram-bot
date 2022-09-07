@@ -76,6 +76,12 @@ class formatter {
     });
     return es;
   }
+  getName(user) {
+    return `${user?.first_name}${
+     user?.last_name ? ` ${user.last_name}` : ""
+    }` ?? user?.username ?? 'пуст'
+  }
+
 }
 export const format = new formatter();
 
@@ -84,8 +90,4 @@ export const d = {
   pn: (prefix, name) => `${prefix}::${name}`,
   group: (id) => `Group::${id}`,
   session: (name, stage) => `${name}::${stage}`,
-  getName: (ctx) =>
-    `${ctx?.from?.first_name}${
-      ctx?.from?.last_name ? ` ${ctx.from.last_name}` : ""
-    }` ?? ctx?.from?.username ?? 'пуст',
 };

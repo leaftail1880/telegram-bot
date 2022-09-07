@@ -1,14 +1,15 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 5, 23], //
+export const VERSION = [6, 5, 24], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   Plugins = [
     "html", // Сайт
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
-    "OC", // Модуль для команды /oc
     "timeChecker", // Время
+    "OC", // Модуль для команды /oc
     "Cooldowns", // Таймеры
+
     /*"Animation"*/
   ],
   dbkey = {

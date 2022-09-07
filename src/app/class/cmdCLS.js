@@ -5,6 +5,7 @@ import { bot, members } from "../setup/tg.js";
 import { data } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
+import { Session, ssn } from "./sessionCLS.js";
 
 const public_cmds = {},
   private_cmds = {},
@@ -21,7 +22,6 @@ export class cmd {
    * Создает команду
    * @param {Object} info
    * @param {String} info.name Имя
-   * @param {String} info.prefix def (/) || hide (.-$)
    * @param {Boolean} info.hide Спрятать ли из листа команд
    * @param {String} info.description Описание
    * @param {String} info.session В формате d.session
@@ -31,9 +31,6 @@ export class cmd {
    */
   constructor(info, callback) {
     if (!info.name) return;
-
-    // Определение префикса
-    if (info.prefix == "hide") type = "hide";
 
     // Регистрация инфы
     this.info = {
@@ -168,17 +165,47 @@ new cmd(
     description: "Выход из пошагового меню",
     permisson: 0,
     hide: true,
+    type: 'private'
   },
-  async (ctx, args) => {
+  async (ctx) => {
     /**
      * @type {import("../models.js").DBUser}
      */
     const user = await database.get(d.user(ctx.from.id), true);
     if (user?.cache?.session) {
-      ctx.reply("Вы вышли из меню " + user.cache.session);
+      await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
       delete user.cache.session;
-      await database.set(d.user(ctx.from.id), user, true)
-    }
+      await database.set(d.user(ctx.from.id), user, true);
+    } else ctx.reply('Вы не находитесь в меню!')
+  }
+);
+
+new cmd(
+  {
+    name: "next",
+    prefix: "def",
+    description: "Переходит на следующий шаг меню",
+    permisson: 0,
+    hide: true,
+    type: 'private'
+  },
+  async (ctx) => {
+    /**
+     * @type {import("../models.js").DBUser}
+     */
+    const user = await database.get(d.user(ctx.from.id), true);
+    if (user?.cache?.session?.split) {
+      /**
+       * @type {Session}
+       */
+      const sess = ssn[user.cache.session.split('::')[0]]
+      if (sess) {
+        if (sess.executers[user.cache.session.split('::')[1]]) {
+          sess.executers[user.cache.session.split('::')[1]](ctx, user)
+        } else ctx.reply('Этот шаг не предусматривает пропуска!')
+      } else delete user.cache.session
+      await database.set(d.user(ctx.from.id), user, true);
+    } else ctx.reply('Вы не находитесь в меню!')
   }
 );
 
@@ -258,22 +285,22 @@ export function loadCMDS() {
         return next();
       command = cmd.getCmd(t.split(" ")[0].substring(1));
       if (!command) return next();
-      /**
-       * @type {import("../models.js").DBUser}
-       */
-      const user = await database.get(d.user(ctx.from.id), true);
-      if (
-        user?.cache?.session &&
-        command.info.session &&
-        user?.cache?.session != command.info.session &&
-        command.info.name != "cancel"
-      )
-        return ctx.reply("Вы находитесь в пошаговом меню. Выйти: /cancel");
-      if (await cmd.cantUse(command, ctx))
-        return ctx.reply(
-          "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
-        );
     }
+    // /**
+    //  * @type {import("../models.js").DBUser}
+    //  */
+    // const user = await database.get(d.user(ctx.from.id), true);
+    // if (
+    //   user?.cache?.session &&
+    //   command.info.session &&
+    //   user?.cache?.session != command.info.session &&
+    //   command.info.name != "cancel"
+    // )
+    //   return ctx.reply("Вы находитесь в пошаговом меню. Выйти: /cancel");
+    if (await cmd.cantUse(command, ctx))
+      return ctx.reply(
+        "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
+      );
 
     try {
       const a = t

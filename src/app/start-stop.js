@@ -101,15 +101,15 @@ export async function SERVISE_start() {
     ...new Xitext()
       .Text(`⌬ Кобольдя `)
       ._Group(data.versionMSG.split(" ")[0])
-      .Mono()
-      .Underline()
+      .Url(null, 'https://dashboard.render.com')
+      .Bold()
       ._Group()
       .Text(' ')
       .Italic(data.versionMSG.split(" ")[1])
       .Text(" (")
       .Bold((Date.now() - data.start_time) / 1000)
       .Text(" сек)")
-      ._Build()
+      ._Build({disable_web_page_preview: true})
   );
 
   /**======================
@@ -124,7 +124,7 @@ export async function SERVISE_start() {
     const start = Date.now();
 
     await import(`../vendor/${plugin}/index.js`).catch((error) => {
-      console.warn(`> Error ${plugin}: ` + error + error.stack);
+      console.warn(`> Error ${plugin}: ` + error.stack);
     });
     data.isDev
       ? console.log(`> ${plugin} (${Date.now() - start} ms)`)
@@ -150,7 +150,11 @@ export async function SERVISE_start() {
       }, plugins: ${plgs.join(", ")}`
     );
   if (data.isDev) console.log(" ");
-  data.updateTimer = setInterval(async () => {
+  data.updateTimer = setInterval(checkInterval, 10000);
+}
+
+async function checkInterval() {
+  {
     const query = await database.get(dbkey.request, true);
     if (query?.map) {
       const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
@@ -162,7 +166,7 @@ export async function SERVISE_start() {
         SERVISE_stop(`${data.versionMSG} terminated by self`, true, false);
       }
     }
-  }, 10000);
+  }
 }
 
 export async function SERVISE_stop(
@@ -285,14 +289,18 @@ export async function SERVISE_freeze() {
       console.log(`${data.versionMSG} вновь запущен`);
       const text = new Xitext()
         .Text(`⌬ Кобольдя `)
-        .Mono(data.versionMSG.split(" ")[0])
+        ._Group(data.versionMSG.split(" ")[0])
+        .Url(null, 'https://dashboard.render.com')
+        .Bold()
+        ._Group()
         .Text(' ')
         .Italic(data.versionMSG.split(" ")[1])
         .Text(" вновь запущен (")
         .Italic((Date.now() - data.start_time) / 1000)
         .Text(" сек)");
-      bot.telegram.sendMessage(members.xiller, ...text._Build());
+      bot.telegram.sendMessage(members.xiller, ...text._Build({disable_web_page_preview: true}));
       clearInterval(timeout);
+      data.updateTimer = setInterval(checkInterval, 10000);
       database.del(dbkey.request);
       return;
     }
@@ -318,18 +326,19 @@ export async function SERVISE_freeze() {
         ...new Xitext()
           .Text(`⌬ Кобольдя `)
           ._Group(data.versionMSG.split(" ")[0])
-          .Mono()
-          .Underline()
+          .Url(null, 'https://dashboard.render.com')
+          .Bold()
           ._Group()
           .Text(' ')
           .Italic(data.versionMSG.split(" ")[1])
           .Text(" разморожен за ")
           .Bold((Date.now() - data.start_time) / 1000)
           .Text(" сек")
-          ._Build()
+          ._Build({disable_web_page_preview: true})
       );
       console.log(`${data.versionMSG} разморожен`);
       clearInterval(timeout);
+      data.updateTimer = setInterval(checkInterval, 10000);
       database.del(dbkey.request);
       return;
     }
