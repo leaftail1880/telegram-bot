@@ -90,4 +90,5 @@ export const d = {
   pn: (prefix, name) => `${prefix}::${name}`,
   group: (id) => `Group::${id}`,
   session: (name, stage) => `${name}::${stage}`,
+  query: (prefix, name) => `${prefix}[]${name}`
 };

@@ -42,7 +42,7 @@ export function loadQuerys() {
     const q =
       ques[data] ?? ques[Object.keys(ques).find((e) => data.startsWith(e))];
     if (!q) {
-      ctx.answerCbQuery("Ошибка 400!", {
+      ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
         show_alert: true,
       });
       return next();
