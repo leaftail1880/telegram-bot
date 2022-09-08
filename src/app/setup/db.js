@@ -44,7 +44,7 @@ export class db {
       output[key].forEach((e) => {
         value = value + e;
       });
-      output[key] = value / length;
+      output[key] = Math.round((value / length) * 1000) / 1000;
     }
     return output;
   }

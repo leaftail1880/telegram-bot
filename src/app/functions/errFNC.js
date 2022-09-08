@@ -40,7 +40,7 @@ export function err(code, ctx) {
         ._Build()
     );
   console.warn(
-    `ERR ${ERRCODES[code].log ?? ERRCODES[800].log}${
+    `ERR ${code} ${ERRCODES[code].log ?? ERRCODES[800].log}${
       ctx.from
         ? `User: ${ctx.from.username ?? ctx.from.id}, Text: ${ctx.message.text}`
         : ""

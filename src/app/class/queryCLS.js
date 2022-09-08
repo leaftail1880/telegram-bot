@@ -1,6 +1,6 @@
 import { Context } from "telegraf";
 import { bot } from "../setup/tg.js";
-import { d } from "./formatterCLS.js";
+import { d, format } from "./formatterCLS.js";
 
 /**
  * @type {Object<String, Query>}
@@ -51,14 +51,14 @@ export function loadQuerys() {
       const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
       if (ret?.catch)
         ret.catch((e) => {
-          console.warn(`Promise Query ERR! ${data} ${e?.message ?? e} ${e?.stack}`);
+          console.warn(`ERR! Query Promise [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data} ${e?.message ?? e} ${e?.stack}`);
         });
       if (q.info.msg) ctx.answerCbQuery(q.info.msg)
     } catch (error) {
-      console.warn(`Query ERR! ${data} ${error?.message ?? error} ${error?.stack}`);
+      console.warn(`ERR! Query [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data} ${error?.message ?? error} ${error?.stack}`);
     }
     console.log(
-      `Query [${ctx.callbackQuery.from.username ?? ctx.callbackQuery.from.id}] ${data}`
+      `> Query. [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data}`
     );
     next();
   });

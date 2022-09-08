@@ -305,13 +305,13 @@ export function loadCMDS() {
         const ret = command.callback(ctx, a);
         if (ret?.catch)
           ret.catch((e) => {
-            console.warn(`PERR! ${t} ${e}`);
+            console.warn(`PERR! ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}. ${e}`);
           });
       } catch (error) {
-        console.warn(`ERR! ${t} ${error}`);
+        console.warn(`ERR! ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}. ${error}`);
       }
 
-      console.log(`${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}`);
+      console.log(`> CMD. ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}`);
     } catch (e) {}
     next();
   });

@@ -80,7 +80,7 @@ class formatter {
     return (
       `${user?.first_name}${user?.last_name ? ` ${user.last_name}` : ""}` ??
       user?.username ??
-      "пуст"
+      user?.id
     );
   }
   /**

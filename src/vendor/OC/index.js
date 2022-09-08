@@ -198,21 +198,35 @@ async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard) {
  * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
  */
 async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
-  /**
-   * @type {import("telegraf/typings/telegram-types.js").ExtraDocument}
-   */
-  let extra = {
-    caption: text,
-    caption_entities: entities,
-  };
-  if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
-
   await ctx.telegram.deleteMessage(
     ctx.callbackQuery.message.chat.id,
     ctx.callbackQuery.message.message_id
   );
+  if (text.length < 980 && fileid.endsWith('QQ')) {
+    /**
+     * @type {import("telegraf/typings/telegram-types.js").ExtraDocument}
+     */
+    let extra = {
+      caption: text,
+      caption_entities: entities,
+    };
+    if (InlineKeyboard)
+      extra.reply_markup = { inline_keyboard: InlineKeyboard };
 
-  await ctx.replyWithDocument(fileid, extra);
+    await ctx.replyWithDocument(fileid, extra);
+  } else {
+    /**
+     * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
+     */
+    let extra = {
+      entities: entities,
+      disable_web_page_preview: true
+    };
+    if (InlineKeyboard)
+      extra.reply_markup = { inline_keyboard: InlineKeyboard };
+    if (fileid.endsWith('QQ')) await ctx.replyWithDocument(fileid);
+    await ctx.reply(text, extra);
+  }
 }
 
 /**
@@ -234,7 +248,7 @@ function not(ctx, qq, session) {
  */
 function noCache(user, uOC) {
   return (
-    !user?.cache?.sessionCache[1] || !uOC || !uOC[user?.cache?.sessionCache[1]]
+    !user?.cache?.sessionCache[1] || !uOC || !uOC[user?.cache?.sessionCache[0]]
   );
 }
 
@@ -353,6 +367,7 @@ const MENU = {
         if (not(ctx, await ssn.OC.Q(ctx.from.id, true), 10)) return next();
         ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
         ctx.reply(lang.redact.name());
+        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted reference`)
       }),
 
       ssn.OC.next(10, async (ctx, user) => {
@@ -360,9 +375,10 @@ const MENU = {
           uOC = OCS[ctx.from.id];
         if (noCache(user, uOC)) return err(421, ctx);
 
-        const oc = uOC[user.cache.sessionCache[1]];
+        const oc = uOC[user.cache.sessionCache[0]];
         ssn.OC.enter(ctx.from.id, 11, oc.fileid);
         ctx.reply(lang.redact.name());
+        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped reference`)
       }),
       /*---------------------------------------------------
       
@@ -380,6 +396,7 @@ const MENU = {
 
         ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
         ctx.reply(lang.redact.description());
+        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted name`)
       }),
 
       ssn.OC.next(11, async (ctx, user) => {
@@ -389,6 +406,7 @@ const MENU = {
         const oc = uOC[user?.cache?.sessionCache[1]];
         ssn.OC.enter(ctx.from.id, 12, oc.description);
         ctx.reply(lang.redact.description());
+        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped name`)
       }),
       /*---------------------------------------------------
       
@@ -413,7 +431,7 @@ const MENU = {
           qq.user.cache.sessionCache[0]
         );
         ssn.OC.exit(ctx.from.id);
-        ctx.reply("Успешно изменено! /oc");
+        ctx.reply(lang.create.done);
       }),
 
       ssn.OC.next(12, async (ctx, user) => {
@@ -433,7 +451,7 @@ const MENU = {
           user.cache.sessionCache[1]
         );
         ssn.OC.exit(ctx.from.id);
-        ctx.reply(lang.redact.description());
+        ctx.reply(lang.create.done);
       }),
     ],
   ],
@@ -540,6 +558,7 @@ const MENU = {
       if (not(ctx, await ssn.OC.Q(ctx.from.id, true), 0)) return next();
       ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
       ctx.reply(lang.create.name);
+      console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended reference`)
     }),
 
     // 2 этап, имя
@@ -552,6 +571,7 @@ const MENU = {
 
       ssn.OC.enter(ctx.from.id, 2, ctx.message.text);
       ctx.reply(lang.create.description);
+      console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended name`)
     }),
 
     // 3 этап - описание

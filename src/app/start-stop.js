@@ -101,15 +101,15 @@ export async function SERVISE_start() {
     ...new Xitext()
       .Text(`⌬ Кобольдя `)
       ._Group(data.versionMSG.split(" ")[0])
-      .Url(null, 'https://dashboard.render.com')
+      .Url(null, "https://dashboard.render.com")
       .Bold()
       ._Group()
-      .Text(' ')
+      .Text(" ")
       .Italic(data.versionMSG.split(" ")[1])
       .Text(" (")
       .Bold((Date.now() - data.start_time) / 1000)
       .Text(" сек)")
-      ._Build({disable_web_page_preview: true})
+      ._Build({ disable_web_page_preview: true })
   );
 
   /**======================
@@ -131,9 +131,9 @@ export async function SERVISE_start() {
       : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
   // Инициализация команд и списков
-  loadCMDS()
-  loadQuerys()
-  
+  loadCMDS();
+  loadQuerys();
+
   if (data.isDev) {
     console.log(" ");
     console.log("Done.");
@@ -161,7 +161,7 @@ async function checkInterval() {
       if (q) return await database.set(dbkey.request, "terminate_you");
       if (!q) {
         await database.set(dbkey.request, "terminate_me");
-        await database.client.quit()
+        await database.client.quit();
         clearInterval(data.updateTimer);
         SERVISE_stop(`${data.versionMSG} terminated by self`, true, false);
       }
@@ -192,13 +192,16 @@ export async function SERVISE_stop(
           : " ",
         "("
       )
-      ._Group(stopApp ? "app " : "")
+      ._Group(stopApp ? "app" : "")
       .Bold()
       .Underline()
       ._Group()
-      .Italic(stopBot ? "bot" : "")
+      .Italic(stopBot ? " bot" : "")
       .Text(")");
-    await bot.telegram.sendMessage(members.xiller, ...text._Build());
+    await bot.telegram.sendMessage(
+      members.xiller,
+      ...text._Build({ disable_web_page_preview: true })
+    );
     console.log(text._text);
   }
   if (stopBot && data.started && !data.stopped) {
@@ -230,7 +233,10 @@ export function SERVISE_error(error, extra = null) {
         : ""
     );
   if (data.started) {
-    bot.telegram.sendMessage(members.xiller, ...text._Build());
+    bot.telegram.sendMessage(
+      members.xiller,
+      ...text._Build({ disable_web_page_preview: true })
+    );
   }
   console.log(text._text);
 }
@@ -258,12 +264,12 @@ export async function SERVISE_freeze() {
     if (answer === "terminate_you") {
       clearInterval(timeout);
       await database.del(dbkey.request);
-      await database.client.quit()
+      await database.client.quit();
       return SERVISE_stop(
         "🌑 Terminated by new version (Active: " + data.versionMSG + ")",
         null,
         true,
-        true,
+        false,
         false,
         false
       );
@@ -288,17 +294,20 @@ export async function SERVISE_freeze() {
       data.started = true;
       console.log(`${data.versionMSG} вновь запущен`);
       const text = new Xitext()
-        .Text(`⌬ Кобольдя `)
+        .Text(`🌖 Кобольдя `)
         ._Group(data.versionMSG.split(" ")[0])
-        .Url(null, 'https://dashboard.render.com')
+        .Url(null, "https://dashboard.render.com")
         .Bold()
         ._Group()
-        .Text(' ')
+        .Text(" ")
         .Italic(data.versionMSG.split(" ")[1])
         .Text(" вновь запущен (")
         .Italic((Date.now() - data.start_time) / 1000)
         .Text(" сек)");
-      bot.telegram.sendMessage(members.xiller, ...text._Build({disable_web_page_preview: true}));
+      bot.telegram.sendMessage(
+        members.xiller,
+        ...text._Build({ disable_web_page_preview: true })
+      );
       clearInterval(timeout);
       data.updateTimer = setInterval(checkInterval, 10000);
       database.del(dbkey.request);
@@ -324,17 +333,17 @@ export async function SERVISE_freeze() {
       bot.telegram.sendMessage(
         members.xiller,
         ...new Xitext()
-          .Text(`⌬ Кобольдя `)
+          .Text(`↩️ Кобольдя `)
           ._Group(data.versionMSG.split(" ")[0])
-          .Url(null, 'https://dashboard.render.com')
+          .Url(null, "https://dashboard.render.com")
           .Bold()
           ._Group()
-          .Text(' ')
+          .Text(" ")
           .Italic(data.versionMSG.split(" ")[1])
           .Text(" разморожен за ")
           .Bold((Date.now() - data.start_time) / 1000)
           .Text(" сек")
-          ._Build({disable_web_page_preview: true})
+          ._Build({ disable_web_page_preview: true })
       );
       console.log(`${data.versionMSG} разморожен`);
       clearInterval(timeout);
