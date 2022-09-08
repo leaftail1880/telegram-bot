@@ -163,7 +163,7 @@ async function checkInterval() {
         await database.set(dbkey.request, "terminate_me");
         await database.client.quit();
         clearInterval(data.updateTimer);
-        SERVISE_stop(`${data.versionMSG} terminated by self`, true, false);
+        SERVISE_stop(`${data.versionMSG} выключился как старый`, true, false);
       }
     }
   }
@@ -179,7 +179,7 @@ export async function SERVISE_stop(
 ) {
   if (data.started && sendMessage) {
     const text = new Xitext()
-      ._Group("> ")
+      ._Group(">  ")
       .Url(null, "https://dashboard.render.com")
       .Bold()
       ._Group()
@@ -189,9 +189,9 @@ export async function SERVISE_stop(
           ? `\n${
               typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
             } `
-          : " ",
-        "("
+          : " "
       )
+      .Text("(")
       ._Group(stopApp ? "app" : "")
       .Bold()
       .Underline()
@@ -246,9 +246,9 @@ export async function SERVISE_freeze() {
   if (data.started)
     await bot.telegram.sendMessage(
       members.xiller,
-      `❄️ Бот ${data.versionMSG} заморожен`
+      `❄️ Бот ${data.versionMSG} ждет ответа от сессии`
     ),
-      console.log(`❄️ Бот ${data.versionMSG} заморожен`);
+      console.log(`❄️ Бот ${data.versionMSG} ждет ответа от сессии`);
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
@@ -292,7 +292,7 @@ export async function SERVISE_freeze() {
 
       data.stopped = false;
       data.started = true;
-      console.log(`${data.versionMSG} вновь запущен`);
+      console.log(`${data.versionMSG} запущен как последний`);
       const text = new Xitext()
         .Text(`🌖 Кобольдя `)
         ._Group(data.versionMSG.split(" ")[0])
@@ -301,7 +301,7 @@ export async function SERVISE_freeze() {
         ._Group()
         .Text(" ")
         .Italic(data.versionMSG.split(" ")[1])
-        .Text(" вновь запущен (")
+        .Text(" запущен как последний (")
         .Italic((Date.now() - data.start_time) / 1000)
         .Text(" сек)");
       bot.telegram.sendMessage(
@@ -340,12 +340,12 @@ export async function SERVISE_freeze() {
           ._Group()
           .Text(" ")
           .Italic(data.versionMSG.split(" ")[1])
-          .Text(" разморожен за ")
+          .Text(" не получил ответа и вернулся за ")
           .Bold((Date.now() - data.start_time) / 1000)
           .Text(" сек")
           ._Build({ disable_web_page_preview: true })
       );
-      console.log(`${data.versionMSG} разморожен`);
+      console.log(`${data.versionMSG} не дождался ответа сервера`);
       clearInterval(timeout);
       data.updateTimer = setInterval(checkInterval, 10000);
       database.del(dbkey.request);
