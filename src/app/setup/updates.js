@@ -42,7 +42,7 @@ export async function updateVisualVersion(data) {
    * @type {Array}
    */
   const dbversion = await database.get(dbkey.version, true);
-  if (dbversion.splice) dbversion.splice(3, 10)
+  if (dbversion.splice) dbversion.splice(3, 10);
 
   // Сравниваем версии
   data.isLatest = bigger(
@@ -56,21 +56,19 @@ export async function updateVisualVersion(data) {
     if (data.isDev) {
       console.log("⍚ New version! ⍚");
       console.log(" ");
-    } else console.log("> New version!")
+    } else console.log("> New version!");
     // Прописываем ее в базе данных
     database.set(dbkey.version, [VERSION[0], VERSION[1], VERSION[2]], true);
-    data.isLatest = true;
-
-    // Обнуляем сессию
-    // data.session = 0;
-    // database.set(dbkey.session, 0);
+    data.isLatest = true
   }
 
   // Записываем значения
   data.v = `${VERSION.join(".")}.x${
     "0000".substring(0, 4 - `${session}`.length) + session
   }`;
-  data.versionMSG = `v${data.v}${
-    data.isLatest ? ` Релиз` : data.isLatest == 0 ? " Последняя" : " Стабильная"
-  }`;
+  let d;
+  if (data.isLatest === true) d = "Релиз";
+  if (data.isLatest === 0) d = "G";
+  if (data.isLatest === false) d = "Старая";
+  data.versionMSG = `v${data.v}${d}`;
 }
