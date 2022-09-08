@@ -23,6 +23,7 @@ export class cmd {
    * @param {Object} info
    * @param {String} info.name Имя
    * @param {Boolean} info.hide Спрятать ли из листа команд
+   * @param {Boolean} info.specprefix 
    * @param {String} info.description Описание
    * @param {String} info.session В формате d.session
    * @param {Number} info.permisson 0 - все, 1 - админы
@@ -43,7 +44,8 @@ export class cmd {
     };
     this.callback = callback;
 
-    if (!info.hide && info.type) {
+    // Ы
+    if (!info.specprefix) {
       public_cmds[info.name] = this;
     } else {
       private_cmds[info.name] = this;
@@ -88,21 +90,22 @@ export class cmd {
   static async cantUse(command, ctx) {
     // Условия разрешений
     let _lg = // Где
-        command.info.type == "group" &&
-        (ctx.chat.type == "group" || ctx.chat.type == "supergroup"),
-      _lp = command.info.type == "private" && ctx.chat.type == "private",
-      _lc = command.info.type == "channel" && ctx.chat.type == "channel",
-      _la = command.info.type == "all",
+        command.info.type === "group" &&
+        (ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
+      _lp = command.info.type === "private" && ctx.chat.type === "private",
+      _lc = command.info.type === "channel" && ctx.chat.type === "channel",
+      _la = command.info.type === "all" || !command.info.type,
+      // Если команда для всех
+      _pall = command.info.perm === 0,
       // Если команда для админов, и отправитель админ
-      _pall = command.info.perm == 0,
       _padmin =
-        command.info.perm == 1 && (await isAdmin(ctx, ctx.message.from.id)),
+        command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id)),
       // Если команда хильки
       _pxiller =
-        command.info.perm == 2 && ctx.message.from.id == members.xiller;
+        command.info.perm === 2 && ctx.message.from.id == members.xiller;
 
     // Если нет ни одного разрешения, значит нельзя
-    return !(_la || _lc || _lg || _lp) && !(_pall || _padmin || _pxiller);
+    return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
   }
 }
 
@@ -165,7 +168,7 @@ new cmd(
     description: "Выход из пошагового меню",
     permisson: 0,
     hide: true,
-    type: 'private'
+    type: "private",
   },
   async (ctx) => {
     /**
@@ -176,7 +179,7 @@ new cmd(
       await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
       delete user.cache.session;
       await database.set(d.user(ctx.from.id), user, true);
-    } else ctx.reply('Вы не находитесь в меню!')
+    } else ctx.reply("Вы не находитесь в меню!");
   }
 );
 
@@ -187,7 +190,7 @@ new cmd(
     description: "Переходит на следующий шаг меню",
     permisson: 0,
     hide: true,
-    type: 'private'
+    type: "private",
   },
   async (ctx) => {
     /**
@@ -198,14 +201,14 @@ new cmd(
       /**
        * @type {Session}
        */
-      const sess = ssn[user.cache.session.split('::')[0]]
+      const sess = ssn[user.cache.session.split("::")[0]];
       if (sess) {
-        if (sess.executers[user.cache.session.split('::')[1]]) {
-          sess.executers[user.cache.session.split('::')[1]](ctx, user)
-        } else ctx.reply('Этот шаг не предусматривает пропуска!')
-      } else delete user.cache.session
+        if (sess.executers[user.cache.session.split("::")[1]]) {
+          sess.executers[user.cache.session.split("::")[1]](ctx, user);
+        } else ctx.reply("Этот шаг не предусматривает пропуска!");
+      } else delete user.cache.session;
       await database.set(d.user(ctx.from.id), user, true);
-    } else ctx.reply('Вы не находитесь в меню!')
+    } else ctx.reply("Вы не находитесь в меню!");
   }
 );
 
@@ -224,22 +227,24 @@ export function loadCMDS() {
      */
     const cmd = public_cmds[e],
       m = { command: cmd.info.name, description: cmd.info.description };
-    if (
-      (cmd.info.type == "group" || cmd.info.type == "all") &&
-      cmd.info.perm == 0
-    )
-      groupC.push(m);
-    if (
-      (cmd.info.type == "group" || cmd.info.type == "all") &&
-      cmd.info.perm == 1
-    )
-      groupAC.push(m);
-    if (
-      (cmd.info.type == "private" || cmd.info.type == "all") &&
-      cmd.info.perm == 0
-    )
-      privateC.push(m), xiller.push(m);
-    if (cmd.info.perm == 2) xiller.push(m);
+    if (!cmd.info.hide) {
+      if (
+        (cmd.info.type == "group" || cmd.info.type == "all") &&
+        cmd.info.perm == 0
+      )
+        groupC.push(m);
+      if (
+        (cmd.info.type == "group" || cmd.info.type == "all") &&
+        cmd.info.perm == 1
+      )
+        groupAC.push(m);
+      if (
+        (cmd.info.type == "private" || cmd.info.type == "all") &&
+        cmd.info.perm == 0
+      )
+        privateC.push(m), xiller.push(m);
+      if (cmd.info.perm == 2) xiller.push(m);
+    }
 
     allKmds.push(e);
   });
@@ -286,17 +291,6 @@ export function loadCMDS() {
       command = cmd.getCmd(t.split(" ")[0].substring(1));
       if (!command) return next();
     }
-    // /**
-    //  * @type {import("../models.js").DBUser}
-    //  */
-    // const user = await database.get(d.user(ctx.from.id), true);
-    // if (
-    //   user?.cache?.session &&
-    //   command.info.session &&
-    //   user?.cache?.session != command.info.session &&
-    //   command.info.name != "cancel"
-    // )
-    //   return ctx.reply("Вы находитесь в пошаговом меню. Выйти: /cancel");
     if (await cmd.cantUse(command, ctx))
       return ctx.reply(
         "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
@@ -317,7 +311,7 @@ export function loadCMDS() {
         console.warn(`ERR! ${t} ${error}`);
       }
 
-      console.log(`${ctx.message.from.username ?? ctx.message.from.id}: ${t}`);
+      console.log(`${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}`);
     } catch (e) {}
     next();
   });

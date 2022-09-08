@@ -48,7 +48,7 @@ export class Session {
    * @param {Number} stage 
    * @param {function(Context, DBUser)} callback 
    */
-  nextExecuter(stage, callback) {
+  next(stage, callback) {
     this.executers[`${stage}`] = callback
   }
 }

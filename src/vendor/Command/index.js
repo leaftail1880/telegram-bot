@@ -30,7 +30,7 @@ new cmd({
 new cmd(
   {
     name: "stop",
-    prefix: "hide",
+    specprefix: true,
     hide: true,
     description: "Bot App",
     permisson: 2,
@@ -40,23 +40,9 @@ new cmd(
   }
 );
 
-// new cmd(
-//   {
-//     name: "reg",
-//     prefix: "def",
-//     description: "Айди выдает",
-//     permisson: 0,
-//     type: "group",
-//   },
-//   (ctx) => {
-//     ctx.reply("Твой айди: " + ctx.message.from.id);
-//   }
-// );
-
 new cmd(
   {
     name: "version",
-    prefix: "def",
     description: "Версия бота",
     permisson: 0,
     type: "all",
@@ -78,7 +64,6 @@ new cmd(
 new cmd(
   {
     name: "db",
-    prefix: "def",
     hide: true,
     description: "Описание",
     permisson: 2,
@@ -88,13 +73,13 @@ new cmd(
       case "pairs":
         const a = await database.getPairs();
         console.log(a);
-        ctx.reply(format.stringifyEx(a, " "));
+        format.sendSeparatedMessage(format.stringifyEx(a, " "), ctx)
         break;
       case "get":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
         const get = await database.get(args[1], true);
         console.log(get);
-        ctx.reply(format.stringifyEx(get, " "));
+        format.sendSeparatedMessage(format.stringifyEx(get, " "), ctx)
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
@@ -127,7 +112,7 @@ new cmd(
           ...new Xitext()
             .Text("Доступные методы:")
             .Mono("\n pairs")
-            .Mono("\n get ")
+            .Mono("\n get")
             .Text(" <key>")
             .Mono("\n set")
             .Text(" <key> <value>")
@@ -146,6 +131,7 @@ new cmd(
     hide: true,
     description: "Описание",
     permisson: 2,
+    specprefix: true,
   },
   async (ctx, args) => {
     switch (args[0]) {
@@ -182,6 +168,7 @@ new cmd(
     hide: true,
     description: "В консоль спамит (но это полезный спам!)",
     permisson: 2,
+    specprefix: true,
   },
   () => {
     const e = format.stringifyEx(env, " ");
@@ -254,6 +241,7 @@ new cmd(
     description: "Задает ник при сборе",
     permisson: 0,
     type: "group",
+    specprefix: true,
   },
   async (ctx, args) => {
     const user = (await getUser(ctx, false)).user,
@@ -391,5 +379,3 @@ new cmd(
 //     );
 //   }
 // );
-
-

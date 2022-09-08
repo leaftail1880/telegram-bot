@@ -28,14 +28,13 @@ export class Query {
     };
     this.callback = callback;
 
-    ques[d.pn(info.prefix, info.name)] = this;
+    ques[d.query(info.prefix, info.name)] = this;
   }
 }
 
 export function loadQuerys() {
   bot.on("callback_query", async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    if (!data || !data.includes("::")) return next();
     /**
      * @type {Query}
      */
@@ -45,20 +44,21 @@ export function loadQuerys() {
       ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
         show_alert: true,
       });
+      console.warn('No btn parser for ' + data)
       return next();
     }
     try {
-      const ret = q.callback(ctx, ctx.callbackQuery.data.split('::'));
+      const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
       if (ret?.catch)
         ret.catch((e) => {
-          console.warn(`PQERR! ${data} ${e?.message ?? e} ${e?.stack}`);
+          console.warn(`Promise Query ERR! ${data} ${e?.message ?? e} ${e?.stack}`);
         });
       if (q.info.msg) ctx.answerCbQuery(q.info.msg)
     } catch (error) {
-      console.warn(`QERR! ${data} ${error?.message ?? error} ${error?.stack}`);
+      console.warn(`Query ERR! ${data} ${error?.message ?? error} ${error?.stack}`);
     }
     console.log(
-      `Q ${ctx.callbackQuery.from.username ?? ctx.callbackQuery.from.id} - ${data}`
+      `Query [${ctx.callbackQuery.from.username ?? ctx.callbackQuery.from.id}] ${data}`
     );
     next();
   });

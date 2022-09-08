@@ -1,4 +1,3 @@
-
 import { database } from "../../index.js";
 import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
 import { format } from "../../app/class/formatterCLS.js";

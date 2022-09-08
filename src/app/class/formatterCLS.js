@@ -77,11 +77,24 @@ class formatter {
     return es;
   }
   getName(user) {
-    return `${user?.first_name}${
-     user?.last_name ? ` ${user.last_name}` : ""
-    }` ?? user?.username ?? 'пуст'
+    return (
+      `${user?.first_name}${user?.last_name ? ` ${user.last_name}` : ""}` ??
+      user?.username ??
+      "пуст"
+    );
   }
+  /**
+   *
+   * @param {String} msg
+   * @param {Context} ctx
+   */
+  sendSeparatedMessage(msg, ctx, limit = 4000) {
+    if (msg.length < limit) return ctx.reply(msg);
 
+    for (let p = 0; p <= msg.length / limit; p++) {
+      ctx.reply(msg.substring(p * limit - limit, p * limit));
+    }
+  }
 }
 export const format = new formatter();
 
@@ -90,5 +103,13 @@ export const d = {
   pn: (prefix, name) => `${prefix}::${name}`,
   group: (id) => `Group::${id}`,
   session: (name, stage) => `${name}::${stage}`,
-  query: (prefix, name) => `${prefix}[]${name}`
+  // Query link
+  query: (prefix, name, ...args) =>
+    `${prefix}${d._s.q}${name}${args ? `${d._s.d}${args.join(d._s.a)}` : ""}`,
+  // Separator
+  _s: {
+    q: "/",
+    d: "?=",
+    a: "::",
+  },
 };
