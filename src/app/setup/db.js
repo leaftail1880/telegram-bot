@@ -7,6 +7,10 @@ export class db {
     this.log = [];
     this.logAdd("create");
   }
+  async close() {
+    await this.client.quit()
+    this.client = false
+  }
   setClient(c, ms) {
     this.client = c;
     this.logAdd("connect", ms);
@@ -65,7 +69,7 @@ export class db {
     };
   }
   async logGetFromCache() {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const val = await this.getValues((e) => e.startsWith("Cache::log:"));
     return val.map((e) => this.logParse(e));
   }
@@ -79,7 +83,7 @@ export class db {
    * @returns {Promise<String | Boolean | Object>}
    */
   async get(key, jsonparse = false) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       value = await this.client.get(key);
     let ret;
@@ -97,7 +101,7 @@ export class db {
    * @returns {Promise<Boolean>}
    */
   async del(key) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       value = await this.client.del(key);
     this.logAdd("del", start);
@@ -110,7 +114,7 @@ export class db {
    * @returns
    */
   async set(key, value, stringify = false, lifetime) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now();
     await this.client.set(
       key,
@@ -129,35 +133,35 @@ export class db {
    * @returns {Promise<Boolean>}
    */
   async has(key) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       boolean = await this.client.exists(key);
     this.logAdd("has", start);
     return boolean;
   }
   async add(key, number = 1) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       result = await this.client.incrBy(key, number);
     this.logAdd("add", start);
     return result;
   }
   async remove(key, number = 1) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       result = await this.client.decrBy(key, number);
     this.logAdd("remove", start);
     return result;
   }
   async keys(filter = () => true) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       keys = await this.client.keys("*");
     this.logAdd("keys", start);
     return keys.filter((e) => filter(e));
   }
   async getValues(filter = () => true) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       collection = [],
       keys = await this.keys();
@@ -172,7 +176,7 @@ export class db {
    * @returns {Object<String, Object>}
    */
   async getPairs() {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       collection = {},
       arg = await this.keys();
@@ -185,7 +189,7 @@ export class db {
 
   /*
   async (key) {
-    if (!this.client) throw new Error("Нет дб");
+    if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(), a = await this.client(key);
     this.logAdd('', start);
     return a;

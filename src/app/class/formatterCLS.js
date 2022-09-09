@@ -1,8 +1,8 @@
 import { Context } from "telegraf";
-import { bot } from "../setup/tg.js";
 
 class formatter {
   stringifyEx(startObject, space = undefined) {
+    if (typeof startObject === "string") return startObject
     let unsafeProperty = "unsafeproperty.fixed";
     function getString(ThisObject, before, isSpace) {
       switch (typeof ThisObject) {

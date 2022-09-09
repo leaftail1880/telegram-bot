@@ -26,7 +26,8 @@ import { loadEvents } from "./class/EventsCLS.js";
 export const data = {
   v: VERSION.join("."),
   isLatest: true,
-  versionMSG: `v${VERSION.join(".")} (Init)`,
+  versionMSG: `v${VERSION.join(".")} (Инит)`,
+  versionLOG: `v${VERSION.join(".")} (Init)`,
   session: 0,
   start_time: Date.now(),
   started: false,
@@ -48,7 +49,7 @@ export async function SERVISE_start() {
       }`
     );
     console.log(" ");
-  } else console.log(`> v${VERSION.join(".")}, Port: ${PORT}`);
+  } else console.log(`v${VERSION.join(".")}, Port: ${PORT}`);
 
   /**======================
    * Подключение к базе данных
@@ -134,7 +135,7 @@ export async function SERVISE_start() {
   // Инициализация команд и списков
   loadCMDS();
   loadQuerys();
-  loadEvents()
+  loadEvents();
 
   if (data.isDev) {
     console.log(" ");
@@ -147,26 +148,32 @@ export async function SERVISE_start() {
     );
   } else
     console.log(
-      `> ${(Date.now() - data.start_time) / 1000} sec, Session: ${
+      `${(Date.now() - data.start_time) / 1000} sec, Session: ${
         data.session
       }, plugins: ${plgs.join(", ")}`
     );
   if (data.isDev) console.log(" ");
-  data.updateTimer = setInterval(checkInterval, 10000);
+  data.updateTimer = setInterval(checkInterval, 5000);
 }
 
 async function checkInterval() {
-  {
-    const query = await database.get(dbkey.request, true);
-    if (query?.map) {
-      const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
-      if (q) return await database.set(dbkey.request, "terminate_you");
-      if (!q) {
-        await database.set(dbkey.request, "terminate_me");
-        await database.client.quit();
-        clearInterval(data.updateTimer);
-        SERVISE_stop(`${data.versionMSG} выключился как старый`, true, false);
-      }
+  if (!database.client) return;
+  const query = await database.get(dbkey.request, true);
+  if (query?.map) {
+    const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
+    if (q === true) return await database.set(dbkey.request, "terminate_you");
+    if (q === false || q === 0) {
+      await database.set(dbkey.request, "terminate_me");
+      await database.client.quit();
+      database.client = false;
+      clearInterval(data.updateTimer);
+      SERVISE_stop(
+        `${data.versionLOG} выключился как старый`,
+        null,
+        true,
+        false
+      );
+      return;
     }
   }
 }
@@ -174,66 +181,52 @@ async function checkInterval() {
 export async function SERVISE_stop(
   reason,
   extra = null,
-  stopBot = true,
-  stopApp = true,
-  reload = false,
+  stopBot,
+  stopApp,
   sendMessage = true
 ) {
-  if (data.started && sendMessage) {
-    const text = new Xitext()
-      ._Group(">  ")
-      .Url(null, "https://dashboard.render.com")
-      .Bold()
-      ._Group()
-      .Mono(reason ? `${reason}.` : "Остановка.")
-      .Text(
-        extra
-          ? `\n${
-              typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
-            } `
-          : " "
-      )
-      .Text("(")
-      ._Group(stopApp ? "app" : "")
-      .Bold()
-      .Underline()
-      ._Group()
-      .Italic(stopBot ? " bot" : "")
-      .Text(")");
+  let log = "✕ ";
+  const text = new Xitext()
+    ._Group("✕ ")
+    .Url(null, "https://dashboard.render.com")
+    .Bold()
+    ._Group();
+  if (extra) text.Text(format.stringifyEx(extra, " "));
+  if (stopApp) {
+    text._Group("app").Bold().Underline()._Group();
+    log = `${log}app`;
+    if (stopBot) text.Text(" "), (log = `${log} `);
+  }
+  if (stopBot) text.Italic("bot"), (log = `${log}bot`);
+  text.Text(": ");
+  log = `${log}: `;
+  text.Mono(reason ? `${reason}.` : "Остановка.");
+  log = `${log}${reason ? `${reason}.` : "Остановка."}`;
+
+  console.log(log);
+  if (data.started && sendMessage)
     await bot.telegram.sendMessage(
       members.xiller,
       ...text._Build({ disable_web_page_preview: true })
     );
-    console.log(text._text);
-  }
+
   if (stopBot && data.started && !data.stopped) {
     data.stopped = true;
     bot.stop(reason);
   }
-  stopApp
-    ? process.exit(0)
-    : reload
-    ? ""
-    : setTimeout(() => {
-        console.log("⌦ End.");
-        process.exit(0);
-      }, 12000000);
+  if (stopApp) {
+    process.exit(0);
+  }
 }
 
 export function SERVISE_error(error, extra = null) {
   const text = new Xitext()
-    ._Group("✕ ")
+    ._Group("ERR. ")
     .Bold()
     .Url(null, "https://dashboard.render.com")
     ._Group()
-    .Bold(error)
-    .Text(
-      extra
-        ? `\n${
-            typeof extra == "object" ? format.stringifyEx(extra, " ") : extra
-          } `
-        : ""
-    );
+    .Bold(error);
+  if (extra) text.Text(format.stringifyEx(extra, " "));
   if (data.started) {
     bot.telegram.sendMessage(
       members.xiller,
@@ -245,12 +238,13 @@ export function SERVISE_error(error, extra = null) {
 
 export async function SERVISE_freeze() {
   clearInterval(data.updateTimer);
+  let log = "FRZ! ";
   if (data.started)
     await bot.telegram.sendMessage(
       members.xiller,
       `❄️ Бот ${data.versionMSG} ждет ответа от сессии`
     ),
-      console.log(`❄️ Бот ${data.versionMSG} ждет ответа от сессии`);
+      console.log(`${data.versionLOG} ждет ответа от сессии`);
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
@@ -261,22 +255,23 @@ export async function SERVISE_freeze() {
     true,
     300
   );
+
+  let times = 0;
   const timeout = setInterval(async () => {
     const answer = await database.get(dbkey.request);
     if (answer === "terminate_you") {
-      clearInterval(timeout);
       await database.del(dbkey.request);
       await database.client.quit();
+      database.client = false;
+      clearInterval(timeout);
       return SERVISE_stop(
         "🌑 Terminated by new version (Active: " + data.versionMSG + ")",
         null,
         true,
         false,
-        false,
         false
       );
     }
-    let times = 0;
 
     if (answer === "terminate_me") {
       data.start_time = Date.now();
@@ -294,7 +289,7 @@ export async function SERVISE_freeze() {
 
       data.stopped = false;
       data.started = true;
-      console.log(`${data.versionMSG} запущен как последний`);
+      console.log(`${data.versionLOG} запущен как последний`);
       const text = new Xitext()
         .Text(`🌖 Кобольдя `)
         ._Group(data.versionMSG.split(" ")[0])
@@ -310,13 +305,16 @@ export async function SERVISE_freeze() {
         members.xiller,
         ...text._Build({ disable_web_page_preview: true })
       );
-      clearInterval(timeout);
+
       data.updateTimer = setInterval(checkInterval, 10000);
       database.del(dbkey.request);
+      clearInterval(timeout);
       return;
     }
+
     times++;
     if (times >= 10) {
+      clearInterval(timeout);
       data.start_time = Date.now();
 
       // Обновляет сессию
@@ -347,9 +345,9 @@ export async function SERVISE_freeze() {
           .Text(" сек")
           ._Build({ disable_web_page_preview: true })
       );
-      console.log(`${data.versionMSG} не дождался ответа сервера`);
-      clearInterval(timeout);
-      data.updateTimer = setInterval(checkInterval, 10000);
+      console.log(`${data.versionLOG} не дождался ответа сервера`);
+
+      data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);
       return;
     }

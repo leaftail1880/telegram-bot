@@ -1,4 +1,6 @@
 import { bot } from "../../app/setup/tg.js";
+import { data } from "../../app/start-stop.js";
+import { database } from "../../index.js";
 import { getRegisteredGroups } from "../UserDB/index.js";
 
 const active = {};
@@ -14,6 +16,7 @@ function Animate(group) {
     delete active[id];
   }
   const timer = setInterval(() => {
+    if (data.stopped || !database.client) return 
     active[id].stage++;
     if (!group.cache.titleAnimation[active[id].stage]) active[id].stage = 0;
     bot.telegram.setChatTitle(id, group.cache.titleAnimation[active[id].stage]);

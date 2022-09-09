@@ -67,8 +67,10 @@ export async function updateVisualVersion(data) {
     "0000".substring(0, 4 - `${session}`.length) + session
   }`;
   let d;
-  if (data.isLatest === true) d = " Релиз";
-  if (data.isLatest === 0) d = " Рабочая";
-  if (data.isLatest === false) d = " Старая";
-  data.versionMSG = `v${data.v}${d}`;
+  if (data.isLatest === true) d = "Релиз";
+  if (data.isLatest === 0) d = "Рабочая";
+  if (data.isLatest === false) d = "Старая";
+  data.versionMSG = `v${data.v} ${d}`;
+  data.versionLOG = `v${data.v} (${d})`;
+  data
 }
