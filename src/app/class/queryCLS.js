@@ -32,6 +32,10 @@ export class Query {
   }
 }
 
+const activeQueries = {
+
+}
+
 export function loadQuerys() {
   bot.on("callback_query", async (ctx, next) => {
     const data = ctx.callbackQuery.data;
@@ -47,6 +51,11 @@ export function loadQuerys() {
       console.warn('No btn parser for ' + data)
       return next();
     }
+    if (activeQueries[data] && Date.now() - activeQueries[data] < 100) {
+      activeQueries[data] = Date.now()
+      return next()
+    }
+    activeQueries[data] = Date.now()
     try {
       const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
       if (ret?.catch)
