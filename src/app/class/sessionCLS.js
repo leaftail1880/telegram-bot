@@ -26,11 +26,11 @@ export class Session {
     delete user.cache.sessionCache
     await database.set(d.user(id), user, true);
   }
-  async Q(id, returnUser) {
+  async Q(id, returnUser, CacheUser = null) {
     /**
      * @type {import("../models.js").DBUser}
      */
-    const user = await database.get(d.user(id), true);
+    const user = CacheUser ?? await database.get(d.user(id), true);
     if (
       !user ||
       typeof user != "object" ||

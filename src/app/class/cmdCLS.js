@@ -6,12 +6,13 @@ import { data } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
 import { Session, ssn } from "./sessionCLS.js";
+import { EventListener } from "./EventsCLS.js";
 
 const public_cmds = {},
   private_cmds = {},
   hprefixes = [".", "-", "$"];
 /**
- * @typedef {String} CommandType
+ * @typedef {Object} CommandType
  * @property {String} group
  * @property {String} private
  * @property {String} all
@@ -23,12 +24,12 @@ export class cmd {
    * @param {Object} info
    * @param {String} info.name Имя
    * @param {Boolean} info.hide Спрятать ли из листа команд
-   * @param {Boolean} info.specprefix 
+   * @param {Boolean} info.specprefix
    * @param {String} info.description Описание
    * @param {String} info.session В формате d.session
    * @param {Number} info.permisson 0 - все, 1 - админы
    * @param {CommandType} info.type all | group | private
-   * @param {function(Context, Array)} callback
+   * @param {function(Context, Array, import("./EventsCLS.js").EventData)} callback
    */
   constructor(info, callback) {
     if (!info.name) return;
@@ -87,7 +88,7 @@ export class cmd {
    * @param {Context} ctx
    * @returns
    */
-  static async cantUse(command, ctx) {
+  static async cantUse(command, ctx, user = null) {
     // Условия разрешений
     let _lg = // Где
         command.info.type === "group" &&
@@ -99,7 +100,8 @@ export class cmd {
       _pall = command.info.perm === 0,
       // Если команда для админов, и отправитель админ
       _padmin =
-        command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id)),
+        command.info.perm === 1 &&
+        (await isAdmin(ctx, ctx.message.from.id, user)),
       // Если команда хильки
       _pxiller =
         command.info.perm === 2 && ctx.message.from.id == members.xiller;
@@ -135,27 +137,27 @@ new cmd(
     description: "Список команд",
     type: "all",
   },
-  async (ctx) => {
+  async (ctx, _a, data) => {
     if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
       return ctx.reply("А команд то и нет");
     let c = false,
       p = false,
       a = new Xitext();
 
-    Object.values(public_cmds).forEach((e) => {
+    for (const e of Object.values(public_cmds)) {
+      if (await cmd.cantUse(e, ctx, data.userRights)) continue;
       if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
       a.Text(`  /${e.info.name}`);
       a.Italic(` - ${e.info.description}\n`);
-    });
+    }
 
-    Object.values(private_cmds)
-      .filter(async (e) => !(await cmd.cantUse(e, ctx)))
-      .forEach((e) => {
-        if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
-        a.Text(`  `);
-        a.Mono(`-${e.info.name}`);
-        a.Italic(` - ${e.info.description}\n`);
-      });
+    for (const e of Object.values(private_cmds)) {
+      if (await cmd.cantUse(e, ctx, data.userRights)) continue;
+      if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
+      a.Text(`  `);
+      a.Mono(`-${e.info.name}`);
+      a.Italic(` - ${e.info.description}\n`);
+    }
     if (!a._text) return ctx.reply("А доступных команд то и нет");
     ctx.reply(...a._Build());
   }
@@ -192,19 +194,20 @@ new cmd(
     hide: true,
     type: "private",
   },
-  async (ctx) => {
+  async (ctx, _a, data) => {
     /**
      * @type {import("../models.js").DBUser}
      */
-    const user = await database.get(d.user(ctx.from.id), true);
+    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session?.split) {
       /**
        * @type {Session}
        */
-      const sess = ssn[user.cache.session.split("::")[0]];
+      const abst = user.cache.session.split("::"),
+        sess = ssn[abst[0]];
       if (sess) {
-        if (sess.executers[user.cache.session.split("::")[1]]) {
-          sess.executers[user.cache.session.split("::")[1]](ctx, user);
+        if (sess.executers[abst[1]]) {
+          sess.executers[abst[1]](ctx, user);
         } else ctx.reply("Этот шаг не предусматривает пропуска!");
       } else delete user.cache.session;
       await database.set(d.user(ctx.from.id), user, true);
@@ -271,48 +274,64 @@ export function loadCMDS() {
       }`
     );
 
-  bot.on("text", async (ctx, next) => {
-    /**
-     * @type {String}
-     */
-    const t = ctx.message.text;
-    if (!t) return next();
-    let command;
-    if (t.startsWith("/")) {
-      command = cmd.getCmd(t.split(" ")[0].substring(1), true);
-      if (!command) return next();
-    } else {
-      if (
-        !t ||
-        !hprefixes.find((e) => t.startsWith(e)) ||
-        !t.split(" ")[0]?.substring(1)
-      )
-        return next();
-      command = cmd.getCmd(t.split(" ")[0].substring(1));
-      if (!command) return next();
-    }
-    if (await cmd.cantUse(command, ctx))
-      return ctx.reply(
-        "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
-      );
-
-    try {
-      const a = t
-        .match(/"[^"]+"|[^\s]+/g)
-        .map((e) => e.replace(/"(.+)"/, "$1").toString());
-      a.shift();
-      try {
-        const ret = command.callback(ctx, a);
-        if (ret?.catch)
-          ret.catch((e) => {
-            console.warn(`PERR! ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}. ${e}`);
-          });
-      } catch (error) {
-        console.warn(`ERR! ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}. ${error}`);
+  new EventListener(
+    "text",
+    9,
+    async (ctx, next, data) => {
+      /**
+       * @type {String}
+       */
+      const t = ctx.message.text;
+      if (!t) return next();
+      let command;
+      if (t.startsWith("/")) {
+        command = cmd.getCmd(t.split(" ")[0].substring(1), true);
+        if (!command) return next();
+      } else {
+        if (
+          !t ||
+          !hprefixes.find((e) => t.startsWith(e)) ||
+          !t.split(" ")[0]?.substring(1)
+        )
+          return next();
+        command = cmd.getCmd(t.split(" ")[0].substring(1));
+        if (!command) return next();
       }
+      if (await cmd.cantUse(command, ctx, data.userRights))
+        return ctx.reply(
+          "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
+        );
 
-      console.log(`> CMD. ${format.getName(ctx.message.from) ?? ctx.message.from.id}: ${t}`);
-    } catch (e) {}
-    next();
-  });
+      try {
+        const a = t
+          .match(/"[^"]+"|[^\s]+/g)
+          .map((e) => e.replace(/"(.+)"/, "$1").toString());
+        a.shift();
+        try {
+          const ret = command.callback(ctx, a, data);
+          if (ret?.catch)
+            ret.catch((e) => {
+              console.warn(
+                `PERR! ${
+                  format.getName(ctx.message.from) ?? ctx.message.from.id
+                }: ${t}. ${e}`
+              );
+            });
+        } catch (error) {
+          console.warn(
+            `ERR! ${
+              format.getName(ctx.message.from) ?? ctx.message.from.id
+            }: ${t}. ${error}`
+          );
+        }
+
+        console.log(
+          `> CMD. ${
+            format.getName(ctx.message.from) ?? ctx.message.from.id
+          }: ${t}`
+        );
+      } catch (e) {}
+    },
+    true
+  );
 }

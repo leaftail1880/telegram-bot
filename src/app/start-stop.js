@@ -7,6 +7,7 @@ import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
 import { Xitext } from "./class/XitextCLS.js";
 import { loadCMDS } from "./class/cmdCLS.js";
 import { loadQuerys } from "./class/queryCLS.js";
+import { loadEvents } from "./class/EventsCLS.js";
 
 /**
  * @typedef {Object} sessionCache
@@ -105,7 +106,7 @@ export async function SERVISE_start() {
       .Bold()
       ._Group()
       .Text(" ")
-      .Italic(data.versionMSG.split(" ")[1])
+      .Italic(data.versionMSG.split(" ")[1] ?? false)
       .Text(" (")
       .Bold((Date.now() - data.start_time) / 1000)
       .Text(" сек)")
@@ -133,6 +134,7 @@ export async function SERVISE_start() {
   // Инициализация команд и списков
   loadCMDS();
   loadQuerys();
+  loadEvents()
 
   if (data.isDev) {
     console.log(" ");

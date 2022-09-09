@@ -27,7 +27,7 @@ process.on("unhandledRejection", async (err) => {
     err.stack.split(":")[0] &&
     eros.includes(err.stack.split(":")[0])
   ) {
-    SERVISE_error(err.message, err.stack);
+    SERVISE_error(err.message, err.stack?.replace(err.message, ''));
   } else
     SERVISE_stop(
       err.message ? err.message : "App error: ",

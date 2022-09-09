@@ -32,13 +32,15 @@ export class Query {
   }
 }
 
-const activeQueries = {
-
-}
+const activeQueries = {};
 
 export function loadQuerys() {
   bot.on("callback_query", async (ctx, next) => {
     const data = ctx.callbackQuery.data;
+    if (activeQueries[data] && Date.now() - activeQueries[data] < 100) {
+      activeQueries[data] = Date.now();
+      return;
+    }
     /**
      * @type {Query}
      */
@@ -48,27 +50,34 @@ export function loadQuerys() {
       ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
         show_alert: true,
       });
-      console.warn('No btn parser for ' + data)
+      console.warn("No btn parser for " + data);
       return next();
     }
-    if (activeQueries[data] && Date.now() - activeQueries[data] < 100) {
-      activeQueries[data] = Date.now()
-      return next()
-    }
-    activeQueries[data] = Date.now()
+
+    activeQueries[data] = Date.now();
     try {
       const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
       if (ret?.catch)
         ret.catch((e) => {
-          console.warn(`ERR! Query Promise [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data} ${e?.message ?? e} ${e?.stack}`);
+          console.warn(
+            `ERR! Query Promise [${
+              format.getName(ctx.callbackQuery.from) ??
+              ctx.callbackQuery.from.id
+            }] ${data} ${e?.message ?? e} ${e?.stack}`
+          );
         });
-      if (q.info.msg) ctx.answerCbQuery(q.info.msg)
+      if (q.info.msg) ctx.answerCbQuery(q.info.msg);
     } catch (error) {
-      console.warn(`ERR! Query [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data} ${error?.message ?? error} ${error?.stack}`);
+      console.warn(
+        `ERR! Query [${
+          format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id
+        }] ${data} ${error?.message ?? error} ${error?.stack}`
+      );
     }
     console.log(
-      `> Query. [${format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id}] ${data}`
+      `> Query. [${
+        format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id
+      }] ${data}`
     );
-    next();
   });
 }

@@ -112,4 +112,5 @@ export const d = {
     d: "?=",
     a: "::",
   },
+  guide: (index) => `https://t.me/xillerbotguides/${index}`
 };

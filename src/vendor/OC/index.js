@@ -1,5 +1,6 @@
 import { Context } from "telegraf";
 import { cmd } from "../../app/class/cmdCLS.js";
+import { EventListener } from "../../app/class/EventsCLS.js";
 import { d, format } from "../../app/class/formatterCLS.js";
 import { Query } from "../../app/class/queryCLS.js";
 import { ssn } from "../../app/class/sessionCLS.js";
@@ -40,7 +41,7 @@ const lang = {
     .Text("Меню ")
     ._Group("OC")
     .Bold()
-    .Url(null, "https://t.me/xillerbotguides/6")
+    .Url(null, d.guide(6))
     .Text(" (Или гифтменю):"),
   reg0: new Xitext()
     .Text(
@@ -48,14 +49,14 @@ const lang = {
     )
     ._Group("файла")
     .Bold()
-    .Url(null, "https://t.me/xillerbotguides/5")
+    .Url(null, d.guide(5))
     ._Group()
     .Text("\n Что бы выйти из этого пошагового меню используй команду /cancel"),
   red0: new Xitext()
     .Text("Отправь новый референс персонажа ввиде ")
     ._Group("файла")
     .Bold()
-    .Url(null, "https://t.me/xillerbotguides/5")
+    .Url(null, d.guide(5))
     ._Group()
     .Text(
       "\n\n Если хочешь оставить прошлый референс, используй /next\n Что бы выйти из этого пошагового меню используй команду /cancel"
@@ -202,7 +203,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
     ctx.callbackQuery.message.chat.id,
     ctx.callbackQuery.message.message_id
   );
-  if (text.length < 980 && fileid.endsWith('QQ')) {
+  if (text.length < 980 && fileid.endsWith("QQ")) {
     /**
      * @type {import("telegraf/typings/telegram-types.js").ExtraDocument}
      */
@@ -220,11 +221,11 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
      */
     let extra = {
       entities: entities,
-      disable_web_page_preview: true
+      disable_web_page_preview: true,
     };
     if (InlineKeyboard)
       extra.reply_markup = { inline_keyboard: InlineKeyboard };
-    if (fileid.endsWith('QQ')) await ctx.replyWithDocument(fileid);
+    if (fileid.endsWith("QQ")) await ctx.replyWithDocument(fileid);
     await ctx.reply(text, extra);
   }
 }
@@ -363,11 +364,16 @@ const MENU = {
       /*---------------------------------------------------
       //                  1 этап, фото
       ----------------------------------------------------*/
-      bot.on("document", async (ctx, next) => {
-        if (not(ctx, await ssn.OC.Q(ctx.from.id, true), 10)) return next();
+      new EventListener("document", 0, async (ctx, next, ow) => {
+        if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.DBUser), 10))
+          return next();
         ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
         ctx.reply(lang.redact.name());
-        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted reference`)
+        console.log(
+          `> OC. [${
+            format.getName(ctx.from) ?? ctx.from.id
+          }] redacted reference`
+        );
       }),
 
       ssn.OC.next(10, async (ctx, user) => {
@@ -378,7 +384,9 @@ const MENU = {
         const oc = uOC[user.cache.sessionCache[0]];
         ssn.OC.enter(ctx.from.id, 11, oc.fileid);
         ctx.reply(lang.redact.name());
-        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped reference`)
+        console.log(
+          `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped reference`
+        );
       }),
       /*---------------------------------------------------
       
@@ -386,8 +394,8 @@ const MENU = {
       ---------------------------------------------------
       //                  2 этап, имя
       ----------------------------------------------------*/
-      bot.on("text", async (ctx, next) => {
-        const qq = await ssn.OC.Q(ctx.from.id, true);
+      new EventListener("text", 0, async (ctx, next, ow) => {
+        const qq = await ssn.OC.Q(ctx.from.id, true, ow.DBUser);
         if (not(ctx, qq, 11)) return next();
         if (cacheEmpty(qq)) return err(421, ctx);
 
@@ -396,7 +404,9 @@ const MENU = {
 
         ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
         ctx.reply(lang.redact.description());
-        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted name`)
+        console.log(
+          `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted name`
+        );
       }),
 
       ssn.OC.next(11, async (ctx, user) => {
@@ -406,7 +416,9 @@ const MENU = {
         const oc = uOC[user?.cache?.sessionCache[1]];
         ssn.OC.enter(ctx.from.id, 12, oc.description);
         ctx.reply(lang.redact.description());
-        console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped name`)
+        console.log(
+          `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped name`
+        );
       }),
       /*---------------------------------------------------
       
@@ -414,8 +426,8 @@ const MENU = {
       ---------------------------------------------------
       //                  3 этап, описание
       ----------------------------------------------------*/
-      bot.on("text", async (ctx, next) => {
-        const qq = await ssn.OC.Q(ctx.from.id, true);
+      new EventListener("text", 0, async (ctx, next, ow) => {
+        const qq = await ssn.OC.Q(ctx.from.id, true, ow.DBUser);
         if (not(ctx, qq, 12)) return next();
         if (cacheEmpty(qq, 1)) return err(421, ctx);
         if (ctx.message.text.length > 4000)
@@ -439,16 +451,16 @@ const MENU = {
           uOC = OCS[ctx.from.id];
         if (noCache(user, uOC)) return err(ctx, 422);
 
-        const oc = uOC[user?.cache?.sessionCache[1]];
+        const oc = uOC[user.cache.sessionCache[1]];
 
         saveOC(
           ctx.from.id,
           {
-            name: user.cache.sessionCache[3],
-            fileid: user.cache.sessionCache[2],
+            name: user.cache.sessionCache[2],
+            fileid: user.cache.sessionCache[1],
             description: oc.description,
           },
-          user.cache.sessionCache[1]
+          user.cache.sessionCache[0]
         );
         ssn.OC.exit(ctx.from.id);
         ctx.reply(lang.create.done);
@@ -554,16 +566,19 @@ const MENU = {
     ),
 
     // 1 этап, фото
-    bot.on("document", async (ctx, next) => {
-      if (not(ctx, await ssn.OC.Q(ctx.from.id, true), 0)) return next();
+    new EventListener("document", 0, async (ctx, next, ow) => {
+      if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.DBUser), 0))
+        return next();
       ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
       ctx.reply(lang.create.name);
-      console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended reference`)
+      console.log(
+        `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended reference`
+      );
     }),
 
     // 2 этап, имя
-    bot.on("text", async (ctx, next) => {
-      const qq = await ssn.OC.Q(ctx.from.id, true);
+    new EventListener("text", 0, async (ctx, next, ow) => {
+      const qq = await ssn.OC.Q(ctx.from.id, true, ow.DBUser);
       if (not(ctx, qq, 1)) return next();
       if (cacheEmpty(qq)) return err(420, ctx);
       if (ctx.message.text.length > 32)
@@ -571,12 +586,14 @@ const MENU = {
 
       ssn.OC.enter(ctx.from.id, 2, ctx.message.text);
       ctx.reply(lang.create.description);
-      console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended name`)
+      console.log(
+        `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended name`
+      );
     }),
 
     // 3 этап - описание
-    bot.on("text", async (ctx, next) => {
-      const qq = await ssn.OC.Q(ctx.from.id, true);
+    new EventListener("text", 0, async (ctx, next, ow) => {
+      const qq = await ssn.OC.Q(ctx.from.id, true, ow.DBUser);
       if (not(ctx, qq, 2)) return next();
       if (cacheEmpty(qq, 1)) return err(420, ctx);
       if (ctx.message.text.length > 4000)

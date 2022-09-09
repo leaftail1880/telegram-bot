@@ -1,9 +1,9 @@
 import { database } from "../../index.js";
 import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
 import { format } from "../../app/class/formatterCLS.js";
-import { bot } from "../../app/setup/tg.js";
+import { EventListener } from "../../app/class/EventsCLS.js";
 
-bot.on("message", async (ctx, next) => {
+new EventListener("message", 10, async (ctx, next, data) => {
   if (ctx.message.from.is_bot) return;
   const u = await getUser(ctx, false),
     user = u.user;

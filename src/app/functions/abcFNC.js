@@ -9,15 +9,17 @@ const obj = {
   i: "ш",
   o: "щ",
   p: "з",
-  '[': "х",
-  ']': "ъ"
-}
+  "[": "х",
+  "]": "ъ",
+};
 
 export function abc(msg) {
-  if (!msg?.split) return msg
-  let ret = ''
-  for (const a of msg.split('')) {
-    if (obj[a]) ret = ret + a.toLowerCase() == a ? obj[a] : obj[a].toUpperCase(); else ret = ret + a
+  if (!msg?.split) return msg;
+  let ret = "";
+  for (const a of msg.split("")) {
+    if (obj[a])
+      ret = ret + a.toLowerCase() == a ? obj[a] : obj[a].toUpperCase();
+    else ret = ret + a;
   }
-  return ret
+  return ret;
 }

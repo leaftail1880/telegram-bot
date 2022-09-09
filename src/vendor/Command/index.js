@@ -1,5 +1,5 @@
 import { env } from "../../app/setup/tg.js";
-import { format } from "../../app/class/formatterCLS.js";
+import { d, format } from "../../app/class/formatterCLS.js";
 import { database } from "../../index.js";
 import { cmd } from "../../app/class/cmdCLS.js";
 import { data, SERVISE_stop } from "../../app/start-stop.js";
@@ -286,7 +286,7 @@ new cmd(
       } else {
         o = `часов осталось`;
       }
-      const reply = new Xitext().Bold(hrs).Text(` ${o}`);
+      const reply = new Xitext()._Group(hrs).Bold().Url(null, d.guide(7))._Group().Text(` ${o}`);
       return ctx.reply(...reply._Build());
     }
     if (!ctx.message?.reply_to_message?.message_id) {
@@ -314,68 +314,3 @@ new cmd(
     await database.set(`Group::${g.static.id}`, g, true);
   }
 );
-
-// new cmd(
-//   {
-//     name: "animtitle",
-//     prefix: "hide",
-//     description: " ы",
-//     permisson: 1,
-//     type: "group",
-//   },
-//   async (ctx, args) => {
-//     if (!args || !args[0] || !args[1] || Number(args[0]) == NaN)
-//       return ctx.reply("Че?");
-//     const group = (await getGroup(ctx, true)).group,
-//       oldtitle = `${group.cache.titleAnimationSpeed ?? 0} ${
-//         group.cache?.titleAnimation?.join(" ") ?? group.static.title
-//       }`,
-//       anims = [];
-//     args.forEach((e) => anims.push(e));
-//     anims.shift();
-//     group.cache.titleAnimationSpeed = Number(args[0]);
-//     group.cache.titleAnimation = anims;
-//     ctx.reply(
-//       `Сменена анимация имени группы:\n ${anims.join("\n ")}\n\nСкорость: ${
-//         args[0]
-//       } сек.\n\nВернуть старую: -animtitle ${oldtitle}`
-//     );
-//     await database.set(`Group::${group.static.id}`, group, true);
-//     SetAnimations();
-//   }
-// );
-
-// new cmd(
-//   {
-//     name: "animreload",
-//     prefix: "hide",
-//     description: " ы",
-//     permisson: 1,
-//     type: "group",
-//   },
-//   async (ctx, args) => {
-//     ctx.reply("Успешно!");
-//     SetAnimations();
-//   }
-// );
-
-// new cmd(
-//   {
-//     name: "newoc",
-//     prefix: "def",
-//     description: "Как зарегать",
-//     permisson: 0,
-//     type: "private",
-//   },
-//   async (ctx, args) => {
-//     // if (!ctx.message?.reply_to_message?.message_id)
-//     //   return ctx.reply("Отметь файл с изображением!", {
-//     //     reply_to_message_id: ctx.message.message_id,
-//     //     allow_sending_without_reply: true,
-//     //   });
-//     // const id = ctx.message?.reply_to_message?.message_id, msg = await ctx.telegram.
-//     ctx.reply(
-//       'Что бы зарегистрировать ОС, отправь мне файл (именно файл, а не фото!) с референсом персонажа, и подписью в формате <Имя персонажа> <Описание>\n  Примеры подписей:\n Листохвост Известный кобольдя\n "Ре На" Рандомное имя придуманное что бы показать как делать имена с пробелами'
-//     );
-//   }
-// );
