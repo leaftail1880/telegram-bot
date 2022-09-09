@@ -1,6 +1,6 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 6, 1], //
+export const VERSION = [6, 6, 2], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   Plugins = [
     "html", // Сайт
