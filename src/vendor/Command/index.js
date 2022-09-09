@@ -6,6 +6,7 @@ import { data, SERVISE_stop } from "../../app/start-stop.js";
 import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
 import { c } from "../timeChecker/index.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
+import { abc } from "../../app/functions/abcFNC.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -18,14 +19,37 @@ import { Xitext } from "../../app/class/XitextCLS.js";
 
 new cmd({
   name: '',
-  prefix: 'def',
+  specprefix: false,
   description: 'Описание',
   permisson: 0,
+  hide: true,
   type: 'all'
 }, (ctx, args) => {
   
 })
 */
+
+new cmd(
+  {
+    name: "abc",
+    description: "Описание",
+    permisson: 0,
+    type: "all",
+  },
+  (ctx, args) => {
+
+    /**
+     * @type {import("telegraf/typings/core/types/typegram.js").CommonMessageBundle}
+     */
+    const msg = ctx.message.reply_to_message;
+    if (!msg) return ctx.reply("Отметь сообщение!");
+    if (!msg.caption && !msg.text) return ctx.reply("Я не могу это перевести!");
+    ctx.reply(abc(msg.text ?? msg.caption), {
+      reply_to_message_id: msg.message_id,
+      allow_sending_without_reply: true,
+    });
+  }
+);
 
 new cmd(
   {
@@ -73,13 +97,13 @@ new cmd(
       case "pairs":
         const a = await database.getPairs();
         console.log(a);
-        format.sendSeparatedMessage(format.stringifyEx(a, " "), ctx)
+        format.sendSeparatedMessage(format.stringifyEx(a, " "), ctx);
         break;
       case "get":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
         const get = await database.get(args[1], true);
         console.log(get);
-        format.sendSeparatedMessage(format.stringifyEx(get, " "), ctx)
+        format.sendSeparatedMessage(format.stringifyEx(get, " "), ctx);
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
@@ -286,7 +310,12 @@ new cmd(
       } else {
         o = `часов осталось`;
       }
-      const reply = new Xitext()._Group(hrs).Bold().Url(null, d.guide(7))._Group().Text(` ${o}`);
+      const reply = new Xitext()
+        ._Group(hrs)
+        .Bold()
+        .Url(null, d.guide(7))
+        ._Group()
+        .Text(` ${o}`);
       return ctx.reply(...reply._Build());
     }
     if (!ctx.message?.reply_to_message?.message_id) {
