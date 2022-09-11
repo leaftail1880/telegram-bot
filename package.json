@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "node test.js",
-    "STARTBOT": "node app.js"
+    "START": "node app.js",
+    "test": "node test.js"
   },
   "keywords": [],
   "author": "",

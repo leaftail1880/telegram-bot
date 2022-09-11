@@ -7,6 +7,7 @@ import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
 import { c } from "../timeChecker/index.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { abc } from "../../app/functions/abcFNC.js";
+import { Context } from "telegraf";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -29,6 +30,35 @@ new cmd({
 })
 */
 
+/**
+ *
+ * @param {Context} ctx
+ * @param {*} args
+ * @param {*} Dta
+ * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
+ */
+function sudo(ctx, _args, Dta, command) {
+  const a = "args, ctx, g, db, data, fdata, Xitext, format",
+    func = `(async () => {${ctx.message.text.replace(
+      `${ctx.message.text.charAt(0)}${command.info.name} `,
+      ""
+    ).replace(/\n/g, ' ')}})();`;
+  new Function(a, func)(a, ctx, global, database, data, Dta, Xitext, format);
+}
+
+new cmd(
+  {
+    name: "f",
+    aliases: ["sudo"],
+    specprefix: true,
+    description: "Дл",
+    permisson: 2,
+    hide: true,
+    type: "all",
+  },
+  sudo
+);
+
 new cmd(
   {
     name: "abc",
@@ -37,7 +67,6 @@ new cmd(
     type: "all",
   },
   (ctx, args) => {
-
     /**
      * @type {import("telegraf/typings/core/types/typegram.js").CommonMessageBundle}
      */
@@ -283,7 +312,8 @@ new cmd(
   }
 );
 
-export const cooldown = 5 * 3.6e6;
+export const cooldown = 5 * 3.6e6,
+  chatcooldown = 3.6e6;
 new cmd(
   {
     name: "pin",
@@ -292,31 +322,30 @@ new cmd(
     permisson: 0,
     type: "all",
   },
-  async (ctx) => {
+  async (ctx, _args, data) => {
     const g = (await getGroup(ctx, true)).group,
-      u = (await getUser(ctx, false)).user;
+      u = data.DBUser ?? (await getUser(ctx, false)).user;
     let lp = 0;
     if (typeof g?.cache?.lastPin == "object") {
       lp = g.cache?.lastPin[u.static.id];
     } else g.cache.lastPin = {};
     const time = Date.now() - lp;
-    if (time <= cooldown) {
-      const hrs = `${Math.ceil(time / 3.6e6)}`;
-      let o;
-      if (hrs.endsWith("1") && hrs != "11") {
-        o = "час cостался!";
-      } else if (hrs.endsWith("2") || hrs.endsWith("3") || hrs.endsWith("4")) {
-        o = `часa осталось`;
-      } else {
-        o = `часов осталось`;
-      }
-      const reply = new Xitext()
-        ._Group(hrs)
-        .Bold()
-        .Url(null, d.guide(7))
-        ._Group()
-        .Text(` ${o}`);
-      return ctx.reply(...reply._Build());
+    if (time <= chatcooldown) {
+      const min = Math.round((chatcooldown - time) / 60000),
+        reply = new Xitext()
+          ._Group(min)
+          .Bold()
+          .Url(null, d.guide(7))
+          ._Group()
+          .Text(" ")
+          .Text(
+            format
+              .toMinString(min, "осталось", "осталась", "осталось")
+              .split(" ")
+              .slice(1)
+              .join(" ")
+          );
+      return ctx.reply(...reply._Build({ disable_web_page_preview: true }));
     }
     if (!ctx.message?.reply_to_message?.message_id) {
       const text = new Xitext()

@@ -483,11 +483,16 @@ const MENU = {
           page = Number(data[0]) == NaN ? Number(data[0]) : 0;
         for (const e of keys) {
           try {
-            const user = (await ctx.telegram.getChatMember(e, Number(e))).user,
-              u = format.getName(user);
+            /**
+             * @type {import("../../app/models.js").DBUser}
+             */
+            const user = await database.get(d.user(e), true),
+              u = user?.cache?.nickname ?? user?.static?.name;
             if (u)
               btns.push([
-                new Button(u).data(link("userOCs", e, page, u, user.username)),
+                new Button(format.capitalizeFirstLetter(u)).data(
+                  link("userOCs", e, page, format.capitalizeFirstLetter(u), user?.static?.nickname)
+                ),
               ]);
           } catch (e) {}
         }

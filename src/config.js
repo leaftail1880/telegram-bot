@@ -1,13 +1,14 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 6, 3], //
+export const VERSION = [6, 6, 4], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
+  errRespCodes = [400, 409],
   Plugins = [
     "html", // Сайт
 
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
-    "timeChecker", // Время
+    "timeChecker", // Времяz
     "OC", // Модуль для команды /oc
     
     "Cooldowns", // Таймеры

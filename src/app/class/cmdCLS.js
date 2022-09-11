@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import { Xitext } from "./XitextCLS.js";
 import { isAdmin } from "../functions/checkFNC.js";
 import { bot, members } from "../setup/tg.js";
-import { data } from "../start-stop.js";
+import { data, SERVISE_error } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
 import { Session, ssn } from "./sessionCLS.js";
@@ -10,7 +10,7 @@ import { EventListener } from "./EventsCLS.js";
 
 const public_cmds = {},
   private_cmds = {},
-  hprefixes = [".", "-", "$"];
+  hprefixes = [".", "-", "+", "$"];
 /**
  * @typedef {Object} CommandType
  * @property {String} group
@@ -18,39 +18,75 @@ const public_cmds = {},
  * @property {String} all
  */
 
+/**
+ * @typedef {function(Context, Array<String>, import("./EventsCLS.js").EventData, ChatCommand)} ChatCommandCallback
+ */
+
+/**
+ * @typedef {Object} ChatCommand
+ * @property {Object} info
+ * @property {string} info.name
+ * @property {string} info.description
+ * @property {CommandType} info.type
+ * @property {number}  info.perm
+ * @property {boolean} info.hide
+ * @property {string} info.session
+ * @property {ChatCommandCallback} callback
+ */
+
 export class cmd {
   /**
    * Создает команду
    * @param {Object} info
    * @param {String} info.name Имя
+   * @param {Array<String>} info.aliases Имя
    * @param {Boolean} info.hide Спрятать ли из листа команд
    * @param {Boolean} info.specprefix
    * @param {String} info.description Описание
    * @param {String} info.session В формате d.session
    * @param {Number} info.permisson 0 - все, 1 - админы
    * @param {CommandType} info.type all | group | private
-   * @param {function(Context, Array, import("./EventsCLS.js").EventData)} callback
+   * @param {ChatCommandCallback} callback
    */
   constructor(info, callback) {
     if (!info.name) return;
 
+    const datas = [];
     // Регистрация инфы
-    this.info = {
-      name: info.name,
-      description: info.description ?? "Пусто",
-      type: info.type,
-      perm: info.permisson ?? 0,
-      hide: info.hide,
-      session: info.session,
-    };
-    this.callback = callback;
+    datas.push({
+      info: {
+        name: info.name,
+        description: info.description ?? "Пусто",
+        type: info.type,
+        perm: info.permisson ?? 0,
+        hide: info.hide,
+        session: info.session,
+      },
+      callback: callback,
+    });
+
+    for (const alias of info.aliases ?? []) {
+      datas.push({
+        info: {
+          name: alias,
+          description: info.description ?? "Пусто",
+          type: info.type,
+          perm: info.permisson ?? 0,
+          hide: info.hide,
+          session: info.session,
+        },
+        callback: callback,
+      });
+    }
 
     // Ы
     if (!info.specprefix) {
-      public_cmds[info.name] = this;
+      datas.forEach((e) => (public_cmds[e.info.name] = e));
     } else {
-      private_cmds[info.name] = this;
+      datas.forEach((e) => (private_cmds[e.info.name] = e));
     }
+
+    return this;
   }
   /**
    *
@@ -68,14 +104,14 @@ export class cmd {
       cmd =
         public_cmds[
           Object.keys(public_cmds).find(
-            (e) => e == msg || e == msg.split("@")[0]
+            (e) => e === msg || e === (msg.split("@")[0] ?? msg)
           )
         ];
     } else {
       cmd =
         private_cmds[
           Object.keys(private_cmds).find(
-            (e) => e == msg || e == msg.split("@")[0]
+            (e) => e === msg || e === (msg.split("@")[0] ?? msg)
           )
         ];
     }
@@ -121,11 +157,9 @@ new cmd(
     type: "private",
     hide: true,
   },
-  (ctx) => {
+  (ctx, _args, data) => {
     ctx.reply(
-      `${format.getName(
-        ctx
-      )} Кобольдя очнулся. Список доступных Вам команд: /help`
+      `${data.DBUser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
     );
   }
 );
@@ -172,11 +206,11 @@ new cmd(
     hide: true,
     type: "private",
   },
-  async (ctx) => {
+  async (ctx, _args, data) => {
     /**
      * @type {import("../models.js").DBUser}
      */
-    const user = await database.get(d.user(ctx.from.id), true);
+    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session) {
       await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
       delete user.cache.session;
@@ -282,11 +316,12 @@ export function loadCMDS() {
        * @type {String}
        */
       const t = ctx.message.text;
-      if (!t) return next();
+      /**
+       * @type {ChatCommand}
+       */
       let command;
-      if (t.startsWith("/")) {
+      if (t?.startsWith("/")) {
         command = cmd.getCmd(t.split(" ")[0].substring(1), true);
-        if (!command) return next();
       } else {
         if (
           !t ||
@@ -295,42 +330,47 @@ export function loadCMDS() {
         )
           return next();
         command = cmd.getCmd(t.split(" ")[0].substring(1));
-        if (!command) return next();
       }
+      if (!command) return next();
       if (await cmd.cantUse(command, ctx, data.userRights))
         return ctx.reply(
           "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
         );
 
-      try {
-        const a = t
-          .match(/"[^"]+"|[^\s]+/g)
-          .map((e) => e.replace(/"(.+)"/, "$1").toString());
-        a.shift();
-        try {
-          const ret = command.callback(ctx, a, data);
-          if (ret?.catch)
-            ret.catch((e) => {
-              console.warn(
-                `PERR! ${
-                  format.getName(ctx.message.from) ?? ctx.message.from.id
-                }: ${t}. ${e}`
-              );
-            });
-        } catch (error) {
-          console.warn(
-            `ERR! ${
-              format.getName(ctx.message.from) ?? ctx.message.from.id
-            }: ${t}. ${error}`
-          );
-        }
+      // All good, run
+      let err = false;
+      const a =
+          t
+            .replace(`${t.charAt(0)}${command.info.name}`, "")
+            ?.match(/"[^"]+"|[^\s]+/g)
+            ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
+        user = data.DBUser,
+        name =
+          user?.cache?.nickname ??
+          user?.static?.name ??
+          format.getName(ctx.message.from) ??
+          ctx.message.from.id;
 
-        console.log(
-          `> CMD. ${
-            format.getName(ctx.message.from) ?? ctx.message.from.id
-          }: ${t}`
-        );
-      } catch (e) {}
+      try {
+        const ret = command.callback(ctx, a, data, command);
+        if (ret?.catch)
+          ret.catch((e) => {
+            SERVISE_error({
+              type: `Promise CMD error`,
+              message: e.message,
+              stack: ` at ${command.info.name} (${name}: ${t})`,
+            });
+            err = true;
+          });
+      } catch (error) {
+        SERVISE_error({
+          type: `CMD error`,
+          message: error.message,
+          stack: ` at ${command.info.name} (${name}: ${t})`,
+        });
+        err = true;
+      }
+      if (!err) console.log(`> CMD. ${name}: ${t}`);
     },
     true
   );

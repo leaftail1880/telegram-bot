@@ -179,29 +179,28 @@ async function checkInterval() {
 }
 
 export async function SERVISE_stop(
-  reason,
+  reason = "Остановка",
   extra = null,
   stopBot,
   stopApp,
   sendMessage = true
 ) {
-  let log = "✕ ";
+  let log = `✕ `;
   const text = new Xitext()
     ._Group("✕ ")
     .Url(null, "https://dashboard.render.com")
     .Bold()
     ._Group();
-  if (extra) text.Text(format.stringifyEx(extra, " "));
-  if (stopApp) {
-    text._Group("app").Bold().Underline()._Group();
-    log = `${log}app`;
-    if (stopBot) text.Text(" "), (log = `${log} `);
-  }
-  if (stopBot) text.Italic("bot"), (log = `${log}bot`);
-  text.Text(": ");
-  log = `${log}: `;
-  text.Mono(reason ? `${reason}.` : "Остановка.");
-  log = `${log}${reason ? `${reason}.` : "Остановка."}`;
+
+  if (stopApp) text.Bold("ALL \n");
+  if (stopBot && !stopApp) text.Text("bot: \n"), (log = `${log}bot: \n`);
+
+  text.Mono(reason + "").Text(": ");
+  log = `${log} ${reason}: `;
+
+  if (extra)
+    text.Text(format.stringifyEx(extra, " ")),
+      (log = log + format.stringifyEx(extra, " "));
 
   console.log(log);
   if (data.started && sendMessage)
@@ -210,7 +209,7 @@ export async function SERVISE_stop(
       ...text._Build({ disable_web_page_preview: true })
     );
 
-  if (stopBot && data.started && !data.stopped) {
+  if ((stopBot || stopApp) && data.started && !data.stopped) {
     data.stopped = true;
     bot.stop(reason);
   }
@@ -219,14 +218,22 @@ export async function SERVISE_stop(
   }
 }
 
-export function SERVISE_error(error, extra = null) {
-  const text = new Xitext()
-    ._Group("ERR. ")
-    .Bold()
-    .Url(null, "https://dashboard.render.com")
-    ._Group()
-    .Bold(error);
-  if (extra) text.Text(format.stringifyEx(extra, " "));
+/**
+ *
+ * @param {Error} error
+ */
+export function SERVISE_error(error) {
+  const PeR = format.errParse(error, true),
+    text = new Xitext()
+      ._Group(PeR[0])
+      .Bold()
+      .Url(null, "https://dashboard.render.com")
+      ._Group()
+      ._Group(PeR[1])
+      .Bold()
+      .Mono()
+      ._Group()
+      .Text(` ${PeR[2]}`);
   if (data.started) {
     bot.telegram.sendMessage(
       members.xiller,
@@ -234,17 +241,22 @@ export function SERVISE_error(error, extra = null) {
     );
   }
   console.log(text._text);
+  if (PeR[3]) {
+    console.log(PeR[3]);
+    format.sendSeparatedMessage(PeR[3], (a) =>
+      bot.telegram.sendMessage(members.xiller, a)
+    );
+  }
 }
 
 export async function SERVISE_freeze() {
   clearInterval(data.updateTimer);
-  let log = "FRZ! ";
   if (data.started)
     await bot.telegram.sendMessage(
       members.xiller,
       `❄️ Бот ${data.versionMSG} ждет ответа от сессии`
     ),
-      console.log(`${data.versionLOG} ждет ответа от сессии`);
+      console.log(`FRZ! ${data.versionLOG}`);
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");

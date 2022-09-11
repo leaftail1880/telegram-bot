@@ -24,14 +24,7 @@
  * @param {Number} pin
  * @returns {DBUser}
  */
-export function CreateUser(
-  id,
-  nickname,
-  name,
-  customName = null,
-  tag = null,
-  active = Date.now()
-) {
+export function CreateUser(id, nickname, name, active = Date.now()) {
   console.log("New user! Id: " + id + " Nickname: " + nickname);
   return {
     static: {
@@ -40,9 +33,6 @@ export function CreateUser(
       name: name,
     },
     cache: {
-      nickname: customName,
-      tag: tag,
-      session: null,
       lastActive: active,
     },
   };
@@ -67,19 +57,10 @@ export function CreateUser(
  * @param {Number} id
  * @param {String} title
  * @param {Array<Number>} members
- * @param {Array<String>} titleAnimation
- * @param {Number} titleAnimationSpeed
  * @param {*} call
  * @returns {DBUgroup}
  */
-export function CreateGroup(
-  id,
-  title,
-  members = [],
-  titleAnimation = [],
-  titleAnimationSpeed = 10,
-  call = Date.now()
-) {
+export function CreateGroup(id, title, members = [], call = Date.now()) {
   console.log("New group! Id: " + id + " Title: " + title);
   return {
     static: {
@@ -88,10 +69,7 @@ export function CreateGroup(
     },
     cache: {
       members: members,
-      titleAnimation: titleAnimation,
-      titleAnimationSpeed: titleAnimationSpeed,
       lastCall: call,
-      pin: null,
       lastPin: {},
     },
   };

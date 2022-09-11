@@ -32,11 +32,11 @@ export class Xitext {
     return this;
   }
   _Group(text) {
-    if (!text) {
+    if (!text && this.group) {
       this.group = false;
       this.offset = this.offset + this.prev.length ?? 0
       this.prev = null;
-    } else {
+    } else if (text) {
       this.group = true;
       const t = `${text}`;
       this.prev = t;
