@@ -20,7 +20,7 @@ export const maxButtonsRows = 12,
   maxButtonsPerRow = 6;
 
 /*------------------------------------------ ЯЗЫК ------------------------------------------*/
-const lang = {
+export const lang = {
   create: {
     name: "Теперь отправь мне имя персонажа. (Не более 32 символов)",
     description:
