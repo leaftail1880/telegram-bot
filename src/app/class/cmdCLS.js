@@ -9,8 +9,7 @@ import { Session, ssn } from "./sessionCLS.js";
 import { EventListener } from "./EventsCLS.js";
 
 const public_cmds = {},
-  private_cmds = {},
-  hprefixes = [".", "-", "+", "$"];
+  private_cmds = {}
 /**
  * @typedef {Object} CommandType
  * @property {String} group
@@ -325,7 +324,7 @@ export function loadCMDS() {
       } else {
         if (
           !t ||
-          !hprefixes.find((e) => t.startsWith(e)) ||
+          !t.match(/^[\.\-\+\/\$]/gm) ||
           !t.split(" ")[0]?.substring(1)
         )
           return next();
@@ -341,7 +340,7 @@ export function loadCMDS() {
       let err = false;
       const a =
           t
-            .replace(`${t.charAt(0)}${command.info.name}`, "")
+            .replace(/[\.\-\+\/\$]\S+\s?/g, "")
             ?.match(/"[^"]+"|[^\s]+/g)
             ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
         user = data.DBUser,

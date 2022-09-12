@@ -7,8 +7,9 @@ import { ssn } from "../../app/class/sessionCLS.js";
 import { Button, Xitext } from "../../app/class/XitextCLS.js";
 import { err } from "../../app/functions/errFNC.js";
 import { bot } from "../../app/setup/tg.js";
+import { data } from "../../app/start-stop.js";
 import { database } from "../../index.js";
-
+const _data = data;
 /**
  * @typedef {Object} UserOC
  * @property {String} name
@@ -156,7 +157,7 @@ function link(method, ...args) {
  * @param {import("telegraf/typings/telegram-types.js").ExtraEditMessageText} extra
  * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
  */
-async function editMsg(ctx, text, extra, InlineKeyboard) {
+async function editMsg(ctx, text, extra = {}, InlineKeyboard) {
   if (typeof extra === "object" && InlineKeyboard)
     extra.reply_markup.inline_keyboard = InlineKeyboard;
   await ctx.telegram.editMessageText(
@@ -174,19 +175,24 @@ async function editMsg(ctx, text, extra, InlineKeyboard) {
  * @param {String} text
  * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
  */
-async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard) {
+async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard, delType) {
   /**
    * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
    */
   let extra = {
-    entities: entities,
     disable_web_page_preview: true,
   };
+  if (entities) extra.entities = entities;
   if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
+
 
   await ctx.telegram.deleteMessage(
     ctx.callbackQuery.message.chat.id,
     ctx.callbackQuery.message.message_id
+  );
+  if (delType === 'mm') await ctx.telegram.deleteMessage(
+    ctx.callbackQuery.message.chat.id,
+    ctx.callbackQuery.message.message_id - 1
   );
 
   await ctx.reply(text, extra);
@@ -203,7 +209,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
     ctx.callbackQuery.message.chat.id,
     ctx.callbackQuery.message.message_id
   );
-  if (text.length < 980 && fileid.endsWith("QQ")) {
+  if (getRefType(fileid, text) === "n") {
     /**
      * @type {import("telegraf/typings/telegram-types.js").ExtraDocument}
      */
@@ -228,6 +234,15 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
     if (fileid.endsWith("QQ")) await ctx.replyWithDocument(fileid);
     await ctx.reply(text, extra);
   }
+}
+
+/**
+ *
+ * @param {String} text
+ */
+function getRefType(fileid, text) {
+  if (text.length < 980 && fileid.endsWith("QQ")) return "n";
+  return "mm";
 }
 
 /**
@@ -322,13 +337,13 @@ const MENU = {
         if (!OCS[data[0]]?.map || !OCS[data[0]][data[1]]) return noOC(ctx);
 
         const OC = OCS[data[0]][data[1]],
-          capt = lang.myOC(OC.name, OC.description, data[2]);
+          capt = lang.myOC(OC.name, OC.description, data[2]), refType = getRefType(OC.fileid, capt._text);
 
         ctx.answerCbQuery(OC.name);
         sendRef(ctx, OC.fileid, capt._text, capt._entities, [
           [new Button("Изменить").data(link("redact", data[1], data[2]))],
-          [new Button("Удалить").data(link("del", data[1]))],
-          [new Button("↩️").data(link("backdoc"))],
+          [new Button("Удалить").data(link("del", data[1], refType))],
+          [new Button("↩️").data(link("backdoc", refType))],
         ]);
       }
     ),
@@ -344,6 +359,10 @@ const MENU = {
         await ctx.telegram.deleteMessage(
           ctx.callbackQuery.message.chat.id,
           ctx.callbackQuery.message.message_id
+        );
+        if (data[1] === 'mm') await ctx.telegram.deleteMessage(
+          ctx.callbackQuery.message.chat.id,
+          ctx.callbackQuery.message.message_id - 1
         );
       }
     ),
@@ -478,6 +497,8 @@ const MENU = {
         const OCS = await getOCS(),
           keys = Object.keys(OCS);
         if (!keys[0]) return noOC(ctx);
+        if (_data.isDev)
+          editMsg(ctx, "Загрузка...\n\n\n\n\n\n\n\nДа, иногда долгая.");
         const btns = [],
           menu = [new Button("↩️").data(link("back"))],
           page = Number(data[0]) == NaN ? Number(data[0]) : 0;
@@ -491,7 +512,13 @@ const MENU = {
             if (u)
               btns.push([
                 new Button(format.capitalizeFirstLetter(u)).data(
-                  link("userOCs", e, page, format.capitalizeFirstLetter(u), user?.static?.nickname)
+                  link(
+                    "uOC",
+                    e,
+                    page,
+                    format.capitalizeFirstLetter(u),
+                    user?.static?.name
+                  )
                 ),
               ]);
           } catch (e) {}
@@ -512,7 +539,7 @@ const MENU = {
 
     new Query(
       {
-        name: "userOCs",
+        name: "uOC",
         prefix: "OC",
       },
       async (ctx, data) => {
@@ -531,9 +558,11 @@ const MENU = {
         btns.push(menu);
 
         ctx.answerCbQuery("ОС " + data[2]);
-        editMsg(ctx, lang.userOCS(data[2]), {
-          reply_markup: { inline_keyboard: btns },
-        });
+        if (!data[4])
+          editMsg(ctx, lang.userOCS(data[2]), {
+            reply_markup: { inline_keyboard: btns },
+          });
+        else sendMsgDelDoc(ctx, lang.userOCS(data[2]), null, btns, data[4]);
       }
     ),
 
@@ -548,11 +577,15 @@ const MENU = {
           return noOC(ctx);
 
         const OC = OCS[data[0]][data[1]],
-          capt = lang.OC(OC.name, OC.description, data[2], data[3]);
+          capt = lang.OC(OC.name, OC.description, data[2], data[3]),
+          refType = getRefType(OC.fileid, capt._text);
 
         ctx.answerCbQuery(OC.name);
         sendRef(ctx, OC.fileid, capt._text, capt._entities, [
-          [new Button("↩️").data(link("backdoc"))],
+          [
+            new Button("↩️↩️").data(link("backdoc", refType)),
+            new Button("↩️").data(link("uOC", ...data, refType)),
+          ],
         ]);
       }
     ),
@@ -652,12 +685,13 @@ const MENU = {
         prefix: "OC",
         message: "Назад",
       },
-      (ctx) => {
+      (ctx, data) => {
         sendMsgDelDoc(
           ctx,
           lang.main._text,
           lang.main._entities,
-          lang.mainKeyboard
+          lang.mainKeyboard,
+          data[0]
         );
       }
     ),

@@ -55,15 +55,14 @@ export function loadQuerys() {
     }
 
     activeQueries[data] = Date.now();
+    const name =
+      format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id;
     try {
       const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
       if (ret?.catch)
         ret.catch((e) => {
           console.warn(
-            `ERR! Query Promise [${
-              format.getName(ctx.callbackQuery.from) ??
-              ctx.callbackQuery.from.id
-            }] ${data} ${e?.message ?? e} ${e?.stack}`
+            `ERR! Query Promise ${name}: ${data} ${format.errParse(e, false)}`
           );
         });
       if (q.info.msg) ctx.answerCbQuery(q.info.msg);
@@ -74,10 +73,6 @@ export function loadQuerys() {
         }] ${data} ${error?.message ?? error} ${error?.stack}`
       );
     }
-    console.log(
-      `> Query. [${
-        format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id
-      }] ${data}`
-    );
+    console.log(`> Query. ${name}: ${data}`);
   });
 }

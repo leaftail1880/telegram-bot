@@ -66,29 +66,45 @@ new cmd(
       group = g.cache;
     const time = Date.now() - group.lastCall;
     if (time <= 60000) {
-      let sec = "секунд",
-        hrs = `${time * 1000}`;
-      if (hrs.endsWith("1") && hrs != "11") {
-        sec = "секунду";
-      } else if (hrs == "2" || hrs == "3" || hrs == "4") {
-        sec = `секунды`;
-      }
-      return ctx.reply(
-        ...new Xitext()
-          .Text(`Подожди еще `)
-          ._Group(hrs)
+      const sec = Math.round((60000 - time) / 1000),
+        reply = new Xitext()
+          ._Group(sec)
           .Bold()
-          .Underline()
-          .Text(` ${sec}`)
-          ._Build()
-      );
+          .Url(null, d.guide(7))
+          ._Group()
+          .Text(" ")
+          .Text(
+            format
+              .toSecString(sec, "осталось", "осталась", "осталось")
+              .split(" ")
+              .slice(1)
+              .join(" ")
+          );
+      return ctx.reply(...reply._Build({ disable_web_page_preview: true }));
     }
     if (!group.members[1]) return ctx.reply("Некого созывать!");
     for (const e of group.members) {
       const obj = await ctx.telegram.getChatMember(ctx.chat.id, e);
-      obj.name =
-        (await database.get(`User::${e}`, true)).cache.nickname ??
-        `${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""}`;
+      if (
+        obj.status === "kicked" ||
+        obj.status === "left" ||
+        c(obj.user.id) ||
+        obj.user.is_bot
+      )
+        continue;
+      const text = new Xitext()
+        .Url(
+          (await database.get(`User::${e}`, true)).cache.nickname ??
+            `${obj.user.first_name}${
+              obj.user.last_name ? obj.user.last_name : ""
+            }` ??
+            obj.user.username,
+          `https://t.me/${obj.user.username}`
+        )
+        //.Mention(obj.name ?? obj.user.username, obj.user)
+        .Text(" ")
+        .Text(args[0] ? args.join(" ") : "Созыв!");
+      await ctx.reply(...text._Build({ disable_web_page_preview: true }));
       all.push(obj);
     }
     const mbs = all.filter(
@@ -96,13 +112,6 @@ new cmd(
     );
     if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
     group.lastCall = Date.now();
-    for (const e of mbs) {
-      const text = new Xitext()
-        .Mention(e.name ?? e.user.username, e.user)
-        .Text(" ")
-        .Text(args[0] ? args.join(" ") : "Созыв!");
-      await ctx.reply(...text._Build());
-    }
     await database.set(`Group::${g.static.id}`, g, true);
   }
 );

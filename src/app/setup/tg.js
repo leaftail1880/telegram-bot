@@ -12,6 +12,8 @@ if (!process || !process.env || !process.env.TOKEN)
  * @property {String} whereImRunning
  * @property {String} CUSTOM_MEMBERS
  * @property {String} allowedGroups
+ * @property {String | undefined} local
+ * @property {String | undefined} xillerPC
  */
 
 /**

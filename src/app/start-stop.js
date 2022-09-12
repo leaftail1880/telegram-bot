@@ -88,10 +88,7 @@ export async function SERVISE_start() {
   /**======================
    * Обработчик ошибок
    *========================**/
-  bot.catch((error) => {
-    console.log("Ошибка при работе бота: ", error);
-    SERVISE_stop("error", error);
-  });
+  bot.catch(SERVISE_error);
 
   /**======================
    * Запуск бота

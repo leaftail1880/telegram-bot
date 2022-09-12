@@ -1,4 +1,5 @@
 import { Context } from "telegraf";
+import { errParseTypes, mainFolderName } from "../../config.js";
 
 class formatter {
   stringifyEx(startObject, space = undefined) {
@@ -96,7 +97,7 @@ class formatter {
    * @returns {string}
    */
   toSecString(seconds, left1, left2, left3) {
-    let s = `секунд${left1 ? ` ${left1}` : ""}`;
+    let s = `секунд${left1 ? ` ${left1}` : ""}`,
     sec = `${seconds}`;
     if (sec.endsWith("1") && sec != "11") {
       s = `секунда${left2 ? ` ${left2}` : ""}`;
@@ -140,53 +141,46 @@ class formatter {
    */
   errParse(err, returnArr, twoTypes) {
     if (typeof err != "object" || !err.stack || !err.message) return err;
-    let parsedErrMsg,
-      parsedErrStack,
-      parsedErrType = "Error: ",
+
+    let msg,
+      stack2 = [],
+      stack1,
+      type = "Error: ",
       arr;
-    parsedErrMsg = err.message;
-    parsedErrStack = err.stack.replace(err.message, "").split("\n");
-    if (!parsedErrStack[0].match(/\s+at\s/g))
-      parsedErrType = parsedErrStack.shift();
-    if (parsedErrMsg.match(/\d{3}:\s/g)) {
-      parsedErrType = `${parsedErrType.replace(": ", "")} ${
-        parsedErrMsg.split(": ")[0]
-      }: `;
-      parsedErrMsg = parsedErrMsg.split(": ").slice(1).join(": ");
+    msg = err.message;
+    stack1 = err.stack.replace(err.message, "").split("\n");
+    if (!stack1[0].match(/\s+at\s/g)) type = stack1.shift();
+    if (msg.match(/\d{3}:\s/g)) {
+      type = `${type.replace(": ", "")} ${msg.split(": ")[0]}: `;
+      msg = msg.split(": ").slice(1).join(": ");
     }
-    parsedErrStack = parsedErrStack
+    stack1 = stack1
       .map((e) => e.replace(/\s+at\s/g, ""))
-      .map((e) =>
-        e.includes("internal")
-          ? "Internal"
-          : e.includes("telegraf")
-          ? "TelegrafAPI"
-          : e.includes("redis")
-          ? "RedisClient"
-          : e
-      )
-      .map((e) => `\n   at ${e}`);
-    parsedErrStack = parsedErrStack.join("");
+      .map(parseErrStack)
+      .map((e) => `\n\n   at ${e}`);
+
+    stack1.forEach((e) => {
+      if (!stack2.includes(e)) stack2.push(e);
+    });
+
+    stack2 = stack2.join("");
+
     if (twoTypes)
       arr = [
-        `${parsedErrType}${
-          parsedErrType.endsWith(": ") ? " " : ": "
-        }${parsedErrMsg}`,
-        parsedErrStack,
+        `${type}${type.endsWith(": ") ? " " : ": "}${msg}`,
+        stack2,
         err.on ? format.stringifyEx(err.on, " ") : undefined,
       ];
     else
       arr = [
-        parsedErrType,
-        parsedErrMsg,
-        parsedErrStack,
+        type,
+        msg,
+        stack2,
         err.on ? format.stringifyEx(err.on, " ") : undefined,
       ];
     return returnArr
       ? arr
-      : `${parsedErrType}${
-          parsedErrType.endsWith(":") ? " " : ": "
-        }${parsedErrMsg} ${parsedErrStack}`;
+      : `${type}${type.endsWith(":") ? " " : ": "}${msg} ${stack2}`;
   }
   getName(user) {
     return (
@@ -213,6 +207,49 @@ class formatter {
 }
 export const format = new formatter();
 
+/*
+ReferenceError: user is not defined 
+   at file:///C:/Users/%D0%9D%D0%B0%D1%81%D1%82%D1%8F/Desktop/-=x=-/tgbot/src/app/class/queryCLS.js:59:7
+   at C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:163:111
+   at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+
+Ошибка при работе бота:  ReferenceError: user is not defined
+    at file:///C:/Users/%D0%9D%D0%B0%D1%81%D1%82%D1%8F/Desktop/-=x=-/tgbot/src/app/class/queryCLS.js:59:7
+    at C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:163:111
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
+    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
+
+*/
+
+/**
+ *
+ * @param {String} line
+ */
+function parseErrStack(line) {
+  if (line.includes("node:internal")) {
+    return "Node";
+  } else if (line.includes("node_modules")) {
+    const l = line.replace(/\\/g, "/");
+    // Clears ".../node_modules/" part
+    return l
+      .replace(/[\(\s]\S+node_modules./g, ` (`)
+      .replace(/.+node_modules./g, ``);
+  } else return line;
+}
+
 export const d = {
   user: (id) => `User::${id}`,
   pn: (prefix, name) => `${prefix}::${name}`,
@@ -225,7 +262,7 @@ export const d = {
   _s: {
     q: "/",
     d: "?=",
-    a: "::",
+    a: "#",
   },
   guide: (index) => `https://t.me/xillerbotguides/${index}`,
 };
