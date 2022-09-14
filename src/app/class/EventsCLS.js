@@ -18,8 +18,6 @@ const EVENTS = {
 /**
  * @typedef {Object} EventData
  * @property {import("../models.js").DBUser} DBUser
- * @property {boolean} DBUserSave
- * @property {boolean} DBUserSaved
  * @property {import("telegraf/typings/core/types/typegram.js").ChatMember} userRights
  * @property {import("telegraf/typings/core/types/typegram.js").User} user
  */
@@ -27,8 +25,8 @@ const EVENTS = {
 export class EventListener {
   /**
    *
-   * @param {*} type
-   * @param {*} lvl
+   * @param {"message" | "text" | "document"} type
+   * @param {number} lvl
    * @param {function(Context, Function, EventData)} callback
    * @param {Object} options
    * @param {Boolean} options.reqUser
@@ -55,15 +53,13 @@ export function loadEvents() {
     /**
      * @type {Array<Event>}
      */
-    const Executers = EVENTS.message ?? [];
+    const Executers = [...EVENTS.message] ?? [];
     if (ctx.message.text && EVENTS.text) Executers.push(...EVENTS.text);
-    if (ctx.message.document && EVENTS.document) Executers.push(...EVENTS.text);
+    if (ctx.message.document && EVENTS.document) Executers.push(...EVENTS.document);
     const data = {};
     if (EVENTS.options.reqUser) {
       const user = await getUser(ctx, false);
       data.DBUser = user.user;
-      data.DBUserSave = user.saveU;
-      data.DBUserSaved = false;
     }
     if (EVENTS.options.requser) {
       const user = await ctx.telegram.getChatMember(

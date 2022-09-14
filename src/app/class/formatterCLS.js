@@ -1,5 +1,4 @@
 import { Context } from "telegraf";
-import { errParseTypes, mainFolderName } from "../../config.js";
 
 class formatter {
   stringifyEx(startObject, space = undefined) {
@@ -132,6 +131,10 @@ class formatter {
       if (!es.includes(e)) es.push(e);
     });
     return es;
+  }
+
+  isError(error) {
+    return typeof error === "object" && error !== null && "message" in error;
   }
   /**
    *

@@ -7,13 +7,12 @@ import {
   SERVISE_start,
   SERVISE_stop,
 } from "./app/start-stop.js";
-import { format } from "./app/class/formatterCLS.js";
 
 /**======================
  * База данных
  *========================**/
 export const database = new db(),
-  eros = ["TypeError", "SyntaxError"];
+  eros = ["TypeError", "SyntaxError", "Socket closed unexpectedly"];
 
 /**======================
  * Всякая хрень
@@ -31,7 +30,7 @@ process.on("unhandledRejection", async (err) => {
     SERVISE_error(err);
   } else
     SERVISE_stop(
-      ...format.errParse(err, true, true),
+      err,
       true,
       true
     );

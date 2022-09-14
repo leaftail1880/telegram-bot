@@ -17,6 +17,7 @@ new EventListener("message", 10, async (ctx, next, data) => {
   user.static.name = format.getName(ctx.from)
   user.static.nickname = ctx.from.username
   user.cache.lastActive = Date.now();
+  data.DBUser = user
   await database.set(d.user(ctx.from.id), user, true);
   next();
 });

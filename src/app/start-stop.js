@@ -68,6 +68,10 @@ export async function SERVISE_start() {
       await SERVISE_stop("db ip update", null, true, true, false, false);
       return;
     }
+    if (err.message == "Socket closed unexpectedly") {
+      await client.connect();
+      return;
+    }
     console.warn("◔ Error: ", err);
   });
 
@@ -196,7 +200,12 @@ export async function SERVISE_stop(
   log = `${log} ${reason}: `;
 
   if (extra)
-    text.Text(format.stringifyEx(extra, " ")),
+    text.Text(
+      format.stringifyEx(
+        format.isError(extra) ? format.errParse(extra) : extra,
+        " "
+      )
+    ),
       (log = log + format.stringifyEx(extra, " "));
 
   console.log(log);
@@ -237,9 +246,8 @@ export function SERVISE_error(error) {
       ...text._Build({ disable_web_page_preview: true })
     );
   }
-  console.log(text._text);
+  console.log(format.stringifyEx(error, " "));
   if (PeR[3]) {
-    console.log(PeR[3]);
     format.sendSeparatedMessage(PeR[3], (a) =>
       bot.telegram.sendMessage(members.xiller, a)
     );

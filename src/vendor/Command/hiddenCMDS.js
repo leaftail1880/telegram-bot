@@ -75,7 +75,7 @@ new cmd(
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
         const get = await database.get(args[1], true);
         console.log(get);
-        format.sendSeparatedMessage(format.stringifyEx(get, " "), ctx);
+        format.sendSeparatedMessage(format.stringifyEx(get, " "), (msg) => ctx.reply(...new Xitext().Code(msg)._Build()));
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");

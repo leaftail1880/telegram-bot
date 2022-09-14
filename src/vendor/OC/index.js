@@ -264,7 +264,7 @@ function not(ctx, qq, session) {
  */
 function noCache(user, uOC) {
   return (
-    !user?.cache?.sessionCache[1] || !uOC || !uOC[user?.cache?.sessionCache[0]]
+    !user?.cache?.sessionCache[0] || !uOC || !uOC[user?.cache?.sessionCache[0]]
   );
 }
 
@@ -375,7 +375,7 @@ const MENU = {
           message: "Редактирование",
         },
         (ctx, data) => {
-          ssn.OC.enter(ctx.callbackQuery.from.id, 10, [data[0], data[1]], true);
+          ssn.OC.enter(ctx.callbackQuery.from.id, 10, [data[0]], true);
           ctx.reply(...lang.red0._Build({ disable_web_page_preview: true }));
         }
       ),
@@ -432,8 +432,8 @@ const MENU = {
         const OCS = await getOCS(),
           uOC = OCS[ctx.from.id];
         if (noCache(user, uOC)) return err(421, ctx);
-        const oc = uOC[user?.cache?.sessionCache[1]];
-        ssn.OC.enter(ctx.from.id, 12, oc.description);
+        const oc = uOC[user?.cache?.sessionCache[0]];
+        ssn.OC.enter(ctx.from.id, 12, oc.name);
         ctx.reply(lang.redact.description());
         console.log(
           `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped name`
@@ -470,7 +470,7 @@ const MENU = {
           uOC = OCS[ctx.from.id];
         if (noCache(user, uOC)) return err(ctx, 422);
 
-        const oc = uOC[user.cache.sessionCache[1]];
+        const oc = uOC[user.cache.sessionCache[0]];
 
         saveOC(
           ctx.from.id,
