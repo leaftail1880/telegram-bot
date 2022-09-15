@@ -9,11 +9,93 @@ import { loadCMDS } from "./class/cmdCLS.js";
 import { loadQuerys } from "./class/queryCLS.js";
 import { loadEvents } from "./class/EventsCLS.js";
 
+const lang = {
+  launchLOG: (reason) => `> ${data.versionLOG} [${reason}]`,
+  stopRes: (reason) => `% ${data.versionLOG} [${reason}]`,
+  stop: {
+    noRespLog: () => lang.stopRes("No response"),
+    terminate: () => lang.stopRes(`🌑`),
+    old: () => `${data.versionLOG} [OLD]`,
+    freeze: () => `❄️ ${data.versionMSG} [FRZ!]`,
+    freezeLOG: () => lang.stopRes(`FRZ!`),
+  },
+  runLOG: {
+    error: {
+      renderError: (err) => console.warn("◔ Error: ", err),
+      renderRegister: () =>
+        console.warn(
+          "◔ Перерегайся: dashboard.render.com/r/red-cc4qn1un6mprie1hdlrg"
+        ),
+    },
+  },
+  startLOG: {
+    render: [
+      () => console.log(`v${VERSION.join(".")}, Port: ${PORT}`),
+      (plgs) =>
+        console.log(
+          `${(Date.now() - data.start_time) / 1000} sec, Session: ${
+            data.session
+          }, plugins: ${plgs.join(", ")}`
+        ),
+    ],
+    dev: [
+      () => {
+        console.log(" ");
+        console.log(
+          `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${
+            !env.local ? PORT : `localhost:${PORT}`
+          }`
+        );
+        console.log(" ");
+      },
+      () => {
+        console.log("◔ Подключено");
+        console.log(" ");
+      },
+      () => {
+        console.log("Plugins: ");
+        console.log(" ");
+      },
+      (plugin, error) => {
+        console.warn(`> Error ${plugin}: ` + error.stack);
+      },
+      (plugin, start) => {
+        console.log(`> ${plugin} (${Date.now() - start} ms)`);
+      },
+      () => {
+        console.log(" ");
+        console.log("Done.");
+        console.log(" ");
+        console.log(
+          `> [Load end] ${
+            (Date.now() - data.start_time) / 1000
+          } sec, Session: ${data.session}`
+        );
+        console.log(" ");
+      },
+    ],
+  },
+  start: (info, prefix = '⌬') =>
+    new Xitext()
+      .Text(`${prefix} Кобольдя `)
+      ._Group(data.versionMSG.split(" ")[0])
+      .Url(null, "https://dashboard.render.com")
+      .Bold()
+      ._Group()
+      .Text(' ')
+      .Italic(info ? info : data.versionMSG.split(" ")[1] ?? false)
+      .Text(" (")
+      .Bold((Date.now() - data.start_time) / 1000)
+      .Text(" сек)")
+      ._Build({ disable_web_page_preview: true }),
+};
+
 /**
  * @typedef {Object} sessionCache
  * @property {String} v 6.3.3
  * @property {Boolean} isLatest true | false | 0 | 'empty array'
  * @property {String} versionMSG v6.3.3 (Init)
+ * @property {String} versionLOG v6.3.3
  * @property {Number} session 0
  * @property {Number} start_time 1224214
  * @property {Boolean} started true
@@ -41,15 +123,8 @@ export const data = {
  */
 export async function SERVISE_start() {
   app.get("/healt", (_req, res) => res.sendStatus(200));
-  if (data.isDev) {
-    console.log(" ");
-    console.log(
-      `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${
-        !env.local ? PORT : `localhost:${PORT}`
-      }`
-    );
-    console.log(" ");
-  } else console.log(`v${VERSION.join(".")}, Port: ${PORT}`);
+  if (data.isDev) lang.startLOG.dev[0]();
+  else lang.startLOG.render[0]();
 
   /**======================
    * Подключение к базе данных
@@ -62,9 +137,7 @@ export async function SERVISE_start() {
 
   client.on("error", async (err) => {
     if (err.message == "Client IP address is not in the allowlist.") {
-      console.warn(
-        "◔ Перерегайся: https://dashboard.render.com/r/red-cc4qn1un6mprie1hdlrg"
-      );
+      lang.runLOG.error.renderRegister();
       await SERVISE_stop("db ip update", null, true, true, false, false);
       return;
     }
@@ -72,16 +145,13 @@ export async function SERVISE_start() {
       await client.connect();
       return;
     }
-    console.warn("◔ Error: ", err);
+    lang.runLOG.error.renderError(err);
   });
 
   // Сохранение клиента
   await client.connect();
   database.setClient(client, s);
-  if (data.isDev) {
-    console.log("◔ Подключено");
-    console.log(" ");
-  }
+  if (data.isDev) lang.startLOG.dev[1]();
 
   // Обновляет сессию
   await updateSession(data);
@@ -99,38 +169,23 @@ export async function SERVISE_start() {
    *========================**/
   await bot.launch();
   data.started = true;
-  bot.telegram.sendMessage(
-    members.xiller,
-    ...new Xitext()
-      .Text(`⌬ Кобольдя `)
-      ._Group(data.versionMSG.split(" ")[0])
-      .Url(null, "https://dashboard.render.com")
-      .Bold()
-      ._Group()
-      .Text(" ")
-      .Italic(data.versionMSG.split(" ")[1] ?? false)
-      .Text(" (")
-      .Bold((Date.now() - data.start_time) / 1000)
-      .Text(" сек)")
-      ._Build({ disable_web_page_preview: true })
-  );
+  bot.telegram.sendMessage(members.xiller, ...lang.start());
 
   /**======================
    * Загрузка плагинов
    *========================**/
   let plgs = [];
   if (data.isDev) {
-    console.log("Plugins: ");
-    console.log(" ");
+    lang.startLOG.dev[2]();
   }
   for (const plugin of Plugins) {
     const start = Date.now();
 
     await import(`../vendor/${plugin}/index.js`).catch((error) => {
-      console.warn(`> Error ${plugin}: ` + error.stack);
+      lang.startLOG.dev[3](plugin, error);
     });
     data.isDev
-      ? console.log(`> ${plugin} (${Date.now() - start} ms)`)
+      ? lang.startLOG.dev[4](plugin, start)
       : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
   // Инициализация команд и списков
@@ -138,22 +193,8 @@ export async function SERVISE_start() {
   loadQuerys();
   loadEvents();
 
-  if (data.isDev) {
-    console.log(" ");
-    console.log("Done.");
-    console.log(" ");
-    console.log(
-      `> [Load end] ${(Date.now() - data.start_time) / 1000} sec, Session: ${
-        data.session
-      }`
-    );
-  } else
-    console.log(
-      `${(Date.now() - data.start_time) / 1000} sec, Session: ${
-        data.session
-      }, plugins: ${plgs.join(", ")}`
-    );
-  if (data.isDev) console.log(" ");
+  if (data.isDev) lang.startLOG.dev[5]();
+  else lang.startLOG.render[1](plgs);
   data.updateTimer = setInterval(checkInterval, 5000);
 }
 
@@ -168,12 +209,7 @@ async function checkInterval() {
       await database.client.quit();
       database.client = false;
       clearInterval(data.updateTimer);
-      SERVISE_stop(
-        `${data.versionLOG} выключился как старый`,
-        null,
-        true,
-        false
-      );
+      SERVISE_stop(lang.stop.old(), null, true, false);
       return;
     }
   }
@@ -186,27 +222,29 @@ export async function SERVISE_stop(
   stopApp,
   sendMessage = true
 ) {
-  let log = `✕ `;
+  let log = `✕  `;
   const text = new Xitext()
-    ._Group("✕ ")
+    ._Group("✕  ")
     .Url(null, "https://dashboard.render.com")
     .Bold()
     ._Group();
 
-  if (stopApp) text.Bold("ALL \n");
-  if (stopBot && !stopApp) text.Text("bot: \n"), (log = `${log}bot: \n`);
+  if (stopApp) text.Bold("ALL. "), (log = `${log}ALL. `);
+  else if (stopBot) text.Text("BOT. "), (log = `${log}BOT. `);
 
-  text.Mono(reason + "").Text(": ");
-  log = `${log} ${reason}: `;
+  text.Mono(reason + "");
+  log = `${log}${reason}`;
 
   if (extra)
-    text.Text(
-      format.stringifyEx(
-        format.isError(extra) ? format.errParse(extra) : extra,
-        " "
-      )
-    ),
-      (log = log + format.stringifyEx(extra, " "));
+    text
+      .Text(": ")
+      .Text(
+        format.stringifyEx(
+          format.isError(extra) ? format.errParse(extra) : extra,
+          " "
+        )
+      ),
+      (log = `${log}: ${format.stringifyEx(extra, " ")}`);
 
   console.log(log);
   if (data.started && sendMessage)
@@ -246,7 +284,9 @@ export function SERVISE_error(error) {
       ...text._Build({ disable_web_page_preview: true })
     );
   }
-  console.log(format.stringifyEx(error, " "));
+  console.log(
+    typeof error === "object" ? format.stringifyEx(error, " ") : error
+  );
   if (PeR[3]) {
     format.sendSeparatedMessage(PeR[3], (a) =>
       bot.telegram.sendMessage(members.xiller, a)
@@ -257,11 +297,8 @@ export function SERVISE_error(error) {
 export async function SERVISE_freeze() {
   clearInterval(data.updateTimer);
   if (data.started)
-    await bot.telegram.sendMessage(
-      members.xiller,
-      `❄️ Бот ${data.versionMSG} ждет ответа от сессии`
-    ),
-      console.log(`FRZ! ${data.versionLOG}`);
+    await bot.telegram.sendMessage(members.xiller, lang.stop.freeze()),
+      console.log(lang.stop.freezeLOG());
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
@@ -281,16 +318,11 @@ export async function SERVISE_freeze() {
       await database.client.quit();
       database.client = false;
       clearInterval(timeout);
-      return SERVISE_stop(
-        "🌑 Terminated by new version (Active: " + data.versionMSG + ")",
-        null,
-        true,
-        false,
-        false
-      );
+      return SERVISE_stop(lang.stop.terminate(), null, true, data.isDev, false);
     }
 
     if (answer === "terminate_me") {
+      clearInterval(timeout);
       data.start_time = Date.now();
 
       // Обновляет сессию
@@ -306,26 +338,11 @@ export async function SERVISE_freeze() {
 
       data.stopped = false;
       data.started = true;
-      console.log(`${data.versionLOG} запущен как последний`);
-      const text = new Xitext()
-        .Text(`🌖 Кобольдя `)
-        ._Group(data.versionMSG.split(" ")[0])
-        .Url(null, "https://dashboard.render.com")
-        .Bold()
-        ._Group()
-        .Text(" ")
-        .Italic(data.versionMSG.split(" ")[1])
-        .Text(" запущен как последний (")
-        .Italic((Date.now() - data.start_time) / 1000)
-        .Text(" сек)");
-      bot.telegram.sendMessage(
-        members.xiller,
-        ...text._Build({ disable_web_page_preview: true })
-      );
+      console.log(lang.launchLOG("Newest"));
+      bot.telegram.sendMessage(members.xiller, ...lang.start("[Newest]"));
 
-      data.updateTimer = setInterval(checkInterval, 10000);
+      data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);
-      clearInterval(timeout);
       return;
     }
 
@@ -349,20 +366,9 @@ export async function SERVISE_freeze() {
       data.started = true;
       bot.telegram.sendMessage(
         members.xiller,
-        ...new Xitext()
-          .Text(`↩️ Кобольдя `)
-          ._Group(data.versionMSG.split(" ")[0])
-          .Url(null, "https://dashboard.render.com")
-          .Bold()
-          ._Group()
-          .Text(" ")
-          .Italic(data.versionMSG.split(" ")[1])
-          .Text(" не получил ответа и вернулся за ")
-          .Bold((Date.now() - data.start_time) / 1000)
-          .Text(" сек")
-          ._Build({ disable_web_page_preview: true })
+        ...lang.start("[No response]", "↩️")
       );
-      console.log(`${data.versionLOG} не дождался ответа сервера`);
+      console.log(lang.launchLOG("No response"));
 
       data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);

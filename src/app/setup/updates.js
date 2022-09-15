@@ -71,6 +71,5 @@ export async function updateVisualVersion(data) {
   if (data.isLatest === 0) d = "Рабочая";
   if (data.isLatest === false) d = "Старая";
   data.versionMSG = `v${data.v} ${d}`;
-  data.versionLOG = `v${data.v} (${d})`;
-  data
+  data.versionLOG = `v${data.v}`;
 }
