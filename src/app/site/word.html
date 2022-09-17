@@ -1,27 +1,3 @@
-import { app } from "../../app/setup/tg.js";
-import { data } from "../../app/start-stop.js";
-
-//
-
-let changelog = [];
-
-export class Change {
-  /**
-   *
-   * @param {String} version
-   * @param {Array<String>} changes
-   */
-  constructor(version, changes) {
-    changelog.push(`<h4>v${version}</h4>`);
-    changelog.push(`<ul><li>${changes.join("</li><li>")}</li></ul>`);
-    changelog.push("<br/>");
-  }
-}
-
-import("./changelog.js").then(async () => {
-  const html2 = `
-  <!DOCTYPE html>
-
 <html>
   <head>
     <!-- Open Graph Generated: a.pr-cy.ru -->
@@ -44,6 +20,11 @@ import("./changelog.js").then(async () => {
         color: rgb(228, 213, 236);
         /*background-color: rgb(48, 44, 56);*/
         padding: 2%;
+        margin: 8px;
+        margin-top: -0.25em;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        margin-left: 8px;
       }
       li {
         list-style-type: "- ";
@@ -54,7 +35,6 @@ import("./changelog.js").then(async () => {
       ul {
         display: block;
         list-style-type: disc;
-        margin-block-start: -1em;
         margin-block-end: 30px;
         margin-inline-start: 0px;
         margin-inline-end: 0px;
@@ -73,17 +53,15 @@ import("./changelog.js").then(async () => {
         margin-inline-end: 0px;
         font-weight: bold;
       }
+      .cla {
+        margin-inline-start: 1em;
+      }
     </style>
     <title>Кобольдя</title>
   </head>
   <body>
-    <h3>Состояние:</h3>
-    <p>Бот работает стабильно! Версия: <strong>${data.versionMSG}</strong></p>
-    <br>
-    <h3>Список изменений:</h3>
-    ${changelog.join(" ")}
+    <h1>Кобольдя</h1>
+    <p class="cla">aa</p>
+    <p>s</p>
   </body>
 </html>
-  `;
-  app.get("/", (_req, res) => res.type("html").send(html2));
-});

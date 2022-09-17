@@ -1,5 +1,3 @@
-import { Context } from "telegraf";
-
 class formatter {
   stringifyEx(startObject, space = undefined) {
     if (typeof startObject === "string") return startObject;
@@ -209,33 +207,6 @@ class formatter {
   }
 }
 export const format = new formatter();
-
-/*
-ReferenceError: user is not defined 
-   at file:///C:/Users/%D0%9D%D0%B0%D1%81%D1%82%D1%8F/Desktop/-=x=-/tgbot/src/app/class/queryCLS.js:59:7
-   at C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:163:111
-   at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-   at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-   at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-
-Ошибка при работе бота:  ReferenceError: user is not defined
-    at file:///C:/Users/%D0%9D%D0%B0%D1%81%D1%82%D1%8F/Desktop/-=x=-/tgbot/src/app/class/queryCLS.js:59:7
-    at C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:163:111
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-    at async C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:469:21
-    at async execute (C:\Users\Настя\Desktop\-=x=-\tgbot\node_modules\telegraf\lib\composer.js:468:17)
-
-*/
 
 /**
  *

@@ -7,7 +7,7 @@ import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
 import { Xitext } from "./class/XitextCLS.js";
 import { loadCMDS } from "./class/cmdCLS.js";
 import { loadQuerys } from "./class/queryCLS.js";
-import { loadEvents } from "./class/EventsCLS.js";
+import { emitEvents, loadEvents } from "./class/EventsCLS.js";
 
 const lang = {
   launchLOG: (reason) => `> ${data.versionLOG} [${reason}]`,
@@ -101,6 +101,7 @@ const lang = {
  * @property {Boolean} started true
  * @property {Boolean} stopped false
  * @property {Boolean} isDev false
+ * @property {Boolean} debug
  */
 /**======================
  * Кэш сессии
@@ -116,7 +117,13 @@ export const data = {
   stopped: false,
   isDev: env.xillerPC ? true : false,
   updateTimer: null,
+  debug: false
 };
+
+export function log(msg) {
+  console.log(msg)
+  if (data.debug) bot.telegram.sendMessage(members.xiller, msg)
+}
 /**
  * Запуск бота
  * @returns {void}
@@ -192,6 +199,7 @@ export async function SERVISE_start() {
   loadCMDS();
   loadQuerys();
   loadEvents();
+  emitEvents('afterpluginload');
 
   if (data.isDev) lang.startLOG.dev[5]();
   else lang.startLOG.render[1](plgs);

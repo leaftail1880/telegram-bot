@@ -498,7 +498,7 @@ const MENU = {
           keys = Object.keys(OCS);
         if (!keys[0]) return noOC(ctx);
         if (_data.isDev)
-          editMsg(ctx, "Загрузка...\n\n\n\n\n\n\n\nДа, иногда долгая.");
+          editMsg(ctx, "Загрузка...");
         const btns = [],
           menu = [new Button("↩️").data(link("back"))],
           page = Number(data[0]) == NaN ? Number(data[0]) : 0;
@@ -508,7 +508,7 @@ const MENU = {
              * @type {import("../../app/models.js").DBUser}
              */
             const user = await database.get(d.user(e), true),
-              u = user?.cache?.nickname ?? user?.static?.name;
+              u = user?.cache?.nickname ?? user?.static?.name ?? user?.static?.nickname;
             if (u)
               btns.push([
                 new Button(format.capitalizeFirstLetter(u)).data(
@@ -517,7 +517,7 @@ const MENU = {
                     e,
                     page,
                     format.capitalizeFirstLetter(u),
-                    user?.static?.name
+                    user?.static?.nickname
                   )
                 ),
               ]);

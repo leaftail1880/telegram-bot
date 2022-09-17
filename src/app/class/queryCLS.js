@@ -1,5 +1,6 @@
 import { Context } from "telegraf";
 import { bot } from "../setup/tg.js";
+import { log } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 
 /**
@@ -37,7 +38,7 @@ const activeQueries = {};
 export function loadQuerys() {
   bot.on("callback_query", async (ctx, next) => {
     const data = ctx.callbackQuery.data;
-    if (activeQueries[data] && Date.now() - activeQueries[data] < 100) {
+    if (activeQueries[data] && Date.now() - activeQueries[data] <= 500) {
       activeQueries[data] = Date.now();
       return;
     }
@@ -73,6 +74,6 @@ export function loadQuerys() {
         }] ${data} ${error?.message ?? error} ${error?.stack}`
       );
     }
-    console.log(`> Query. ${name}: ${data}`);
+    log(`> Query. ${name}: ${data}`);
   });
 }

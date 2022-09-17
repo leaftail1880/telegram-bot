@@ -7,6 +7,7 @@ import {
   SERVISE_start,
   SERVISE_stop,
 } from "./app/start-stop.js";
+import { Change } from "./app/site/index.js";
 
 /**======================
  * База данных
@@ -37,6 +38,9 @@ process.on("unhandledRejection", async (err) => {
 });
 
 app.get("/healt", (_req, res) => res.sendStatus(200));
+app.get("/healtz", (_req, res) => res.sendStatus(200));
+app.get("/hp", (_req, res) => res.sendStatus(200));
+app.get('/', (_req, res) => res.type('html').send(Change.site))
 
 /**======================
  * Запуск
@@ -48,3 +52,5 @@ app.listen(PORT, () => SERVISE_start());
  *========================**/
 process.once("SIGINT", () => SERVISE_stop("SIGINT"));
 process.once("SIGTERM", () => SERVISE_stop("SIGTERM"));
+process.once("beforeExit", () => SERVISE_stop("EXIT", 'before', true, false));
+process.once("SIGSTOP", () => SERVISE_stop("EXIT", null, true, false));

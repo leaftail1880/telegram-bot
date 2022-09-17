@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import { Xitext } from "./XitextCLS.js";
 import { isAdmin } from "../functions/checkFNC.js";
 import { bot, members } from "../setup/tg.js";
-import { data, SERVISE_error } from "../start-stop.js";
+import { data, log, SERVISE_error } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
 import { Session, ssn } from "./sessionCLS.js";
@@ -369,7 +369,7 @@ export function loadCMDS() {
         });
         err = true;
       }
-      if (!err) console.log(`> CMD. ${name}: ${t}`);
+      log(`> CMD. ${name}: ${t}`);
     },
     true
   );

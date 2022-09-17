@@ -1,21 +1,16 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [6, 6, 6], //
+export const VERSION = [7, 0, 0], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   errRespCodes = [400, 409],
+  // Время в миллисекундах, которое должно пройти что бы данные пользователя обновились.
+  // Чем меньше, тем дольше будет обработка сообщений при запуске.
+  cacheUpdateTime = 2000,
   // Имя папки, в которой содержатся скрипты. Нужно для парсинга ошибок.
-  mainFolderName = env.mainFolderName, 
-  errParseTypes = {
-    'telegraf': 'Telegraf',
-    'redis': 'RedisCL',
-    'intenal': 'Internal'
-  },
   Plugins = [
-    "html", // Сайт
-
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
-    "timeChecker", // Времяz
+    "timeChecker", // Время
     "OC", // Модуль для команды /oc
     
     "Cooldowns", // Таймеры
