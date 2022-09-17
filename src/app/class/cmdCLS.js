@@ -7,6 +7,7 @@ import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
 import { Session, ssn } from "./sessionCLS.js";
 import { EventListener } from "./EventsCLS.js";
+import { commandClearRegExp } from "../../config.js";
 
 const public_cmds = {},
   private_cmds = {}
@@ -340,7 +341,7 @@ export function loadCMDS() {
       let err = false;
       const a =
           t
-            .replace(/[\.\-\+\/\$]\S+\s?/g, "")
+            .replace(commandClearRegExp, "")
             ?.match(/"[^"]+"|[^\s]+/g)
             ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
         user = data.DBUser,
@@ -369,7 +370,7 @@ export function loadCMDS() {
         });
         err = true;
       }
-      log(`> CMD. ${name}: ${t}`);
+      if (!err) log(`> CMD. ${name}: ${t}`);
     },
     true
   );

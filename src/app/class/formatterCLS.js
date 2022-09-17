@@ -1,5 +1,5 @@
 class formatter {
-  stringifyEx(startObject, space = undefined) {
+  stringifyEx(startObject, space = " ") {
     if (typeof startObject === "string") return startObject;
     let unsafeProperty = "unsafeproperty.fixed";
     function getString(ThisObject, before, isSpace) {
@@ -158,7 +158,7 @@ class formatter {
     stack1 = stack1
       .map((e) => e.replace(/\s+at\s/g, ""))
       .map(parseErrStack)
-      .map((e) => `\n\n   at ${e}`);
+      .map((e) => `\n   at ${e}`);
 
     stack1.forEach((e) => {
       if (!stack2.includes(e)) stack2.push(e);

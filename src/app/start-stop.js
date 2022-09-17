@@ -275,6 +275,7 @@ export async function SERVISE_stop(
  * @param {Error} error
  */
 export function SERVISE_error(error) {
+  console.warn(error)
   const PeR = format.errParse(error, true),
     text = new Xitext()
       ._Group(PeR[0])
@@ -292,9 +293,6 @@ export function SERVISE_error(error) {
       ...text._Build({ disable_web_page_preview: true })
     );
   }
-  console.log(
-    typeof error === "object" ? format.stringifyEx(error, " ") : error
-  );
   if (PeR[3]) {
     format.sendSeparatedMessage(PeR[3], (a) =>
       bot.telegram.sendMessage(members.xiller, a)

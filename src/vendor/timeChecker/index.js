@@ -18,6 +18,21 @@ export function c(ID, Ttime) {
   return false;
 }
 
+export function co(ID, Ttime) {
+  let set = MEMBERS[Object.keys(members).find((e) => members[e] == ID)];
+  if (!set) set = MEMBERS.default;
+  let MessageTime = Ttime ?? t.ArrrayTime(),
+    StartTime = Number(`${set.start[0]}${set.start[1]}`),
+    EndTime = Number(`${set.end[0]}${set.end[1]}`),
+    GMT = env.local ? 0 : 3;
+  MessageTime[0] = MessageTime[0] + GMT + set.GMT;
+  if (MessageTime[0] >= 24) MessageTime[0] = MessageTime[0] - 24;
+  if (`${MessageTime[1]}`.length < 2) MessageTime[1] = "0" + MessageTime[1];
+  MessageTime = Number(`${MessageTime[0]}${MessageTime[1]}`);
+  const qStart = (MessageTime <= StartTime || StartTime <= 600), qEnd = MessageTime >= EndTime, q = qStart && qEnd  
+  return q;
+}
+
 /**
  *
  * @param {Context} ctx

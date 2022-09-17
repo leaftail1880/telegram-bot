@@ -3,9 +3,11 @@ import { cmd } from "../../app/class/cmdCLS.js";
 import { format } from "../../app/class/formatterCLS.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { getUser } from "../../app/functions/getUserFNC.js";
-import { data, SERVISE_stop } from "../../app/start-stop.js";
+import { data, SERVISE_error, SERVISE_stop } from "../../app/start-stop.js";
+import { commandClearRegExp } from "../../config.js";
 import { database } from "../../index.js";
 import { lang } from "../OC/index.js";
+import { co } from "../timeChecker/index.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -35,14 +37,28 @@ new cmd({
  * @param {*} Dta
  * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
  */
- function sudo(ctx, _args, Dta, command) {
-  const a = "args, ctx, g, db, data, fdata, Xitext, format",
+function sudo(ctx, _args, Dta) {
+  const a = "args, ctx, g, db, data, fdata, xt, format, c, r",
     func = `(async () => {${ctx.message.text
-      .replace(`${ctx.message.text.charAt(0)}${command.info.name} `, "")
+      .replace(commandClearRegExp, "")
       .replace(/\n/g, " ")}})();`;
-  new Function(a, func)(a, ctx, global, database, data, Dta, Xitext, format);
+  try {
+    new Function(a, func)(
+      a,
+      ctx,
+      global,
+      database,
+      data,
+      Dta,
+      Xitext,
+      format,
+      co,
+      ctx.reply
+    );
+  } catch (error) {
+    SERVISE_error(error);
+  }
 }
-
 new cmd(
   {
     name: "f",
@@ -55,7 +71,6 @@ new cmd(
   },
   sudo
 );
-
 
 new cmd(
   {
@@ -75,7 +90,9 @@ new cmd(
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
         const get = await database.get(args[1], true);
         console.log(get);
-        format.sendSeparatedMessage(format.stringifyEx(get, " "), (msg) => ctx.reply(...new Xitext().Code(msg)._Build()));
+        format.sendSeparatedMessage(format.stringifyEx(get, " "), (msg) =>
+          ctx.reply(...new Xitext().Code(msg)._Build())
+        );
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
@@ -120,8 +137,6 @@ new cmd(
     }
   }
 );
-
-
 
 new cmd(
   {
