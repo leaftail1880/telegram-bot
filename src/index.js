@@ -53,4 +53,3 @@ app.listen(PORT, () => SERVISE_start());
 process.once("SIGINT", () => SERVISE_stop("SIGINT"));
 process.once("SIGTERM", () => SERVISE_stop("SIGTERM"));
 process.once("beforeExit", () => SERVISE_stop("EXIT", 'before', true, false));
-process.once("SIGSTOP", () => SERVISE_stop("EXIT", null, true, false));
