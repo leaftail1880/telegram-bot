@@ -1,4 +1,4 @@
-import { cmd } from "../../app/class/cmdCLS.js";
+import { Command } from "../../app/class/cmdCLS.js";
 import { d } from "../../app/class/formatterCLS.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { env } from "../../app/setup/tg.js";
@@ -26,7 +26,7 @@ new cmd({
 })
 */
 
-new cmd(
+new Command(
   {
     name: "version",
     description: "Версия бота",

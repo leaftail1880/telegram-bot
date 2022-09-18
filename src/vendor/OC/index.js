@@ -1,14 +1,15 @@
 import { Context } from "telegraf";
-import { cmd } from "../../app/class/cmdCLS.js";
+import { Command } from "../../app/class/cmdCLS.js";
 import { EventListener } from "../../app/class/EventsCLS.js";
 import { d, format } from "../../app/class/formatterCLS.js";
+import { MultiMenuV1 } from "../../app/class/menuCLS.js";
 import { Query } from "../../app/class/queryCLS.js";
 import { ssn } from "../../app/class/sessionCLS.js";
 import { Button, Xitext } from "../../app/class/XitextCLS.js";
 import { err } from "../../app/functions/errFNC.js";
-import { bot } from "../../app/setup/tg.js";
 import { data } from "../../app/start-stop.js";
 import { database } from "../../index.js";
+
 const _data = data;
 /**
  * @typedef {Object} UserOC
@@ -17,8 +18,12 @@ const _data = data;
  * @property {String} fileid
  */
 
-export const maxButtonsRows = 12,
-  maxButtonsPerRow = 6;
+export const m = new MultiMenuV1("OC"),
+  maxButtonsRows = m.config.maxRows,
+  link = m.link.bind(m),
+  editMsg = m.editMsgFromQuery.bind(m),
+  not = m.notPrivateChat.bind(m),
+  cacheEmpty = (qq, lvl) => m.isCacheEmpty(qq?.user, lvl);
 
 /*------------------------------------------ ЯЗЫК ------------------------------------------*/
 export const lang = {
@@ -142,35 +147,6 @@ async function delOC(id, index) {
 
 /**
  *
- * @param {String} method
- * @param  {...String} args
- * @returns {String}
- */
-function link(method, ...args) {
-  return d.query("OC", method, ...args);
-}
-
-/**
- *
- * @param {Context} ctx
- * @param {String} text
- * @param {import("telegraf/typings/telegram-types.js").ExtraEditMessageText} extra
- * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
- */
-async function editMsg(ctx, text, extra = {}, InlineKeyboard) {
-  if (typeof extra === "object" && InlineKeyboard)
-    extra.reply_markup.inline_keyboard = InlineKeyboard;
-  await ctx.telegram.editMessageText(
-    ctx.callbackQuery.message.chat.id,
-    ctx.callbackQuery.message.message_id,
-    ctx.callbackQuery.inline_message_id,
-    text,
-    extra
-  );
-}
-
-/**
- *
  * @param {Context} ctx
  * @param {String} text
  * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
@@ -185,15 +161,15 @@ async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard, delType) {
   if (entities) extra.entities = entities;
   if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
 
-
   await ctx.telegram.deleteMessage(
     ctx.callbackQuery.message.chat.id,
     ctx.callbackQuery.message.message_id
   );
-  if (delType === 'mm') await ctx.telegram.deleteMessage(
-    ctx.callbackQuery.message.chat.id,
-    ctx.callbackQuery.message.message_id - 1
-  );
+  if (delType === "mm")
+    await ctx.telegram.deleteMessage(
+      ctx.callbackQuery.message.chat.id,
+      ctx.callbackQuery.message.message_id - 1
+    );
 
   await ctx.reply(text, extra);
 }
@@ -247,17 +223,6 @@ function getRefType(fileid, text) {
 
 /**
  *
- * @param {Context} ctx
- * @param {*} qq
- * @param {Number} session
- * @returns
- */
-function not(ctx, qq, session) {
-  return ctx.chat.type != "private" || qq === "not" || qq.session != session;
-}
-
-/**
- *
  * @param {import("../../app/models.js").DBUser} user
  * @param {*} uOC
  * @returns
@@ -265,12 +230,6 @@ function not(ctx, qq, session) {
 function noCache(user, uOC) {
   return (
     !user?.cache?.sessionCache[0] || !uOC || !uOC[user?.cache?.sessionCache[0]]
-  );
-}
-
-function cacheEmpty(qq, lvl = 0) {
-  return (
-    !qq?.user?.cache?.sessionCache?.map || !qq?.user?.cache?.sessionCache[lvl]
   );
 }
 
@@ -337,7 +296,8 @@ const MENU = {
         if (!OCS[data[0]]?.map || !OCS[data[0]][data[1]]) return noOC(ctx);
 
         const OC = OCS[data[0]][data[1]],
-          capt = lang.myOC(OC.name, OC.description, data[2]), refType = getRefType(OC.fileid, capt._text);
+          capt = lang.myOC(OC.name, OC.description, data[2]),
+          refType = getRefType(OC.fileid, capt._text);
 
         ctx.answerCbQuery(OC.name);
         sendRef(ctx, OC.fileid, capt._text, capt._entities, [
@@ -360,10 +320,11 @@ const MENU = {
           ctx.callbackQuery.message.chat.id,
           ctx.callbackQuery.message.message_id
         );
-        if (data[1] === 'mm') await ctx.telegram.deleteMessage(
-          ctx.callbackQuery.message.chat.id,
-          ctx.callbackQuery.message.message_id - 1
-        );
+        if (data[1] === "mm")
+          await ctx.telegram.deleteMessage(
+            ctx.callbackQuery.message.chat.id,
+            ctx.callbackQuery.message.message_id - 1
+          );
       }
     ),
 
@@ -494,21 +455,31 @@ const MENU = {
         message: "Поиск",
       },
       async (ctx, data) => {
+        if (_data.isDev) editMsg(ctx, "Загрузка...");
         const OCS = await getOCS(),
           keys = Object.keys(OCS);
-        if (!keys[0]) return noOC(ctx);
-        if (_data.isDev)
-          editMsg(ctx, "Загрузка...");
-        const btns = [],
-          menu = [new Button("↩️").data(link("back"))],
-          page = Number(data[0]) == NaN ? Number(data[0]) : 0;
-        for (const e of keys) {
+        if (!keys[0]) {
+          editMsg(ctx, lang.main._text, {
+            entities: lang.main._entities,
+            reply_markup: {
+              inline_keyboard: lang.mainKeyboard,
+            },
+            disable_web_page_preview: true,
+          });
+          return noOC(ctx);
+        }
+        let btns = [],
+          page = Number(data[0]) !== 0 ? Number(data[0]) : 1;
+        for (const e of keys.sort((a, b) => a - b)) {
           try {
             /**
              * @type {import("../../app/models.js").DBUser}
              */
             const user = await database.get(d.user(e), true),
-              u = user?.cache?.nickname ?? user?.static?.name ?? user?.static?.nickname;
+              u =
+                user?.cache?.nickname ??
+                user?.static?.name ??
+                user?.static?.nickname;
             if (u)
               btns.push([
                 new Button(format.capitalizeFirstLetter(u)).data(
@@ -523,13 +494,14 @@ const MENU = {
               ]);
           } catch (e) {}
         }
-        const qMax = Math.ceil(keys.length / maxButtonsRows) - 1,
-          qNext = qMax >= page + 1;
-        btns.splice(maxButtonsRows * page - page, maxButtonsRows * page);
-        if (page > 0)
-          menu.unshift(new Button("⏪").data(link("find", page - 1)));
-        if (qNext) menu.push(new Button("⏩").data(link("find", page + 1)));
-        btns.push(menu);
+        btns = m.generatePageSwitcher(
+          btns,
+          new Button(m.config.backButtonSymbol).data(link("back")),
+          "find",
+          page
+        );
+
+        
 
         editMsg(ctx, lang.find, {
           reply_markup: { inline_keyboard: btns },
@@ -647,7 +619,7 @@ const MENU = {
     }),
   ],
   MainMenu: [
-    new cmd(
+    new Command(
       {
         name: "oc",
         prefix: "def",

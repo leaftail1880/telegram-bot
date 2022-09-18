@@ -179,7 +179,7 @@ export class db {
     if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       collection = {},
-      arg = await this.keys();
+      arg = (await this.keys()).sort();
     for (const a of arg) {
       collection[a] = await this.client.get(a);
     }

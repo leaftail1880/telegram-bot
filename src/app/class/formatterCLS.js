@@ -95,7 +95,7 @@ class formatter {
    */
   toSecString(seconds, left1, left2, left3) {
     let s = `секунд${left1 ? ` ${left1}` : ""}`,
-    sec = `${seconds}`;
+      sec = `${seconds}`;
     if (sec.endsWith("1") && sec != "11") {
       s = `секунда${left2 ? ` ${left2}` : ""}`;
     } else if (sec.endsWith("2") || sec.endsWith("3") || sec.endsWith("4")) {
@@ -198,11 +198,11 @@ class formatter {
    * @param {String} msg
    * @param {Function} method
    */
-  sendSeparatedMessage(msg, method, limit = 4000) {
+  async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 3) {
     if (msg.length < limit) return method(msg);
 
-    for (let p = 1; p <= Math.ceil(msg.length / limit); p++) {
-      method(msg.substring(p * limit - limit, p * limit));
+    for (let p = 1; p <= Math.ceil(msg.length / limit) && p <= safeCount; p++) {
+      await method(msg.substring(p * limit - limit, p * limit));
     }
   }
 }
@@ -239,4 +239,5 @@ export const d = {
     a: "#",
   },
   guide: (index) => `https://t.me/xillerbotguides/${index}`,
+  userLink: (nickname) => `https://t.me/${nickname}`
 };

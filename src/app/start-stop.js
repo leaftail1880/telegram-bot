@@ -75,14 +75,14 @@ const lang = {
       },
     ],
   },
-  start: (info, prefix = '⌬') =>
+  start: (info, prefix = "⌬") =>
     new Xitext()
       .Text(`${prefix} Кобольдя `)
       ._Group(data.versionMSG.split(" ")[0])
       .Url(null, "https://dashboard.render.com")
       .Bold()
       ._Group()
-      .Text(' ')
+      .Text(" ")
       .Italic(info ? info : data.versionMSG.split(" ")[1] ?? false)
       .Text(" (")
       .Bold((Date.now() - data.start_time) / 1000)
@@ -117,12 +117,58 @@ export const data = {
   stopped: false,
   isDev: env.xillerPC ? true : false,
   updateTimer: null,
-  debug: false
+  debug: false,
 };
 
+const OnErrorActions = {
+  cache: {
+    lastTime: Date.now(),
+    type: 'none',
+    cooldown: 1000
+  },
+  codes: {
+    409: () => SERVISE_freeze(),
+    400: (err) => {
+      if (err?.response?.description?.includes("not enough rights")) {
+        bot.telegram.sendMessage(
+          err.on.payload.chat_id,
+          'У бота нет разрешений для выполнения действия "' +
+            err.on.method +
+            '"'
+        );
+        return;
+      }
+      SERVISE_error(err);
+    },
+    429: (err) => {
+      if (Date.now() - OnErrorActions.cache.lastTime <= OnErrorActions.cache.cooldown && OnErrorActions.cache.type === err.stack) return
+      OnErrorActions.cache.type = err.stack
+      OnErrorActions.cache.lastTime = Date.now()
+      console.warn(err.stack)
+    },
+    413: (err) => {
+      console.warn(err)
+    }
+  },
+  messages: [
+    "TypeError",
+    "SyntaxError",
+    "Socket closed unexpectedly",
+    "ReferenceError",
+  ],
+};
+
+export async function handleError(err) {
+  if (OnErrorActions.codes[err?.response?.error_code]) {
+    OnErrorActions.codes[err?.response?.error_code](err);
+  } else if (OnErrorActions.messages.includes(err?.stack?.split(":")[0])) {
+    SERVISE_error(err);
+  } else SERVISE_stop(err, null, true);
+}
+
 export function log(msg) {
-  console.log(msg)
-  if (data.debug) bot.telegram.sendMessage(members.xiller, msg)
+  console.log(msg);
+  if (data.debug) bot.telegram.sendMessage(members.xiller, msg);
 }
 /**
  * Запуск бота
@@ -199,7 +245,7 @@ export async function SERVISE_start() {
   loadCMDS();
   loadQuerys();
   loadEvents();
-  emitEvents('afterpluginload');
+  emitEvents("afterpluginload");
 
   if (data.isDev) lang.startLOG.dev[5]();
   else lang.startLOG.render[1](plgs);
@@ -275,7 +321,7 @@ export async function SERVISE_stop(
  * @param {Error} error
  */
 export function SERVISE_error(error) {
-  console.warn(error)
+  console.warn(`${error?.message}: ${error?.stack ?? error}`);
   const PeR = format.errParse(error, true),
     text = new Xitext()
       ._Group(PeR[0])

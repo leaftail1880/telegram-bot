@@ -56,6 +56,7 @@ export class EventListener {
 
 export function loadEvents() {
   bot.on("message", async (ctx) => {
+    if (ctx.from.is_bot) return
     /**
      * @type {Array<Event>}
      */

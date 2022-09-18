@@ -10,7 +10,7 @@ import { EventListener } from "./EventsCLS.js";
 import { commandClearRegExp } from "../../config.js";
 
 const public_cmds = {},
-  private_cmds = {}
+  private_cmds = {};
 /**
  * @typedef {Object} CommandType
  * @property {String} group
@@ -34,7 +34,7 @@ const public_cmds = {},
  * @property {ChatCommandCallback} callback
  */
 
-export class cmd {
+export class Command {
   /**
    * Создает команду
    * @param {Object} info
@@ -92,12 +92,12 @@ export class cmd {
    *
    * @param {String} msg
    * @param {boolean} isDefCmd
-   * @returns {cmd}
+   * @returns {Command}
    */
   static getCmd(msg, isDefCmd) {
     if (!msg) return false;
     /**
-     * @type {cmd}
+     * @type {Command}
      */
     let cmd;
     if (isDefCmd) {
@@ -120,7 +120,7 @@ export class cmd {
   }
   /**
    *
-   * @param {cmd} command
+   * @param {Command} command
    * @param {Context} ctx
    * @returns
    */
@@ -150,7 +150,7 @@ export class cmd {
 /**======================ss
  *    Приветствие
  *========================**/
-new cmd(
+new Command(
   {
     name: "start",
     description: "Начало работы с ботом в лс",
@@ -165,7 +165,7 @@ new cmd(
 );
 /*========================*/
 
-new cmd(
+new Command(
   {
     name: "help",
     description: "Список команд",
@@ -179,14 +179,14 @@ new cmd(
       a = new Xitext();
 
     for (const e of Object.values(public_cmds)) {
-      if (await cmd.cantUse(e, ctx, data.userRights)) continue;
+      if (await Command.cantUse(e, ctx, data.userRights)) continue;
       if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
       a.Text(`  /${e.info.name}`);
       a.Italic(` - ${e.info.description}\n`);
     }
 
     for (const e of Object.values(private_cmds)) {
-      if (await cmd.cantUse(e, ctx, data.userRights)) continue;
+      if (await Command.cantUse(e, ctx, data.userRights)) continue;
       if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
       a.Text(`  `);
       a.Mono(`-${e.info.name}`);
@@ -197,7 +197,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "cancel",
     prefix: "def",
@@ -219,7 +219,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "next",
     prefix: "def",
@@ -260,7 +260,7 @@ export function loadCMDS() {
     allKmds = [];
   Object.keys(public_cmds).forEach((e) => {
     /**
-     * @type {cmd}
+     * @type {Command}
      */
     const cmd = public_cmds[e],
       m = { command: cmd.info.name, description: cmd.info.description };
@@ -321,18 +321,14 @@ export function loadCMDS() {
        */
       let command;
       if (t?.startsWith("/")) {
-        command = cmd.getCmd(t.split(" ")[0].substring(1), true);
+        command = Command.getCmd(t.split(" ")[0].substring(1), true);
       } else {
-        if (
-          !t ||
-          !t.match(/^[\.\-\+\/\$]/gm) ||
-          !t.split(" ")[0]?.substring(1)
-        )
+        if (!t || !t.match(/^[\.\-\+\/\$]/gm) || !t.split(" ")[0]?.substring(1))
           return next();
-        command = cmd.getCmd(t.split(" ")[0].substring(1));
+        command = Command.getCmd(t.split(" ")[0].substring(1));
       }
       if (!command) return next();
-      if (await cmd.cantUse(command, ctx, data.userRights))
+      if (await Command.cantUse(command, ctx, data.userRights))
         return ctx.reply(
           "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
         );
@@ -357,16 +353,16 @@ export function loadCMDS() {
           ret.catch((e) => {
             SERVISE_error({
               type: `Promise CMD error`,
-              message: e.message,
-              stack: ` at ${command.info.name} (${name}: ${t})`,
+              message: e.message + ` (${name}: ${t})`,
+              stack: e.stack,
             });
             err = true;
           });
       } catch (error) {
         SERVISE_error({
           type: `CMD error`,
-          message: error.message,
-          stack: ` at ${command.info.name} (${name}: ${t})`,
+          message: error.message + ` (${name}: ${t})`,
+          stack: error.stack,
         });
         err = true;
       }

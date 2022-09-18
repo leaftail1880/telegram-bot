@@ -1,4 +1,4 @@
-import { cmd } from "../../app/class/cmdCLS.js";
+import { Command } from "../../app/class/cmdCLS.js";
 import { d, format } from "../../app/class/formatterCLS.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { abc } from "../../app/functions/abcFNC.js";
@@ -28,7 +28,7 @@ new cmd({
 })
 */
 
-new cmd(
+new Command(
   {
     name: "abc",
     description: "Описание",
@@ -49,7 +49,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "call",
     prefix: "def",
@@ -116,7 +116,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "pin",
     prefix: "def",

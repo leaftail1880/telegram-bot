@@ -1,9 +1,8 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [7, 0, 2], //
+export const VERSION = [7, 0, 3], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   commandClearRegExp = /^[\.\-\+\/\$]\S+\s?/g,
-  errRespCodes = [400, 409],
   // Время в миллисекундах, которое должно пройти что бы данные пользователя обновились.
   // Чем меньше, тем дольше будет обработка сообщений при запуске.
   cacheUpdateTime = 2000,
@@ -13,7 +12,7 @@ export const VERSION = [7, 0, 2], //
     "Command", // Команды
     "timeChecker", // Время
     "OC", // Модуль для команды /oc
-    
+    "DBmanageV2",
     "Cooldowns", // Таймеры
 
     /*"Animation"*/

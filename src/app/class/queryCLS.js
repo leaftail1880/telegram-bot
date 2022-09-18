@@ -1,7 +1,8 @@
 import { Context } from "telegraf";
 import { bot } from "../setup/tg.js";
-import { log } from "../start-stop.js";
+import { log, SERVISE_error } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
+import { editMsg } from "./menuCLS.js";
 
 /**
  * @type {Object<String, Query>}
@@ -13,9 +14,8 @@ export class Query {
    * @param {Object} info
    * @param {String} info.name Имя
    * @param {String} info.prefix Без ::
-   * @param {Number} info.session Это номер, а префикс сессии = префикс Query
    * @param {String} info.message Сообщение при нажатии (оставьте пустым если не надо)
-   * @param {function(Context, Array<String>)} callback
+   * @param {function(Context, Array<String>, function(String, import("telegraf/typings/telegram-types.js").ExtraEditMessageText))} callback
    */
   constructor(info, callback) {
     if (!info?.name) return;
@@ -24,7 +24,6 @@ export class Query {
     this.info = {
       name: info.name,
       msg: info.message,
-      session: info.session,
       perm: info.permisson ?? 0,
     };
     this.callback = callback;
@@ -59,21 +58,38 @@ export function loadQuerys() {
     const name =
       format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id;
     try {
-      const ret = q.callback(ctx, data.split(d._s.d)[1]?.split(d._s.a));
+      const ret = q.callback(
+        ctx,
+        data.split(d._s.d)[1]?.split(d._s.a),
+        (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra)
+      );
       if (ret?.catch)
         ret.catch((e) => {
-          console.warn(
-            `ERR! Query Promise ${name}: ${data} ${format.errParse(e, false)}`
-          );
+          SERVISE_error({
+            type: `Promise Query error`,
+            message: e.message + ` (${name}: ${data})`,
+            stack: e.stack,
+          });
         });
       if (q.info.msg) ctx.answerCbQuery(q.info.msg);
     } catch (error) {
-      console.warn(
-        `ERR! Query [${
-          format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id
-        }] ${data} ${error?.message ?? error} ${error?.stack}`
-      );
+      SERVISE_error({
+        type: `Query error`,
+        message: error.message + ` (${name}: ${data})`,
+        stack: error.stack,
+      });
     }
     log(`> Query. ${name}: ${data}`);
   });
 }
+
+new Query(
+  {
+    name: "delmsg",
+    prefix: "all",
+    message: "Выход...",
+  },
+  (ctx) => {
+    ctx.deleteMessage(ctx.callbackQuery.message.message_id);
+  }
+);

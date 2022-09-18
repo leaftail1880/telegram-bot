@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import { cmd } from "../../app/class/cmdCLS.js";
+import { Command } from "../../app/class/cmdCLS.js";
 import { format } from "../../app/class/formatterCLS.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { getUser } from "../../app/functions/getUserFNC.js";
@@ -59,7 +59,7 @@ function sudo(ctx, _args, Dta) {
     SERVISE_error(error);
   }
 }
-new cmd(
+new Command(
   {
     name: "f",
     aliases: ["sudo"],
@@ -72,7 +72,7 @@ new cmd(
   sudo
 );
 
-new cmd(
+new Command(
   {
     name: "db",
     hide: true,
@@ -84,7 +84,7 @@ new cmd(
       case "pairs":
         const a = await database.getPairs();
         console.log(a);
-        format.sendSeparatedMessage(format.stringifyEx(a, " "), ctx);
+        format.sendSeparatedMessage(format.stringifyEx(a, " "), ctx.reply);
         break;
       case "get":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
@@ -138,7 +138,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "stop",
     specprefix: true,
@@ -151,7 +151,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "log",
     hide: true,
@@ -188,7 +188,7 @@ new cmd(
   }
 );
 
-new cmd(
+new Command(
   {
     name: "ник",
     hide: true,
