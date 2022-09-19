@@ -118,13 +118,18 @@ export const data = {
   isDev: env.xillerPC ? true : false,
   updateTimer: null,
   debug: false,
+  logChatId: {
+    // Айди чата, куда будут поступать самые важные сообщения
+    owner: members.xiller,
+    log: env.logGroupId,
+  },
 };
 
 const OnErrorActions = {
   cache: {
     lastTime: Date.now(),
-    type: 'none',
-    cooldown: 1000
+    type: "none",
+    cooldown: 1000,
   },
   codes: {
     409: () => SERVISE_freeze(),
@@ -141,14 +146,19 @@ const OnErrorActions = {
       SERVISE_error(err);
     },
     429: (err) => {
-      if (Date.now() - OnErrorActions.cache.lastTime <= OnErrorActions.cache.cooldown && OnErrorActions.cache.type === err.stack) return
-      OnErrorActions.cache.type = err.stack
-      OnErrorActions.cache.lastTime = Date.now()
-      console.warn(err.stack)
+      if (
+        Date.now() - OnErrorActions.cache.lastTime <=
+          OnErrorActions.cache.cooldown &&
+        OnErrorActions.cache.type === err.stack
+      )
+        return;
+      OnErrorActions.cache.type = err.stack;
+      OnErrorActions.cache.lastTime = Date.now();
+      console.warn(err.stack);
     },
     413: (err) => {
-      console.warn(err)
-    }
+      console.warn(err);
+    },
   },
   messages: [
     "TypeError",
@@ -166,10 +176,13 @@ export async function handleError(err) {
   } else SERVISE_stop(err, null, true);
 }
 
-export function log(msg) {
+export function log(msg, extra = {}) {
   console.log(msg);
-  if (data.debug) bot.telegram.sendMessage(members.xiller, msg);
+  data.debug
+    ? bot.telegram.sendMessage(data.logChatId.owner, msg, extra)
+    : bot.telegram.sendMessage(data.logChatId.log, msg, extra);
 }
+
 /**
  * Запуск бота
  * @returns {void}
@@ -222,7 +235,7 @@ export async function SERVISE_start() {
    *========================**/
   await bot.launch();
   data.started = true;
-  bot.telegram.sendMessage(members.xiller, ...lang.start());
+  bot.telegram.sendMessage(data.logChatId.log, ...lang.start());
 
   /**======================
    * Загрузка плагинов
@@ -303,7 +316,7 @@ export async function SERVISE_stop(
   console.log(log);
   if (data.started && sendMessage)
     await bot.telegram.sendMessage(
-      members.xiller,
+      data.logChatId.log,
       ...text._Build({ disable_web_page_preview: true })
     );
 
@@ -321,7 +334,9 @@ export async function SERVISE_stop(
  * @param {Error} error
  */
 export function SERVISE_error(error) {
-  console.warn(`${error?.message}: ${error?.stack ?? error}`);
+  console.warn(
+    `${error?.message}: ${error?.stack.replace(error.message, "") ?? error}`
+  );
   const PeR = format.errParse(error, true),
     text = new Xitext()
       ._Group(PeR[0])
@@ -335,21 +350,23 @@ export function SERVISE_error(error) {
       .Text(` ${PeR[2]}`);
   if (data.started) {
     bot.telegram.sendMessage(
-      members.xiller,
+      data.logChatId.log,
       ...text._Build({ disable_web_page_preview: true })
     );
-  }
-  if (PeR[3]) {
-    format.sendSeparatedMessage(PeR[3], (a) =>
-      bot.telegram.sendMessage(members.xiller, a)
-    );
+    if (PeR[3]) {
+      format.sendSeparatedMessage(PeR[3], (a) =>
+        bot.telegram.sendMessage(data.logChatId.log, a, {
+          disable_web_page_preview: true,
+        })
+      );
+    }
   }
 }
 
 export async function SERVISE_freeze() {
   clearInterval(data.updateTimer);
   if (data.started)
-    await bot.telegram.sendMessage(members.xiller, lang.stop.freeze()),
+    await bot.telegram.sendMessage(data.logChatId.log, lang.stop.freeze()),
       console.log(lang.stop.freezeLOG());
   if (data.started && !data.stopped) {
     data.stopped = true;
@@ -391,7 +408,7 @@ export async function SERVISE_freeze() {
       data.stopped = false;
       data.started = true;
       console.log(lang.launchLOG("Newest"));
-      bot.telegram.sendMessage(members.xiller, ...lang.start("[Newest]"));
+      bot.telegram.sendMessage(data.logChatId.owner, ...lang.start("[Newest]"));
 
       data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);
@@ -417,7 +434,7 @@ export async function SERVISE_freeze() {
       data.stopped = false;
       data.started = true;
       bot.telegram.sendMessage(
-        members.xiller,
+        data.logChatId.owner,
         ...lang.start("[No response]", "↩️")
       );
       console.log(lang.launchLOG("No response"));

@@ -8,6 +8,7 @@ import { database } from "../../index.js";
 import { Session, ssn } from "./sessionCLS.js";
 import { EventListener } from "./EventsCLS.js";
 import { commandClearRegExp } from "../../config.js";
+import { safeRun } from "../functions/safeRunFNC.js";
 
 const public_cmds = {},
   private_cmds = {};
@@ -140,7 +141,7 @@ export class Command {
         (await isAdmin(ctx, ctx.message.from.id, user)),
       // Если команда хильки
       _pxiller =
-        command.info.perm === 2 && ctx.message.from.id == members.xiller;
+        command.info.perm === 2 && ctx.message.from.id == data.logChatId.owner;
 
     // Если нет ни одного разрешения, значит нельзя
     return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
@@ -299,7 +300,7 @@ export function loadCMDS() {
     });
   if (xiller[0])
     bot.telegram.setMyCommands(xiller.concat(privateC), {
-      scope: { type: "chat", chat_id: members.xiller },
+      scope: { type: "chat", chat_id: data.logChatId.owner },
     });
   if (data.isDev)
     console.log(
@@ -308,66 +309,46 @@ export function loadCMDS() {
       }`
     );
 
-  new EventListener(
-    "text",
-    9,
-    async (ctx, next, data) => {
-      /**
-       * @type {String}
-       */
-      const t = ctx.message.text;
-      /**
-       * @type {ChatCommand}
-       */
-      let command;
-      if (t?.startsWith("/")) {
-        command = Command.getCmd(t.split(" ")[0].substring(1), true);
-      } else {
-        if (!t || !t.match(/^[\.\-\+\/\$]/gm) || !t.split(" ")[0]?.substring(1))
-          return next();
-        command = Command.getCmd(t.split(" ")[0].substring(1));
-      }
-      if (!command) return next();
-      if (await Command.cantUse(command, ctx, data.userRights))
-        return ctx.reply(
-          "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
-        );
+  new EventListener("text", 9, async (ctx, next, data) => {
+    /**
+     * @type {String}
+     */
+    const t = ctx.message.text;
+    /**
+     * @type {ChatCommand}
+     */
+    let command;
+    if (t?.startsWith("/")) {
+      command = Command.getCmd(t.split(" ")[0].substring(1), true);
+    } else {
+      if (!t || !t.match(/^[\.\-\+\/\$]/gm) || !t.split(" ")[0]?.substring(1))
+        return next();
+      command = Command.getCmd(t.split(" ")[0].substring(1));
+    }
+    if (!command) return next();
+    if (await Command.cantUse(command, ctx, data.userRights))
+      return ctx.reply(
+        "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
+      );
 
-      // All good, run
-      let err = false;
-      const a =
-          t
-            .replace(commandClearRegExp, "")
-            ?.match(/"[^"]+"|[^\s]+/g)
-            ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
-        user = data.DBUser,
-        name =
-          user?.cache?.nickname ??
-          user?.static?.name ??
-          format.getName(ctx.message.from) ??
-          ctx.message.from.id;
+    const // All good, run
+      a =
+        t
+          .replace(commandClearRegExp, "")
+          ?.match(/"[^"]+"|[^\s]+/g)
+          ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
+      user = data.DBUser,
+      name =
+        user?.cache?.nickname ??
+        user?.static?.name ??
+        format.getName(ctx.message.from) ??
+        ctx.message.from.id;
 
-      try {
-        const ret = command.callback(ctx, a, data, command);
-        if (ret?.catch)
-          ret.catch((e) => {
-            SERVISE_error({
-              type: `Promise CMD error`,
-              message: e.message + ` (${name}: ${t})`,
-              stack: e.stack,
-            });
-            err = true;
-          });
-      } catch (error) {
-        SERVISE_error({
-          type: `CMD error`,
-          message: error.message + ` (${name}: ${t})`,
-          stack: error.stack,
-        });
-        err = true;
-      }
-      if (!err) log(`> CMD. ${name}: ${t}`);
-    },
-    true
-  );
+    safeRun(
+      "CMD",
+      () => command.callback(ctx, a, data, command),
+      ` (${name}: ${t})`,
+      `${name}: ${t}`
+    );
+  });
 }

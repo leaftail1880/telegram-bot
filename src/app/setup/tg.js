@@ -11,9 +11,9 @@ if (!process || !process.env || !process.env.TOKEN)
  * @property {String} REDIS_URL
  * @property {String} whereImRunning
  * @property {String} CUSTOM_MEMBERS
- * @property {String} allowedGroups
  * @property {String | undefined} local
  * @property {String | undefined} xillerPC
+ * @property {String | undefined} logGroupId
  */
 
 /**
@@ -27,7 +27,6 @@ if (!process || !process.env || !process.env.TOKEN)
  * Инициализация процессов
  *========================**/
 export const app = express();
-export const router = express.Router();
 export const bot = new Telegraf(process.env.TOKEN);
 /**
  * @type {environment}
@@ -41,9 +40,4 @@ env.CUSTOM_MEMBERS.split(",").forEach((e) => {
  * @type {MEMBERS}
  */
 export const members = member;
-let gps = {};
-env.allowedGroups.split(",").forEach((e) => {
-  gps[e] = true;
-});
-export const groups = gps;
 /*========================*/

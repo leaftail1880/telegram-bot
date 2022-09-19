@@ -1,4 +1,5 @@
 import { Context } from "telegraf";
+import { safeRun } from "../functions/safeRunFNC.js";
 import { bot } from "../setup/tg.js";
 import { log, SERVISE_error } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
@@ -28,7 +29,7 @@ export class Query {
     };
     this.callback = callback;
 
-    ques[d.query(info.prefix, info.name)] = this;
+    ques[d.queryREGISTER(info.prefix, info.name)] = this;
   }
 }
 
@@ -44,8 +45,7 @@ export function loadQuerys() {
     /**
      * @type {Query}
      */
-    const q =
-      ques[data] ?? ques[Object.keys(ques).find((e) => data.startsWith(e))];
+    const q = ques[data.split(d.separator.linkToData)[0]];
     if (!q) {
       ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
         show_alert: true,
@@ -57,29 +57,22 @@ export function loadQuerys() {
     activeQueries[data] = Date.now();
     const name =
       format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id;
-    try {
-      const ret = q.callback(
+
+    function run() {
+      q.callback(
         ctx,
-        data.split(d._s.d)[1]?.split(d._s.a),
+        data.split(d.separator.linkToData)[1]?.split(d.separator.data),
         (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra)
       );
-      if (ret?.catch)
-        ret.catch((e) => {
-          SERVISE_error({
-            type: `Promise Query error`,
-            message: e.message + ` (${name}: ${data})`,
-            stack: e.stack,
-          });
-        });
-      if (q.info.msg) ctx.answerCbQuery(q.info.msg);
-    } catch (error) {
-      SERVISE_error({
-        type: `Query error`,
-        message: error.message + ` (${name}: ${data})`,
-        stack: error.stack,
-      });
     }
-    log(`> Query. ${name}: ${data}`);
+
+    safeRun(
+      "Query",
+      () => run(),
+      ` (${name}: ${data})`,
+      `${name}: ${data}`
+    );
+    if (q.info.msg) ctx.answerCbQuery(q.info.msg);
   });
 }
 

@@ -231,13 +231,15 @@ export const d = {
   session: (name, stage) => `${name}::${stage}`,
   // Query link
   query: (prefix, name, ...args) =>
-    `${prefix}${d._s.q}${name}${args ? `${d._s.d}${args.join(d._s.a)}` : ""}`,
+    `${prefix}${d.separator.link}${name}${args ? `${d.separator.linkToData}${args.join(d.separator.data)}` : ""}`,
+  queryREGISTER: (prefix, name) =>
+    `${prefix}${d.separator.link}${name}`,
   // Separator
-  _s: {
-    q: "/",
-    d: "?=",
-    a: "#",
+  separator: {
+    link: ".",
+    linkToData: "/",
+    data: "&",
   },
   guide: (index) => `https://t.me/xillerbotguides/${index}`,
-  userLink: (nickname) => `https://t.me/${nickname}`
+  userLink: (nickname) => `https://t.me/${nickname}`,
 };

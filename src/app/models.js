@@ -1,3 +1,5 @@
+import { log } from "./start-stop.js";
+
 /**
  * @typedef {Object} DBUser
  * @property {Object} static
@@ -9,7 +11,6 @@
  * @property {String} cache.session
  * @property {String} cache.tag
  * @property {Number} cache.lastActive
-
  */
 
 /**
@@ -25,7 +26,7 @@
  * @returns {DBUser}
  */
 export function CreateUser(id, nickname, name, active = Date.now()) {
-  console.log("New user! Id: " + id + " Nickname: " + nickname);
+  log("New user! Id: " + id + " Nickname: " + nickname);
   return {
     static: {
       id: id,
@@ -61,7 +62,7 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
  * @returns {DBUgroup}
  */
 export function CreateGroup(id, title, members = [], call = Date.now()) {
-  console.log("New group! Id: " + id + " Title: " + title);
+ log("New group! Id: " + id + " Title: " + title);
   return {
     static: {
       id: id,

@@ -79,6 +79,7 @@ export class MultiMenuV1 {
 }
 
 export async function editMsg(ctx, message, text, extra, InlineKeyboard) {
+  if (text > 4020) return;
   if (typeof extra === "object" && InlineKeyboard)
     extra.reply_markup.inline_keyboard = InlineKeyboard;
   await ctx.telegram.editMessageText(
