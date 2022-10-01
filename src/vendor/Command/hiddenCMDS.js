@@ -1,6 +1,6 @@
 import { Context } from "telegraf";
 import { Command } from "../../app/class/cmdCLS.js";
-import { format } from "../../app/class/formatterCLS.js";
+import { format, d } from "../../app/class/formatterCLS.js";
 import { Xitext } from "../../app/class/XitextCLS.js";
 import { getUser } from "../../app/functions/getUserFNC.js";
 import { data, SERVISE_error, SERVISE_stop } from "../../app/start-stop.js";
@@ -38,7 +38,7 @@ new cmd({
  * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
  */
 function sudo(ctx, _args, Dta) {
-  const a = "args, ctx, g, db, data, fdata, xt, format, c, r",
+  const a = "help, ctx, global, db, data, cdata, Xitext, format, c, r, d, ks",
     func = `(async () => {${ctx.message.text
       .replace(commandClearRegExp, "")
       .replace(/\n/g, " ")}})();`;
@@ -53,7 +53,9 @@ function sudo(ctx, _args, Dta) {
       Xitext,
       format,
       co,
-      ctx.reply
+      ctx.reply.bind(ctx),
+      d,
+      (o) => Object.keys(o)
     );
   } catch (error) {
     SERVISE_error(error);

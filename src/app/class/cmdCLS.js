@@ -342,13 +342,14 @@ export function loadCMDS() {
         user?.cache?.nickname ??
         user?.static?.name ??
         format.getName(ctx.message.from) ??
-        ctx.message.from.id;
+        ctx.message.from.id,
+      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username).Text(': ' + t))._Build({ disableWebPagePreview: true})
 
     safeRun(
       "CMD",
       () => command.callback(ctx, a, data, command),
       ` (${name}: ${t})`,
-      `${name}: ${t}`
+      ...xt
     );
   });
 }

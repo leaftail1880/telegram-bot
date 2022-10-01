@@ -1,6 +1,6 @@
 import { SERVISE_error, log } from "../start-stop.js";
 
-export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
+export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull, sucExtra = {} ) {
   try {
     const result = callback();
     if (result?.catch)
@@ -11,7 +11,7 @@ export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
           stack: e.stack,
         });
       });
-    log(`> ${runnerName}. ${dataOnSuccesfull}`);
+    log(`> ${runnerName}. ${dataOnSuccesfull}`, sucExtra);
     return true;
   } catch (error) {
     SERVISE_error({
