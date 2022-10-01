@@ -343,7 +343,7 @@ export function loadCMDS() {
         user?.static?.name ??
         format.getName(ctx.message.from) ??
         ctx.message.from.id,
-      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username).Text(': ' + t))._Build({ disableWebPagePreview: true})
+      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username)).Text(': ' + t)._Build({ disableWebPagePreview: true})
 
     safeRun(
       "CMD",
