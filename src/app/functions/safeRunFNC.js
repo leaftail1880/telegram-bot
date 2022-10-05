@@ -1,6 +1,6 @@
 import { SERVISE_error, log } from "../start-stop.js";
 
-export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull, sucExtra = {} ) {
+export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
   try {
     const result = callback();
     if (result?.catch)
@@ -11,7 +11,13 @@ export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull, suc
           stack: e.stack,
         });
       });
-    log(`> ${runnerName}. ${dataOnSuccesfull}`, sucExtra);
+    let txt = `> ${runnerName}. `, extra = {}
+    if (typeof dataOnSuccesfull === 'string' || !dataOnSuccesfull._Build) {txt += dataOnSuccesfull} else {
+      const temp = dataOnSuccesfull._Build({}, txt.length)
+      txt += temp[0]
+      extra = temp[1]
+    }
+    log(txt, extra);
     return true;
   } catch (error) {
     SERVISE_error({

@@ -31,7 +31,7 @@ class formatter {
                   nextS +
                   (isArray ? "" : `"${key}":${isSpace ? " " : ""}`) +
                   getString(ThisObject[key], nextS, isSpace);
-              } catch (error) {}
+              } catch (error) { }
               First = true;
             }
             ThisObject[unsafeProperty] = undefined;
@@ -157,8 +157,10 @@ class formatter {
     }
     stack1 = stack1
       .map((e) => e.replace(/\s+at\s/g, ""))
-      .map(parseErrStack)
-      .map((e) => `\n   at ${e}`);
+      //.map(parseErrStack)
+      .map(lowlevelStackParse)
+      .filter(e => e)
+      .map((e) => `\n ${e}`);
 
     stack1.forEach((e) => {
       if (!stack2.includes(e)) stack2.push(e);
@@ -168,7 +170,7 @@ class formatter {
 
     if (twoTypes)
       arr = [
-        `${type}${type.endsWith(": ") ? " " : ": "}${msg}`,
+        `${type}${type.includes(":") ? " " : ": "}${msg}`,
         stack2,
         err.on ? format.stringifyEx(err.on, " ") : undefined,
       ];
@@ -181,7 +183,7 @@ class formatter {
       ];
     return returnArr
       ? arr
-      : `${type}${type.endsWith(":") ? " " : ": "}${msg} ${stack2}`;
+      : `${type}${type.includes(":") ? " " : ": "}${msg} ${stack2}`;
   }
   getName(user) {
     return (
@@ -207,6 +209,26 @@ class formatter {
   }
 }
 export const format = new formatter();
+
+const replaces = [
+  [/\\/g, '/'],
+  [/[\(\s]\S+node_modules./g, ` (`],
+  [/.+node_modules./g],
+  ["<anonymous>", "</>", 0],
+  ["file:///opt/render/project/src/"],
+  ["Telegram.callApi (telegraf/lib/core/network/client.js:291:19)", "CallApi (Telegram)"],
+  ["processTicksAndRejections (internal/process/task_queues.js:95:5)"],
+  ["runMicrotasks (</>)"],
+]
+
+
+
+function lowlevelStackParse(el) {
+  let e = el
+  for (const [r, p, count] of replaces)
+    e = count === 0 ? e.replaceAll(r, p ?? '') : e.replace(r, p ?? '')
+  return e
+}
 
 /**
  *

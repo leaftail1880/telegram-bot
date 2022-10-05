@@ -1,5 +1,7 @@
 import { log } from "./start-stop.js";
 
+const newUsers = {}, newGroups = {};
+
 /**
  * @typedef {Object} DBUser
  * @property {Object} static
@@ -26,8 +28,9 @@ import { log } from "./start-stop.js";
  * @returns {DBUser}
  */
 export function CreateUser(id, nickname, name, active = Date.now()) {
-  log("New user! Id: " + id + " Nickname: " + nickname);
-  return {
+  if (newUsers[id]) return newUsers[id]
+  log("Новый пользователь!\n ID: " + id + "\n Ник: " + nickname);
+  const user = {
     static: {
       id: id,
       nickname: nickname,
@@ -37,6 +40,8 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
       lastActive: active,
     },
   };
+  newUsers[id] = user
+  return user
 }
 
 /**
@@ -62,8 +67,9 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
  * @returns {DBUgroup}
  */
 export function CreateGroup(id, title, members = [], call = Date.now()) {
- log("New group! Id: " + id + " Title: " + title);
-  return {
+  if (newGroups[id]) return newGroups[id]
+  log("Новая группа!\n ID: " + id + "\n Название: " + title);
+  const group = {
     static: {
       id: id,
       title: title,
@@ -74,4 +80,6 @@ export function CreateGroup(id, title, members = [], call = Date.now()) {
       lastPin: {},
     },
   };
+  newGroups[id] = group
+  return group
 }

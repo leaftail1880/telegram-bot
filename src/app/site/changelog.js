@@ -1,5 +1,9 @@
 import { Change } from "./index.js";
 
+new Change('7.0.6', ['Системный багофикс'])
+
+new Change('7.0.5', ['Багофикс'])
+
 new Change("7.0.4", [
   "Разработка многих фич",
 ]);

@@ -221,11 +221,17 @@ export class Xitext {
    *
    * @param {import("telegraf/typings/telegram-types.js").ExtraReplyMessage} extra
    */
-  _Build(extra = {}) {
+  _Build(extra = {}, move = 0) {
     /**
      * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
      */
     const EXTRA = Object.assign(extra);
+    if (move != 0) {
+      this._entities.forEach(e => e.offset += move)
+    }
+    if (!EXTRA.disable_web_page_preview) {
+      EXTRA.disable_web_page_preview = true
+    }
     if (Array.isArray(this._entities) && this._entities[0])
       EXTRA.entities = this._entities;
     if (
@@ -236,7 +242,7 @@ export class Xitext {
       if (typeof EXTRA.reply_markup != "object") EXTRA.reply_markup = {};
       EXTRA.reply_markup.inline_keyboard = this._inlineKeyboard;
     }
-    return [this._text, EXTRA];
+    return [this._text ?? 'empty Xitext()', EXTRA];
   }
   /**
    *

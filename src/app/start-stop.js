@@ -11,12 +11,12 @@ import { emitEvents, loadEvents } from "./class/EventsCLS.js";
 
 const lang = {
   launchLOG: (reason) => `> ${data.versionLOG} [${reason}]`,
-  stopRes: (reason) => `% ${data.versionLOG} [${reason}]`,
+  stopRes: (reason) => `% ${data.versionLOG} stopped. ${reason}`,
   stop: {
     noRespLog: () => lang.stopRes("No response"),
-    terminate: () => lang.stopRes(`🌑`),
-    old: () => `${data.versionLOG} [OLD]`,
-    freeze: () => `❄️ ${data.versionMSG} [FRZ!]`,
+    terminate: () => lang.stopRes(`Terminated`),
+    old: () => `% ${data.versionLOG} stopped. OLD`,
+    freeze: () => `$ ${data.versionMSG} freezed.`,
     freezeLOG: () => lang.stopRes(`FRZ!`),
   },
   runLOG: {
@@ -79,7 +79,7 @@ const lang = {
     new Xitext()
       .Text(`${prefix} Кобольдя `)
       ._Group(data.versionMSG.split(" ")[0])
-      .Url(null, "https://dashboard.render.com")
+      .Url(null, `https://kobolie_bot.onrender.com/stop${data.start_time}`)
       .Bold()
       ._Group()
       .Text(" ")
@@ -132,6 +132,9 @@ const OnErrorActions = {
     cooldown: 1000,
   },
   codes: {
+    "ERR_MODULE_NOT_FOUND": (err) => {
+      SERVISE_error(err)
+    },
     409: () => SERVISE_freeze(),
     400: (err) => {
       if (err?.response?.description?.includes("not enough rights")) {
@@ -188,7 +191,9 @@ export function log(msg, extra = {}) {
  * @returns {void}
  */
 export async function SERVISE_start() {
-  app.get("/healt", (_req, res) => res.sendStatus(200));
+  app.get(`/stop${data.start_time}`, (_req, res) => {res.sendStatus(453); 
+    SERVISE_stop('SiteRequest', null, true, true)
+  })
   if (data.isDev) lang.startLOG.dev[0]();
   else lang.startLOG.render[0]();
 
@@ -407,8 +412,8 @@ export async function SERVISE_freeze() {
 
       data.stopped = false;
       data.started = true;
-      console.log(lang.launchLOG("Newest"));
-      bot.telegram.sendMessage(data.logChatId.owner, ...lang.start("[Newest]"));
+      console.log(lang.launchLOG("[Запущена как новый]"));
+      bot.telegram.sendMessage(data.logChatId.log, ...lang.start("Newest"));
 
       data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);
@@ -434,8 +439,8 @@ export async function SERVISE_freeze() {
       data.stopped = false;
       data.started = true;
       bot.telegram.sendMessage(
-        data.logChatId.owner,
-        ...lang.start("[No response]", "↩️")
+        data.logChatId.log,
+        ...lang.start("[Не дождаласьи запустилась]", "↩️")
       );
       console.log(lang.launchLOG("No response"));
 
