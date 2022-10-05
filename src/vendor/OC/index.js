@@ -207,7 +207,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
     };
     if (InlineKeyboard)
       extra.reply_markup = { inline_keyboard: InlineKeyboard };
-    if (fileid.endsWith("QQ")) await ctx.replyWithDocument(fileid);
+    if (fileid.length > 10) await ctx.replyWithDocument(fileid);
     await ctx.reply(text, extra);
   }
 }

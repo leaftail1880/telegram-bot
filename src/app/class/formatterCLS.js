@@ -225,8 +225,9 @@ const replaces = [
 
 function lowlevelStackParse(el) {
   let e = el
-  for (const [r, p, count] of replaces)
-    e = count === 0 ? e.replaceAll(r, p ?? '') : e.replace(r, p ?? '')
+  for (const [r, p, count] of replaces) {
+    if (typeof e === 'string') e = count === 0 && typeof e.replaceAll === 'function' ? e.replaceAll(r, p ?? '') : e.replace(r, p ?? '')
+  }
   return e
 }
 
