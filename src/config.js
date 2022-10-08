@@ -1,6 +1,6 @@
 import { env } from "./app/setup/tg.js";
 
-export const VERSION = [7, 1, 1], //
+export const VERSION = [7, 1, 2], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),
   commandClearRegExp = /^[\.\-\+\/\$]\S+\s?/g,
   // Время в миллисекундах, которое должно пройти что бы данные пользователя обновились.

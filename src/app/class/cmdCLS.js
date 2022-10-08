@@ -265,7 +265,7 @@ export function loadCMDS() {
       )
         groupAC.push(m);
       if (
-        (cmd.info.type == "private" || ckd.info.type == 'all') &&
+        (cmd.info.type == "private" || cmd.info.type == 'all') &&
         cmd.info.perm == 0
       )
         privateC.push(m), xiller.push(m);
