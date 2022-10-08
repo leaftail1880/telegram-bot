@@ -1,4 +1,19 @@
 class formatter {
+  toStr(obj, s = " ") {
+    return JSON.stringify(obj, (key, value) => {
+    switch (typeof value) {
+      case "function": 
+        const r = value
+          .toString()
+          .split(/\)\s*[\{\=]/g)[0]   
+        return r.startsWith("function") 
+          ? `${r})${s}{}`
+          : `${r})${s}=>${s}{}`
+        break;
+      default: return value
+    }
+  }, s)
+  }
   stringifyEx(startObject, space = " ") {
     if (typeof startObject === "string") return startObject;
     let unsafeProperty = "unsafeproperty.fixed";
@@ -200,7 +215,7 @@ class formatter {
    * @param {String} msg
    * @param {Function} method
    */
-  async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 3) {
+  async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
     if (msg.length < limit) return method(msg);
 
     for (let p = 1; p <= Math.ceil(msg.length / limit) && p <= safeCount; p++) {

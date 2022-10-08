@@ -28,10 +28,33 @@ new cmd({
 })
 */
 
+function getLink(search) {
+  const p = new URLSearchParams()
+  p.append("q", search)
+  return "https://google.com/search?" + p.toString()
+}
+
+new Command(
+  {
+    name: "google",
+    description: "Гуглит",
+    type: "all",
+    hide: true,
+  },
+  (ctx, args) => {
+    const text = ctx.reply_to_message?.text ?? args.join(' ')
+    if (!text) return ctx.reply(
+      'И что я по твоему загуглить должен?',
+      { reply_to_message_id: ctx.messsge.message_id, allow_sending_without_reply: true })
+    const x = new Xitext().Url("Поиск в гугле", getLink(text))
+    ctx.reply(...x._Build({ reply_to_message_id: ctx.reply_to_message.message_id ?? ctx.message.message_id, allow_sending_without_reply: true}))
+  }
+)
+
 new Command(
   {
     name: "abc",
-    description: "Описание",
+    description: "Переводит",
     permisson: 0,
     type: "all",
   },
@@ -40,7 +63,10 @@ new Command(
      * @type {import("telegraf/typings/core/types/typegram.js").CommonMessageBundle}
      */
     const msg = ctx.message.reply_to_message;
-    if (!msg) return ctx.reply("Отметь сообщение!");
+    if (!msg) return ctx.reply("Отметь сообщение!", {
+      reply_to_message_id: ctx.message.message_id,
+      allow_sending_without_reply: true,
+    });
     if (!msg.caption && !msg.text) return ctx.reply("Я не могу это перевести!");
     ctx.reply(abc(msg.text ?? msg.caption), {
       reply_to_message_id: msg.message_id,
@@ -95,10 +121,9 @@ new Command(
       const text = new Xitext()
         .Url(
           (await database.get(`User::${e}`, true)).cache.nickname ??
-            `${obj.user.first_name}${
-              obj.user.last_name ? obj.user.last_name : ""
-            }` ??
-            obj.user.username,
+          `${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""
+          }` ??
+          obj.user.username,
           `https://t.me/${obj.user.username}`
         )
         //.Mention(obj.name ?? obj.user.username, obj.user)

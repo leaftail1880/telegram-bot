@@ -15,7 +15,7 @@ const lang = {
   stop: {
     noRespLog: () => lang.stopRes("No response"),
     terminate: () => lang.stopRes(`Terminated`),
-    old: () => `% ${data.versionLOG} stopped. OLD`,
+    old: () => `${data.versionLOG} stopped. OLD`,
     freeze: () => `$ ${data.versionMSG} freezed.`,
     freezeLOG: () => lang.stopRes(`FRZ!`),
   },
@@ -79,14 +79,11 @@ const lang = {
     new Xitext()
       .Text(`${prefix} Кобольдя `)
       ._Group(data.versionMSG.split(" ")[0])
-      .Url(null, `https://kobolie_bot.onrender.com/stop${data.start_time}`)
+      .Url(null, `https://koboldie-bot.onrender.com/stop${data.start_time}`)
       .Bold()
       ._Group()
       .Text(" ")
       .Italic(info ? info : data.versionMSG.split(" ")[1] ?? false)
-      .Text(" (")
-      .Bold((Date.now() - data.start_time) / 1000)
-      .Text(" сек)")
       ._Build({ disable_web_page_preview: true }),
 };
 

@@ -10,8 +10,15 @@ import { EventListener } from "./EventsCLS.js";
 import { commandClearRegExp } from "../../config.js";
 import { safeRun } from "../functions/safeRunFNC.js";
 
-const public_cmds = {},
-  private_cmds = {};
+/**
+ * @type {Array<ChatCommand>}
+ */
+const public_cmds = [];
+
+/**
+ * @type {Array<ChatCommand>}
+ */
+const private_cmds = [];
 /**
  * @typedef {Object} CommandType
  * @property {String} group
@@ -32,6 +39,7 @@ const public_cmds = {},
  * @property {number}  info.perm
  * @property {boolean} info.hide
  * @property {string} info.session
+ * @property {Array<string>} info.aliases
  * @property {ChatCommandCallback} callback
  */
 
@@ -52,41 +60,26 @@ export class Command {
   constructor(info, callback) {
     if (!info.name) return;
 
-    const datas = [];
     // Регистрация инфы
-    datas.push({
+    const cmd = {
       info: {
         name: info.name,
         description: info.description ?? "Пусто",
         type: info.type,
         perm: info.permisson ?? 0,
         hide: info.hide,
-        session: info.session,
+        session: info,
+        aliases: info.aliases
       },
-      callback: callback,
-    });
-
-    for (const alias of info.aliases ?? []) {
-      datas.push({
-        info: {
-          name: alias,
-          description: info.description ?? "Пусто",
-          type: info.type,
-          perm: info.permisson ?? 0,
-          hide: info.hide,
-          session: info.session,
-        },
-        callback: callback,
-      });
+      callback: callback
     }
 
     // Ы
     if (!info.specprefix) {
-      datas.forEach((e) => (public_cmds[e.info.name] = e));
+      public_cmds.push(cmd)
     } else {
-      datas.forEach((e) => (private_cmds[e.info.name] = e));
+      private_cmds.push(cmd)
     }
-
     return this;
   }
   /**
@@ -100,21 +93,16 @@ export class Command {
     /**
      * @type {Command}
      */
-    let cmd;
+    let cmd
+    const
+      c = msg.split("@")[0],
+      f = (e) =>
+        e.name == c || e.aliases.includes(c);
+
     if (isDefCmd) {
-      cmd =
-        public_cmds[
-          Object.keys(public_cmds).find(
-            (e) => e === msg || e === (msg.split("@")[0] ?? msg)
-          )
-        ];
+      cmd = public_cmds.find(f)
     } else {
-      cmd =
-        private_cmds[
-          Object.keys(private_cmds).find(
-            (e) => e === msg || e === (msg.split("@")[0] ?? msg)
-          )
-        ];
+      cmd = private_cmds.find(f)
     }
     if (!cmd) return false;
     return cmd;
@@ -128,8 +116,8 @@ export class Command {
   static async cantUse(command, ctx, user = null) {
     // Условия разрешений
     let _lg = // Где
-        command.info.type === "group" &&
-        (ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
+      command.info.type === "group" &&
+      (ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
       _lp = command.info.type === "private" && ctx.chat.type === "private",
       _lc = command.info.type === "channel" && ctx.chat.type === "channel",
       _la = command.info.type === "all" || !command.info.type,
@@ -259,11 +247,11 @@ export function loadCMDS() {
     groupAC = [],
     xiller = [],
     allKmds = [];
-  Object.keys(public_cmds).forEach((e) => {
+  public_cmds.forEach((e) => {
     /**
      * @type {Command}
      */
-    const cmd = public_cmds[e],
+    const cmd = e,
       m = { command: cmd.info.name, description: cmd.info.description };
     if (!cmd.info.hide) {
       if (
@@ -277,7 +265,7 @@ export function loadCMDS() {
       )
         groupAC.push(m);
       if (
-        (cmd.info.type == "private" || cmd.info.type == "all") &&
+        cmd.info.type == "private" &&
         cmd.info.perm == 0
       )
         privateC.push(m), xiller.push(m);
@@ -304,8 +292,7 @@ export function loadCMDS() {
     });
   if (data.isDev)
     console.log(
-      `> Command Кол-во команд: ${allKmds.length}${
-        allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
+      `> Command Кол-во команд: ${allKmds.length}${allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
       }`
     );
 
@@ -328,7 +315,7 @@ export function loadCMDS() {
     if (!command) return next();
     if (await Command.cantUse(command, ctx, data.userRights))
       return ctx.reply(
-        "У вас нет разрешений для использования этой команды. Список доступных команд: /help"
+        "В этом чате эта команда недоступна. /help", {reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true}
       );
 
     const // All good, run
@@ -343,7 +330,7 @@ export function loadCMDS() {
         user?.static?.name ??
         format.getName(ctx.message.from) ??
         ctx.message.from.id,
-      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username)).Text(': ' + t)._Build({ disableWebPagePreview: true})
+      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username)).Text(': ' + t)._Build({ disableWebPagePreview: true })
 
     safeRun(
       "CMD",

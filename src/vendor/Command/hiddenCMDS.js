@@ -38,7 +38,7 @@ new cmd({
  * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
  */
 function sudo(ctx, _args, Dta) {
-  const a = "help, ctx, global, db, data, cdata, Xitext, format, c, r, d, ks",
+  const a = "help, ctx, global, db, data, cdata, Xitext, format, c, r, d, ks, rr",
     func = `(async () => {${ctx.message.text
       .replace(commandClearRegExp, "")
       .replace(/\n/g, " ")}})();`;
@@ -53,9 +53,10 @@ function sudo(ctx, _args, Dta) {
       Xitext,
       format,
       co,
-      ctx.reply.bind(ctx),
+      (m) => format.sendSeparatedMessage(format.toStr(m), (r) => ctx.reply(r)),
       d,
-      (o) => Object.keys(o)
+      (o) => Object.keys(o),
+      ctx.reply.bind(ctx)
     );
   } catch (error) {
     SERVISE_error(error);

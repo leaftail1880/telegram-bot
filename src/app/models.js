@@ -29,7 +29,7 @@ const newUsers = {}, newGroups = {};
  */
 export function CreateUser(id, nickname, name, active = Date.now()) {
   if (newUsers[id]) return newUsers[id]
-  log("Новый пользователь!\n ID: " + id + "\n Ник: " + nickname);
+  log("Новый пользователь!\n Имя:"+name+"\n ID: " + id + nickname ? `\n @${nickname}` : '');
   const user = {
     static: {
       id: id,
@@ -68,7 +68,7 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
  */
 export function CreateGroup(id, title, members = [], call = Date.now()) {
   if (newGroups[id]) return newGroups[id]
-  log("Новая группа!\n ID: " + id + "\n Название: " + title);
+  log("Новая группа\n Название: " + title + "\n ID: " + id);
   const group = {
     static: {
       id: id,
