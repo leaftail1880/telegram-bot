@@ -96,13 +96,13 @@ export class Command {
     let cmd
     const
       c = msg.split("@")[0],
-      f = (e) =>
-        e.name == c || e.aliases.includes(c);
+      findC = (e) =>
+        e.name == c || (e.aliases?.map && e.aliases.includes(c));
 
     if (isDefCmd) {
-      cmd = public_cmds.find(f)
+      cmd = public_cmds.find(findC)
     } else {
-      cmd = private_cmds.find(f)
+      cmd = private_cmds.find(findC)
     }
     if (!cmd) return false;
     return cmd;
@@ -265,7 +265,7 @@ export function loadCMDS() {
       )
         groupAC.push(m);
       if (
-        cmd.info.type == "private" &&
+        (cmd.info.type == "private" || ckd.info.type == 'all') &&
         cmd.info.perm == 0
       )
         privateC.push(m), xiller.push(m);
