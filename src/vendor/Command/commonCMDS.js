@@ -42,12 +42,12 @@ new Command(
     hide: true,
   },
   (ctx, args) => {
-    const text = ctx.reply_to_message?.text ?? args.join(' ')
+    const text = ctx.message.reply_to_message?.text ?? args.join(' ')
     if (!text) return ctx.reply(
       'И что я по твоему загуглить должен?',
       { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true })
-    const x = new Xitext().Url("Поиск в гугле", getLink(text))
-    ctx.reply(...x._Build({ reply_to_message_id: ctx.reply_to_message?.message_id ?? ctx.message.message_id, allow_sending_without_reply: true}))
+    const x = new Xitext().Url(text, getLink(text))
+    ctx.reply(...x._Build({ reply_to_message_id: ctx.message.reply_to_message?.message_id ?? ctx.message.message_id, allow_sending_without_reply: true}))
   }
 )
 

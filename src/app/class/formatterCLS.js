@@ -1,18 +1,38 @@
 class formatter {
-  toStr(obj, s = " ") {
-    return JSON.stringify(obj, (key, value) => {
-    switch (typeof value) {
-      case "function": 
-        const r = value
-          .toString()
-          .split(/\)\s*[\{\=]/g)[0]   
-        return r.startsWith("function") 
-          ? `${r})${s}{}`
-          : `${r})${s}=>${s}{}`
-        break;
-      default: return value
-    }
-  }, s)
+  toStr(obj, space = "  ", cw = '\\"', funcCode = false) {
+    if (typeof obj !== "object") return obj ?? '{}'
+    
+    // avoid Circular structure error
+    const visited = new WeakSet();
+    
+    return JSON.stringify(obj, (key, value) => {     
+      switch (typeof value) {
+        case "function":    
+          let r = value.toString()
+    
+          if (!funcCode) {
+            // Gets function >>name(args)<< {} part
+            r = r.split(/\)\s*[\{\=]/)[0]  
+  
+            // Strings for "=>" and common functions
+            value = r.startsWith("function") 
+            ? `${r}) {}`
+            : `${r}) => {}`
+          } else value = r  
+          
+          break;
+          
+        case "object":
+          if (visited.has(value)) {
+            // Circular structure detected
+            value = "{...}";
+            break;
+          }        
+          visited.add(value);     
+          break;
+      }
+      return value
+    }, space).replaceAll('\\"', cw)
   }
   stringifyEx(startObject, space = " ") {
     if (typeof startObject === "string") return startObject;
