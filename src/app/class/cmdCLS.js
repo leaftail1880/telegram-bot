@@ -92,7 +92,7 @@ export class Command {
     /**
      * @type {Command}
      */
-    let command = false;
+    let cmd = false;
 
     const type = /^\/\S+/.test(a)
       ? "slash"
@@ -281,9 +281,9 @@ export function loadCMDS() {
       if (cmd.info.perm == 2) xiller.push(m);
     }
 
-    allKmds.push(e);
+    allKmds.push(cmd.info.name);
   });
-  Object.keys(private_cmds).forEach((e) => allKmds.push(e));
+  private_cmds.forEach((e) => allKmds.push(e.info.name));
 
   if (groupC[0])
     bot.telegram.setMyCommands(groupC, { scope: { type: "all_group_chats" } });
