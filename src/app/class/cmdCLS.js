@@ -68,7 +68,7 @@ export class Command {
         type: info.type,
         perm: info.permisson ?? 0,
         hide: info.hide,
-        session: info,
+        session: info.session,
         aliases: info.aliases
       },
       callback: callback
@@ -84,28 +84,37 @@ export class Command {
   }
   /**
    *
-   * @param {String} msg
-   * @param {boolean} isDefCmd
+   * @param {String} a
    * @returns {Command}
    */
-  static getCmd(msg, isDefCmd) {
-    if (!msg) return false;
+  static getCmd(a) {
+    if (!a) return false;
     /**
      * @type {Command}
      */
-    let cmd
-    const
-      c = msg.split("@")[0],
-      findC = (e) =>
-        e.name == c || (e.aliases?.map && e.aliases.includes(c));
+    let command = false;
 
-    if (isDefCmd) {
-      cmd = public_cmds.find(findC)
-    } else {
-      cmd = private_cmds.find(findC)
-    }
-    if (!cmd) return false;
+    const type = /^\/\S+/.test(a)
+      ? "slash"
+      : /^\-\S+/.test(a)
+        ? "special"
+        : "message"
+    if (type === "message") return
+
+    const
+      // Команда из сообщения      
+      c = a.replace(/^.([^\@\s]+)\s?.*/, "$1"),
+      // Функция поиска команды в массиве по имени или сокращению      
+      findC = (e) =>
+        e.info?.name == c ||
+        e.info?.aliases?.includes(c);
+
+    cmd = type === "slash"
+      ? public_cmds.find(findC)
+      : private_cmds.find(findC)
+
     return cmd;
+
   }
   /**
    *
@@ -304,18 +313,11 @@ export function loadCMDS() {
     /**
      * @type {ChatCommand}
      */
-    let command;
-    if (t?.startsWith("/")) {
-      command = Command.getCmd(t.split(" ")[0].substring(1), true);
-    } else {
-      if (!t || !t.match(/^[\.\-\+\/\$]/gm) || !t.split(" ")[0]?.substring(1))
-        return next();
-      command = Command.getCmd(t.split(" ")[0].substring(1));
-    }
+    const command = Command.getCmd(t)
     if (!command) return next();
     if (await Command.cantUse(command, ctx, data.userRights))
       return ctx.reply(
-        "В этом чате эта команда недоступна. /help", {reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true}
+        "В этом чате эта команда недоступна. /help", { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true }
       );
 
     const // All good, run
