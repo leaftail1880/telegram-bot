@@ -1,7 +1,7 @@
 import { database } from "../../index.js";
-import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
-import { d, format } from "../../app/class/formatterCLS.js";
-import { EventListener } from "../../app/class/EventsCLS.js";
+import { getGroup, getUser } from "../../lib/functions/getUserFNC.js";
+import { d, format } from "../../lib/class/formatterCLS.js";
+import { EventListener } from "../../lib/class/EventsCLS.js";
 
 new EventListener("message", 10, async (ctx, next, data) => {
   const user = data.DBUser ?? (await getUser(ctx, false)).user;

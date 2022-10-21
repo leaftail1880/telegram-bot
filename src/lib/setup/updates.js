@@ -3,18 +3,18 @@ import { database } from "../../index.js";
 
 /**
  *
- * @param {Array<Number>} array
- * @param {Array<Number>} array2
+ * @param {Array<number>} array
+ * @param {Array<number>} array2
+ * @returns
  */
-export function bigger(array, array2, returnArray = true) {
-  if (!array || !array2) return "empty array";
+export function bigger(array, array2) {
   for (let a = 0; a <= Math.max(array.length, array2.length); a++) {
     const one = array[a] ?? 0,
       two = array2[a] ?? 0;
-    if (one > two) return returnArray ? array : true;
-    if (two > one) return returnArray ? array2 : false;
+    if (one > two) return true;
+    if (two > one) return false;
   }
-  return returnArray ? array : 0;
+  return 0;
 }
 
 /**
@@ -48,7 +48,6 @@ export async function updateVisualVersion(data) {
   data.isLatest = bigger(
     [VERSION[0], VERSION[1], VERSION[2]],
     dbversion,
-    false
   );
 
   // Если версия новая
@@ -67,8 +66,8 @@ export async function updateVisualVersion(data) {
     "0000".substring(0, 4 - `${session}`.length) + session
   }`;
   let d;
-  if (data.isLatest === true) d = "Релиз";
   if (data.isLatest === 0) d = "Рабочая";
+  if (data.isLatest === true) d = "Релиз";
   if (data.isLatest === false) d = "Старая";
   data.versionMSG = `v${data.v} ${d}`;
   data.versionLOG = `v${data.v}`;

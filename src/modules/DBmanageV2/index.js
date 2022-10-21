@@ -1,9 +1,9 @@
-import { Command } from "../../app/class/cmdCLS.js";
-import { d, format } from "../../app/class/formatterCLS.js";
-import { editMsg, MultiMenuV1 } from "../../app/class/menuCLS.js";
-import { Query } from "../../app/class/queryCLS.js";
-import { Button, Xitext } from "../../app/class/XitextCLS.js";
-import { bot } from "../../app/setup/tg.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { d, format } from "../../lib/class/formatterCLS.js";
+import { editMsg, MultiMenuV1 } from "../../lib/class/menuCLS.js";
+import { Query } from "../../lib/class/queryCLS.js";
+import { Button, Xitext } from "../../lib/class/XitextCLS.js";
+import { bot } from "../../lib/setup/tg.js";
 import { database } from "../../index.js";
 
 (async () => {

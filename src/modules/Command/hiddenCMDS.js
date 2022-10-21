@@ -1,9 +1,9 @@
 import { Context } from "telegraf";
-import { Command } from "../../app/class/cmdCLS.js";
-import { format, d } from "../../app/class/formatterCLS.js";
-import { Xitext } from "../../app/class/XitextCLS.js";
-import { getUser } from "../../app/functions/getUserFNC.js";
-import { data, SERVISE_error, SERVISE_stop } from "../../app/start-stop.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { format, d } from "../../lib/class/formatterCLS.js";
+import { Xitext } from "../../lib/class/XitextCLS.js";
+import { getUser } from "../../lib/functions/getUserFNC.js";
+import { data, SERVISE_error, SERVISE_stop } from "../../lib/start-stop.js";
 import { commandClearRegExp } from "../../config.js";
 import { database } from "../../index.js";
 import { lang } from "../OC/index.js";
@@ -35,7 +35,7 @@ new cmd({
  * @param {Context} ctx
  * @param {*} args
  * @param {*} Dta
- * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
+ * @param {import("../../lib/class/cmdCLS.js").ChatCommand} command
  */
 function sudo(ctx, _args, Dta) {
   const a = "help, ctx, global, db, data, cdata, Xitext, format, c, r, d, ks, rr",

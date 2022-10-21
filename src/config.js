@@ -1,4 +1,4 @@
-import { env } from "./app/setup/tg.js";
+import { env } from "./lib/setup/tg.js";
 
 export const VERSION = [7, 1, 5], //
   PORT = !env.xillerPC ? 3001 : Number(Date.now().toString().substring(9)),

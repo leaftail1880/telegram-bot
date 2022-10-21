@@ -1,6 +1,6 @@
-import { d } from "../../app/class/formatterCLS.js";
-import { bot } from "../../app/setup/tg.js";
-import { data, SERVISE_error } from "../../app/start-stop.js";
+import { d } from "../../lib/class/formatterCLS.js";
+import { bot } from "../../lib/setup/tg.js";
+import { data, SERVISE_error } from "../../lib/start-stop.js";
 import { database } from "../../index.js";
 import { cooldown } from "../Command/index.js";
 

@@ -1,5 +1,4 @@
 import "dotenv/config";
-import express from "express";
 import { Telegraf } from "telegraf";
 
 if (!process || !process.env || !process.env.TOKEN)
@@ -26,7 +25,6 @@ if (!process || !process.env || !process.env.TOKEN)
 /**======================
  * Инициализация процессов
  *========================**/
-export const app = express();
 export const bot = new Telegraf(process.env.TOKEN);
 /**
  * @type {environment}

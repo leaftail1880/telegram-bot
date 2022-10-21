@@ -1,5 +1,5 @@
 import { dbkey, Plugins, PORT, VERSION } from "../config.js";
-import { app, bot, env, members } from "./setup/tg.js";
+import { bot, env, members } from "./setup/tg.js";
 import { createClient } from "redis";
 import { database } from "../index.js";
 import { format } from "./class/formatterCLS.js";
@@ -90,7 +90,7 @@ const lang = {
 /**
  * @typedef {Object} sessionCache
  * @property {String} v 6.3.3
- * @property {Boolean} isLatest true | false | 0 | 'empty array'
+ * @property {boolean | 0} isLatest
  * @property {String} versionMSG v6.3.3 (Init)
  * @property {String} versionLOG v6.3.3
  * @property {Number} session 0
@@ -129,10 +129,10 @@ const OnErrorActions = {
     cooldown: 1000,
   },
   codes: {
-    "ERR_MODULE_NOT_FOUND": (err) => {
-      SERVISE_error(err)
+    ERR_MODULE_NOT_FOUND: (err) => {
+      SERVISE.error(err);
     },
-    409: () => SERVISE_freeze(),
+    409: () => SERVISE.freeze(),
     400: (err) => {
       if (err?.response?.description?.includes("not enough rights")) {
         bot.telegram.sendMessage(
@@ -143,7 +143,7 @@ const OnErrorActions = {
         );
         return;
       }
-      SERVISE_error(err);
+      SERVISE.error(err);
     },
     429: (err) => {
       if (
@@ -172,8 +172,8 @@ export async function handleError(err) {
   if (OnErrorActions.codes[err?.response?.error_code]) {
     OnErrorActions.codes[err?.response?.error_code](err);
   } else if (OnErrorActions.messages.includes(err?.stack?.split(":")[0])) {
-    SERVISE_error(err);
-  } else SERVISE_stop(err, null, true);
+    SERVISE.error(err);
+  } else SERVISE.stop(err, null, true);
 }
 
 export function log(msg, extra = {}) {
@@ -185,12 +185,9 @@ export function log(msg, extra = {}) {
 
 /**
  * Запуск бота
- * @returns {void}
+ * @returns {Promise<void>}
  */
-export async function SERVISE_start() {
-  app.get(`/stop${data.start_time}`, (_req, res) => {res.sendStatus(453); 
-    SERVISE_stop('SiteRequest', null, true, true)
-  })
+async function start() {
   if (data.isDev) lang.startLOG.dev[0]();
   else lang.startLOG.render[0]();
 
@@ -206,7 +203,7 @@ export async function SERVISE_start() {
   client.on("error", async (err) => {
     if (err.message == "Client IP address is not in the allowlist.") {
       lang.runLOG.error.renderRegister();
-      await SERVISE_stop("db ip update", null, true, true, false, false);
+      await SERVISE.stop("db ip update", null, true, true, false);
       return;
     }
     if (err.message == "Socket closed unexpectedly") {
@@ -230,7 +227,7 @@ export async function SERVISE_start() {
   /**======================
    * Обработчик ошибок
    *========================**/
-  bot.catch(SERVISE_error);
+  bot.catch(SERVISE.error);
 
   /**======================
    * Запуск бота
@@ -271,20 +268,19 @@ async function checkInterval() {
   if (!database.client) return;
   const query = await database.get(dbkey.request, true);
   if (query?.map) {
-    const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
+    const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query);
     if (q === true) return await database.set(dbkey.request, "terminate_you");
     if (q === false || q === 0) {
       await database.set(dbkey.request, "terminate_me");
-      await database.client.quit();
-      database.client = false;
+      await database.close();
       clearInterval(data.updateTimer);
-      SERVISE_stop(lang.stop.old(), null, true, false);
+      SERVISE.stop(lang.stop.old(), null, true, false);
       return;
     }
   }
 }
 
-export async function SERVISE_stop(
+async function stop(
   reason = "Остановка",
   extra = null,
   stopBot,
@@ -335,7 +331,7 @@ export async function SERVISE_stop(
  *
  * @param {Error} error
  */
-export function SERVISE_error(error) {
+function error(error) {
   console.warn(
     `${error?.message}: ${error?.stack.replace(error.message, "") ?? error}`
   );
@@ -365,7 +361,7 @@ export function SERVISE_error(error) {
   }
 }
 
-export async function SERVISE_freeze() {
+async function freeze() {
   clearInterval(data.updateTimer);
   if (data.started)
     await bot.telegram.sendMessage(data.logChatId.log, lang.stop.freeze()),
@@ -386,10 +382,9 @@ export async function SERVISE_freeze() {
     const answer = await database.get(dbkey.request);
     if (answer === "terminate_you") {
       await database.del(dbkey.request);
-      await database.client.quit();
-      database.client = false;
+      await database.close();
       clearInterval(timeout);
-      return SERVISE_stop(lang.stop.terminate(), null, true, data.isDev, false);
+      return SERVISE.stop(lang.stop.terminate(), null, true, data.isDev, false);
     }
 
     if (answer === "terminate_me") {
@@ -447,3 +442,10 @@ export async function SERVISE_freeze() {
     }
   }, 5000);
 }
+
+export const SERVISE = {
+  start,
+  stop,
+  error,
+  freeze,
+};

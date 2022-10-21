@@ -1,8 +1,8 @@
-import { Command } from "../../app/class/cmdCLS.js";
-import { d, format } from "../../app/class/formatterCLS.js";
-import { Xitext } from "../../app/class/XitextCLS.js";
-import { abc } from "../../app/functions/abcFNC.js";
-import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { d, format } from "../../lib/class/formatterCLS.js";
+import { Xitext } from "../../lib/class/XitextCLS.js";
+import { abc } from "../../lib/functions/abcFNC.js";
+import { getGroup, getUser } from "../../lib/functions/getUserFNC.js";
 import { database } from "../../index.js";
 import { c } from "../timeChecker/index.js";
 import { chatcooldown } from "./index.js";

@@ -1,13 +1,13 @@
 import { Context } from "telegraf";
-import { Command } from "../../app/class/cmdCLS.js";
-import { EventListener } from "../../app/class/EventsCLS.js";
-import { d, format } from "../../app/class/formatterCLS.js";
-import { MultiMenuV1 } from "../../app/class/menuCLS.js";
-import { Query } from "../../app/class/queryCLS.js";
-import { ssn } from "../../app/class/sessionCLS.js";
-import { Button, Xitext } from "../../app/class/XitextCLS.js";
-import { err } from "../../app/functions/errFNC.js";
-import { data } from "../../app/start-stop.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { EventListener } from "../../lib/class/EventsCLS.js";
+import { d, format } from "../../lib/class/formatterCLS.js";
+import { MultiMenuV1 } from "../../lib/class/menuCLS.js";
+import { Query } from "../../lib/class/queryCLS.js";
+import { ssn } from "../../lib/class/sessionCLS.js";
+import { Button, Xitext } from "../../lib/class/XitextCLS.js";
+import { err } from "../../lib/functions/errFNC.js";
+import { data } from "../../lib/start-stop.js";
 import { database } from "../../index.js";
 
 const _data = data;
@@ -223,7 +223,7 @@ function getRefType(fileid, text) {
 
 /**
  *
- * @param {import("../../app/models.js").DBUser} user
+ * @param {import("../../lib/models.js").DBUser} user
  * @param {*} uOC
  * @returns
  */
@@ -473,7 +473,7 @@ const MENU = {
         for (const e of keys.sort((a, b) => a - b)) {
           try {
             /**
-             * @type {import("../../app/models.js").DBUser}
+             * @type {import("../../lib/models.js").DBUser}
              */
             const user = await database.get(d.user(e), true),
               u =

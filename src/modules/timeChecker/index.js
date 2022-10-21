@@ -1,6 +1,6 @@
-import { bot, env, members } from "../../app/setup/tg.js";
+import { bot, env, members } from "../../lib/setup/tg.js";
 import { MEMBERS } from "../../config.js";
-import { t } from "../../app/class/timeCLS.js";
+import { t } from "../../lib/class/timeCLS.js";
 import { Context } from "telegraf";
 
 export function c(ID, Ttime) {

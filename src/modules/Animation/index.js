@@ -1,5 +1,5 @@
-import { bot } from "../../app/setup/tg.js";
-import { data } from "../../app/start-stop.js";
+import { bot } from "../../lib/setup/tg.js";
+import { data } from "../../lib/start-stop.js";
 import { database } from "../../index.js";
 import { getRegisteredGroups } from "../UserDB/index.js";
 
@@ -7,7 +7,7 @@ const active = {};
 
 /**
  *
- * @param {import("../../app/models.js").DBUgroup} group
+ * @param {import("../../lib/models.js").DBUgroup} group
  */
 function Animate(group) {
   const id = group.static.id;
