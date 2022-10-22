@@ -22,9 +22,8 @@ export const ERRCODES = {
 };
 
 /**
- *
- * @param {Number} code
- * @param {Context} ctx
+ * @param {number} code
+ * @param {FullContext | Context} ctx
  */
 export function err(code, ctx) {
   ssn.OC.exit(ctx.from.id);
@@ -35,14 +34,15 @@ export function err(code, ctx) {
         .Bold()
         .Mono()
         ._Group()
-        .Text(' ')
+        .Text(" ")
         .Text(ERRCODES[code].user ?? ERRCODES[800].user)
         ._Build()
     );
   console.warn(
     `ERR ${code} ${ERRCODES[code].log ?? ERRCODES[800].log}${
       ctx.from
-        ? `User: ${ctx.from.username ?? ctx.from.id}, Text: ${ctx.message.text}`
+        // @ts-ignore
+        ? `User: ${ctx.from.username ?? ctx.from.id}, Text: ${ctx.message.text || ctx.message.caption}`
         : ""
     }`
   );

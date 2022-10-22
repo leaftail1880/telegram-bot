@@ -1,8 +1,8 @@
-import { Command } from "../../app/class/cmdCLS.js";
-import { d } from "../../app/class/formatterCLS.js";
-import { Xitext } from "../../app/class/XitextCLS.js";
-import { env } from "../../app/setup/tg.js";
-import { data } from "../../app/start-stop.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { d } from "../../lib/class/formatterCLS.js";
+import { Xitext } from "../../lib/class/XitextCLS.js";
+import { env } from "../../lib/setup/tg.js";
+import { data } from "../../lib/start-stop.js";
 import { lang } from "../OC/index.js";
 
 /**================================================================================================

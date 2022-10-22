@@ -1,22 +1,23 @@
 import { Context } from "telegraf";
 import { safeRun } from "../functions/safeRunFNC.js";
 import { bot } from "../setup/tg.js";
-import { log, SERVISE_error } from "../start-stop.js";
+import { EventListener } from "./EventsCLS.js";
 import { d, format } from "./formatterCLS.js";
 import { editMsg } from "./menuCLS.js";
 
 /**
- * @type {Object<String, Query>}
+ * @type {Object<string, Query>}
  */
 const ques = {};
 export class Query {
   /**
    * Создает команду
    * @param {Object} info
-   * @param {String} info.name Имя
-   * @param {String} info.prefix Без ::
-   * @param {String} info.message Сообщение при нажатии (оставьте пустым если не надо)
-   * @param {function(Context, Array<String>, function(String, import("telegraf/typings/telegram-types.js").ExtraEditMessageText))} callback
+   * @param {string} info.name Имя
+   * @param {string} info.prefix Без ::
+   * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
+   * @param {number} [info.permisson]
+   * @param {QueryTypes.Callback} callback
    */
   constructor(info, callback) {
     if (!info?.name) return;
@@ -35,16 +36,14 @@ export class Query {
 
 const activeQueries = {};
 
-export function loadQuerys() {
+function loadQuerys() {
   bot.on("callback_query", async (ctx, next) => {
     const data = ctx.callbackQuery.data;
     if (activeQueries[data] && Date.now() - activeQueries[data] <= 500) {
       activeQueries[data] = Date.now();
       return;
     }
-    /**
-     * @type {Query}
-     */
+    
     const q = ques[data.split(d.separator.linkToData)[0]];
     if (!q) {
       ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
@@ -66,12 +65,7 @@ export function loadQuerys() {
       );
     }
 
-    safeRun(
-      "Query",
-      () => run(),
-      ` (${name}: ${data})`,
-      `${name}: ${data}`
-    );
+    safeRun("Query", () => run(), ` (${name}: ${data})`, `${name}: ${data}`);
     if (q.info.msg) ctx.answerCbQuery(q.info.msg);
   });
 }
@@ -86,3 +80,5 @@ new Query(
     ctx.deleteMessage(ctx.callbackQuery.message.message_id);
   }
 );
+
+new EventListener("afterpluginload", 0, loadQuerys);

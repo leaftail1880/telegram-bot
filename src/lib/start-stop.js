@@ -1,13 +1,14 @@
-import { dbkey, Plugins, PORT, VERSION } from "../config.js";
-import { app, bot, env, members } from "./setup/tg.js";
 import { createClient } from "redis";
+import config from "../config.js";
+const { VERSION, Plugins, dbkey } = config;
 import { database } from "../index.js";
+import "./class/cmdCLS.js";
+import { emitEvents } from "./class/EventsCLS.js";
 import { format } from "./class/formatterCLS.js";
-import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
+import "./class/queryCLS.js";
 import { Xitext } from "./class/XitextCLS.js";
-import { loadCMDS } from "./class/cmdCLS.js";
-import { loadQuerys } from "./class/queryCLS.js";
-import { emitEvents, loadEvents } from "./class/EventsCLS.js";
+import { bot, env } from "./setup/tg.js";
+import { bigger, updateSession, updateVisualVersion } from "./setup/updates.js";
 
 const lang = {
   launchLOG: (reason) => `> ${data.versionLOG} [${reason}]`,
@@ -30,7 +31,7 @@ const lang = {
   },
   startLOG: {
     render: [
-      () => console.log(`v${VERSION.join(".")}, Port: ${PORT}`),
+      () => console.log(`v${VERSION.join(".")}`),
       (plgs) =>
         console.log(
           `${(Date.now() - data.start_time) / 1000} sec, Session: ${
@@ -41,11 +42,7 @@ const lang = {
     dev: [
       () => {
         console.log(" ");
-        console.log(
-          `> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}, Порт: ${
-            !env.local ? PORT : `localhost:${PORT}`
-          }`
-        );
+        console.log(`> [Load start] Обнаружен Кобольдя v${VERSION.join(".")}`);
         console.log(" ");
       },
       () => {
@@ -87,24 +84,12 @@ const lang = {
       ._Build({ disable_web_page_preview: true }),
 };
 
-/**
- * @typedef {Object} sessionCache
- * @property {String} v 6.3.3
- * @property {Boolean} isLatest true | false | 0 | 'empty array'
- * @property {String} versionMSG v6.3.3 (Init)
- * @property {String} versionLOG v6.3.3
- * @property {Number} session 0
- * @property {Number} start_time 1224214
- * @property {Boolean} started true
- * @property {Boolean} stopped false
- * @property {Boolean} isDev false
- * @property {Boolean} debug
- */
 /**======================
  * Кэш сессии
  *========================**/
 export const data = {
   v: VERSION.join("."),
+  /** @type {boolean | number} */
   isLatest: true,
   versionMSG: `v${VERSION.join(".")} (Инит)`,
   versionLOG: `v${VERSION.join(".")} (Init)`,
@@ -112,14 +97,27 @@ export const data = {
   start_time: Date.now(),
   started: false,
   stopped: false,
-  isDev: env.xillerPC ? true : false,
+  isDev: env.dev ? true : false,
   updateTimer: null,
   debug: false,
-  logChatId: {
+  chatIDs: {
+    owner: Number(env.ownerID),
     // Айди чата, куда будут поступать самые важные сообщения
-    owner: members.xiller,
-    log: env.logGroupId,
+    log: Number(env.logID),
   },
+};
+
+export const SERVISE = {
+  start,
+  stop,
+  error,
+  freeze,
+};
+
+export const handlers = {
+  processError: handleError,
+  dbError: handleDB,
+  bot: SERVISE.error,
 };
 
 const OnErrorActions = {
@@ -129,10 +127,21 @@ const OnErrorActions = {
     cooldown: 1000,
   },
   codes: {
-    "ERR_MODULE_NOT_FOUND": (err) => {
-      SERVISE_error(err)
+    ECONNRESET: () => {
+      if (
+        Date.now() - OnErrorActions.cache.lastTime <=
+          OnErrorActions.cache.cooldown * 10 &&
+        OnErrorActions.cache.type === "ECONNRESET"
+      )
+        return;
+      OnErrorActions.cache.type = "ECONNRESET";
+      OnErrorActions.cache.lastTime = Date.now();
+      console.log("Нет подключения к интернету");
     },
-    409: () => SERVISE_freeze(),
+    ERR_MODULE_NOT_FOUND: (err) => {
+      SERVISE.error(err);
+    },
+    409: () => SERVISE.freeze(),
     400: (err) => {
       if (err?.response?.description?.includes("not enough rights")) {
         bot.telegram.sendMessage(
@@ -143,7 +152,7 @@ const OnErrorActions = {
         );
         return;
       }
-      SERVISE_error(err);
+      SERVISE.error(err);
     },
     429: (err) => {
       if (
@@ -168,29 +177,18 @@ const OnErrorActions = {
   ],
 };
 
-export async function handleError(err) {
-  if (OnErrorActions.codes[err?.response?.error_code]) {
-    OnErrorActions.codes[err?.response?.error_code](err);
-  } else if (OnErrorActions.messages.includes(err?.stack?.split(":")[0])) {
-    SERVISE_error(err);
-  } else SERVISE_stop(err, null, true);
-}
-
 export function log(msg, extra = {}) {
   console.log(msg);
   data.debug
-    ? bot.telegram.sendMessage(data.logChatId.owner, msg, extra)
-    : bot.telegram.sendMessage(data.logChatId.log, msg, extra);
+    ? bot.telegram.sendMessage(data.chatIDs.owner, msg, extra)
+    : bot.telegram.sendMessage(data.chatIDs.log, msg, extra);
 }
 
 /**
  * Запуск бота
- * @returns {void}
+ * @returns {Promise<void>}
  */
-export async function SERVISE_start() {
-  app.get(`/stop${data.start_time}`, (_req, res) => {res.sendStatus(453); 
-    SERVISE_stop('SiteRequest', null, true, true)
-  })
+async function start() {
   if (data.isDev) lang.startLOG.dev[0]();
   else lang.startLOG.render[0]();
 
@@ -203,18 +201,7 @@ export async function SERVISE_start() {
       url: process.env.REDIS_URL,
     });
 
-  client.on("error", async (err) => {
-    if (err.message == "Client IP address is not in the allowlist.") {
-      lang.runLOG.error.renderRegister();
-      await SERVISE_stop("db ip update", null, true, true, false, false);
-      return;
-    }
-    if (err.message == "Socket closed unexpectedly") {
-      await client.connect();
-      return;
-    }
-    lang.runLOG.error.renderError(err);
-  });
+  client.on("error", handlers.dbError);
 
   // Сохранение клиента
   await client.connect();
@@ -230,14 +217,9 @@ export async function SERVISE_start() {
   /**======================
    * Обработчик ошибок
    *========================**/
-  bot.catch(SERVISE_error);
+  bot.catch(handlers.bot);
 
-  /**======================
-   * Запуск бота
-   *========================**/
-  await bot.launch();
-  data.started = true;
-  bot.telegram.sendMessage(data.logChatId.log, ...lang.start());
+  bot.telegram.sendMessage(data.chatIDs.log, ...lang.start());
 
   /**======================
    * Загрузка плагинов
@@ -249,7 +231,7 @@ export async function SERVISE_start() {
   for (const plugin of Plugins) {
     const start = Date.now();
 
-    await import(`../vendor/${plugin}/index.js`).catch((error) => {
+    await import(`../modules/${plugin}/index.js`).catch((error) => {
       lang.startLOG.dev[3](plugin, error);
     });
     data.isDev
@@ -257,10 +239,13 @@ export async function SERVISE_start() {
       : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
   // Инициализация команд и списков
-  loadCMDS();
-  loadQuerys();
-  loadEvents();
   emitEvents("afterpluginload");
+
+  /**======================
+   * Запуск бота
+   *========================**/
+  await bot.launch();
+  data.started = true;
 
   if (data.isDev) lang.startLOG.dev[5]();
   else lang.startLOG.render[1](plgs);
@@ -271,20 +256,19 @@ async function checkInterval() {
   if (!database.client) return;
   const query = await database.get(dbkey.request, true);
   if (query?.map) {
-    const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query, false);
+    const q = bigger([VERSION[0], VERSION[1], VERSION[2]], query);
     if (q === true) return await database.set(dbkey.request, "terminate_you");
     if (q === false || q === 0) {
       await database.set(dbkey.request, "terminate_me");
-      await database.client.quit();
-      database.client = false;
+      await database.close();
       clearInterval(data.updateTimer);
-      SERVISE_stop(lang.stop.old(), null, true, false);
+      SERVISE.stop(lang.stop.old(), null, true, false);
       return;
     }
   }
 }
 
-export async function SERVISE_stop(
+async function stop(
   reason = "Остановка",
   extra = null,
   stopBot,
@@ -318,7 +302,7 @@ export async function SERVISE_stop(
   console.log(log);
   if (data.started && sendMessage)
     await bot.telegram.sendMessage(
-      data.logChatId.log,
+      data.chatIDs.log,
       ...text._Build({ disable_web_page_preview: true })
     );
 
@@ -333,9 +317,9 @@ export async function SERVISE_stop(
 
 /**
  *
- * @param {Error} error
+ * @param {{type?: string, message: string, stack: string, on?: object}} error
  */
-export function SERVISE_error(error) {
+function error(error) {
   console.warn(
     `${error?.message}: ${error?.stack.replace(error.message, "") ?? error}`
   );
@@ -352,12 +336,12 @@ export function SERVISE_error(error) {
       .Text(` ${PeR[2]}`);
   if (data.started) {
     bot.telegram.sendMessage(
-      data.logChatId.log,
+      data.chatIDs.log,
       ...text._Build({ disable_web_page_preview: true })
     );
     if (PeR[3]) {
       format.sendSeparatedMessage(PeR[3], (a) =>
-        bot.telegram.sendMessage(data.logChatId.log, a, {
+        bot.telegram.sendMessage(data.chatIDs.log, a, {
           disable_web_page_preview: true,
         })
       );
@@ -365,10 +349,10 @@ export function SERVISE_error(error) {
   }
 }
 
-export async function SERVISE_freeze() {
+async function freeze() {
   clearInterval(data.updateTimer);
   if (data.started)
-    await bot.telegram.sendMessage(data.logChatId.log, lang.stop.freeze()),
+    await bot.telegram.sendMessage(data.chatIDs.log, lang.stop.freeze()),
       console.log(lang.stop.freezeLOG());
   if (data.started && !data.stopped) {
     data.stopped = true;
@@ -386,10 +370,9 @@ export async function SERVISE_freeze() {
     const answer = await database.get(dbkey.request);
     if (answer === "terminate_you") {
       await database.del(dbkey.request);
-      await database.client.quit();
-      database.client = false;
+      await database.close();
       clearInterval(timeout);
-      return SERVISE_stop(lang.stop.terminate(), null, true, data.isDev, false);
+      return SERVISE.stop(lang.stop.terminate(), null, true, data.isDev, false);
     }
 
     if (answer === "terminate_me") {
@@ -410,7 +393,7 @@ export async function SERVISE_freeze() {
       data.stopped = false;
       data.started = true;
       console.log(lang.launchLOG("[Запущена как новый]"));
-      bot.telegram.sendMessage(data.logChatId.log, ...lang.start("Newest"));
+      bot.telegram.sendMessage(data.chatIDs.log, ...lang.start("Newest"));
 
       data.updateTimer = setInterval(checkInterval, 5000);
       database.del(dbkey.request);
@@ -436,7 +419,7 @@ export async function SERVISE_freeze() {
       data.stopped = false;
       data.started = true;
       bot.telegram.sendMessage(
-        data.logChatId.log,
+        data.chatIDs.log,
         ...lang.start("[Не дождаласьи запустилась]", "↩️")
       );
       console.log(lang.launchLOG("No response"));
@@ -446,4 +429,28 @@ export async function SERVISE_freeze() {
       return;
     }
   }, 5000);
+}
+
+async function handleError(err) {
+  if (OnErrorActions.codes[err?.response?.error_code]) {
+    OnErrorActions.codes[err?.response?.error_code](err);
+  } else if (OnErrorActions.messages.includes(err?.stack?.split(":")[0])) {
+    SERVISE.error(err);
+  } else SERVISE.stop(err, null, true);
+}
+
+async function handleDB(err) {
+  if (err.message == "Client IP address is not in the allowlist.") {
+    lang.runLOG.error.renderRegister();
+    await SERVISE.stop("db ip update", null, true, true, false);
+    return;
+  }
+  if (err.code == "ENOTFOUND") {
+    return OnErrorActions.codes.ECONNRESET()
+  }
+  if (err.message == "Socket closed unexpectedly") {
+    await database.client.connect();
+    return;
+  }
+  lang.runLOG.error.renderError(err);
 }

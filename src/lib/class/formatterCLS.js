@@ -1,38 +1,40 @@
 class formatter {
   toStr(obj, space = "  ", cw = '\\"', funcCode = false) {
-    if (typeof obj !== "object") return obj ?? '{}'
-    
+    if (typeof obj !== "object") return obj ?? "{}";
+
     // avoid Circular structure error
     const visited = new WeakSet();
-    
-    return JSON.stringify(obj, (key, value) => {     
-      switch (typeof value) {
-        case "function":    
-          let r = value.toString()
-    
-          if (!funcCode) {
-            // Gets function >>name(args)<< {} part
-            r = r.split(/\)\s*[\{\=]/)[0]  
-  
-            // Strings for "=>" and common functions
-            value = r.startsWith("function") 
-            ? `${r}) {}`
-            : `${r}) => {}`
-          } else value = r  
-          
-          break;
-          
-        case "object":
-          if (visited.has(value)) {
-            // Circular structure detected
-            value = "{...}";
+
+    return JSON.stringify(
+      obj,
+      (key, value) => {
+        switch (typeof value) {
+          case "function":
+            let r = value.toString();
+
+            if (!funcCode) {
+              // Gets function >>name(args)<< {} part
+              r = r.split(/\)\s*[\{\=]/)[0];
+
+              // Strings for "=>" and common functions
+              value = r.startsWith("function") ? `${r}) {}` : `${r}) => {}`;
+            } else value = r;
+
             break;
-          }        
-          visited.add(value);     
-          break;
-      }
-      return value
-    }, space).replaceAll('\\"', cw)
+
+          case "object":
+            if (visited.has(value)) {
+              // Circular structure detected
+              value = "{...}";
+              break;
+            }
+            visited.add(value);
+            break;
+        }
+        return value;
+      },
+      space
+    ).replaceAll('\\"', cw);
   }
   stringifyEx(startObject, space = " ") {
     if (typeof startObject === "string") return startObject;
@@ -66,7 +68,7 @@ class formatter {
                   nextS +
                   (isArray ? "" : `"${key}":${isSpace ? " " : ""}`) +
                   getString(ThisObject[key], nextS, isSpace);
-              } catch (error) { }
+              } catch (error) {}
               First = true;
             }
             ThisObject[unsafeProperty] = undefined;
@@ -122,7 +124,7 @@ class formatter {
   }
   /**
    *
-   * @param {number | string} hours
+   * @param {number | string} seconds
    * @param {string} left1 осталось
    * @param {string} left2 осталась
    * @param {string} left3 осталось
@@ -140,7 +142,7 @@ class formatter {
   }
   /**
    *
-   * @param {number | string} hours
+   * @param {number | string} minutes
    * @param {string} left1 осталось
    * @param {string} left2 осталась
    * @param {string} left3 осталось
@@ -171,11 +173,11 @@ class formatter {
   }
   /**
    *
-   * @param {Error} err
-   * @param {boolean} returnArr
+   * @param {{stack?: string; message: string; on?: object;}} err
+   * @param {boolean} [returnArr]
    * @returns
    */
-  errParse(err, returnArr, twoTypes) {
+  errParse(err, returnArr) {
     if (typeof err != "object" || !err.stack || !err.message) return err;
 
     let msg,
@@ -194,28 +196,19 @@ class formatter {
       .map((e) => e.replace(/\s+at\s/g, ""))
       //.map(parseErrStack)
       .map(lowlevelStackParse)
-      .filter(e => e)
+      .filter((e) => e)
       .map((e) => `\n ${e}`);
 
     stack1.forEach((e) => {
       if (!stack2.includes(e)) stack2.push(e);
     });
 
-    stack2 = stack2.join("");
-
-    if (twoTypes)
-      arr = [
-        `${type}${type.includes(":") ? " " : ": "}${msg}`,
-        stack2,
-        err.on ? format.stringifyEx(err.on, " ") : undefined,
-      ];
-    else
-      arr = [
-        type,
-        msg,
-        stack2,
-        err.on ? format.stringifyEx(err.on, " ") : undefined,
-      ];
+    arr = [
+      type,
+      msg,
+      stack2.join(""),
+      err.on ? format.stringifyEx(err.on, " ") : undefined,
+    ];
     return returnArr
       ? arr
       : `${type}${type.includes(":") ? " " : ": "}${msg} ${stack2}`;
@@ -232,7 +225,7 @@ class formatter {
   }
   /**
    *
-   * @param {String} msg
+   * @param {string} msg
    * @param {Function} method
    */
   async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
@@ -246,40 +239,31 @@ class formatter {
 export const format = new formatter();
 
 const replaces = [
-  [/\\/g, '/'],
+  [/\\/g, "/"],
   [/[\(\s]\S+node_modules./g, ` (`],
   [/.+node_modules./g],
   ["<anonymous>", "</>", 0],
   ["file:///opt/render/project/src/"],
-  ["Telegram.callApi (telegraf/lib/core/network/client.js:291:19)", "CallApi (Telegram)"],
+  [
+    "Telegram.callApi (telegraf/lib/core/network/client.js:291:19)",
+    "CallApi (Telegram)",
+  ],
   ["processTicksAndRejections (internal/process/task_queues.js:95:5)"],
   ["runMicrotasks (</>)"],
-]
-
-
+];
 
 function lowlevelStackParse(el) {
-  let e = el
+  let e = el;
   for (const [r, p, count] of replaces) {
-    if (typeof e === 'string') e = count === 0 && typeof e.replaceAll === 'function' ? e.replaceAll(r, p ?? '') : e.replace(r, p ?? '')
+    if (typeof e === "string")
+      e =
+        count === 0 && typeof e.replaceAll === "function"
+          ? // @ts-ignore
+            e.replaceAll(r, p ?? "")
+          : // @ts-ignore
+            e.replace(r, p ?? "");
   }
-  return e
-}
-
-/**
- *
- * @param {String} line
- */
-function parseErrStack(line) {
-  if (line.includes("node:internal")) {
-    return "Node";
-  } else if (line.includes("node_modules")) {
-    const l = line.replace(/\\/g, "/");
-    // Clears ".../node_modules/" part
-    return l
-      .replace(/[\(\s]\S+node_modules./g, ` (`)
-      .replace(/.+node_modules./g, ``);
-  } else return line;
+  return e;
 }
 
 export const d = {
@@ -289,9 +273,10 @@ export const d = {
   session: (name, stage) => `${name}::${stage}`,
   // Query link
   query: (prefix, name, ...args) =>
-    `${prefix}${d.separator.link}${name}${args ? `${d.separator.linkToData}${args.join(d.separator.data)}` : ""}`,
-  queryREGISTER: (prefix, name) =>
-    `${prefix}${d.separator.link}${name}`,
+    `${prefix}${d.separator.link}${name}${
+      args ? `${d.separator.linkToData}${args.join(d.separator.data)}` : ""
+    }`,
+  queryREGISTER: (prefix, name) => `${prefix}${d.separator.link}${name}`,
   // Separator
   separator: {
     link: ".",

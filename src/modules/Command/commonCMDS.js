@@ -1,10 +1,9 @@
-import { Command } from "../../app/class/cmdCLS.js";
-import { d, format } from "../../app/class/formatterCLS.js";
-import { Xitext } from "../../app/class/XitextCLS.js";
-import { abc } from "../../app/functions/abcFNC.js";
-import { getGroup, getUser } from "../../app/functions/getUserFNC.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { d, format } from "../../lib/class/formatterCLS.js";
+import { Xitext } from "../../lib/class/XitextCLS.js";
+import { abc } from "../../lib/functions/abcFNC.js";
+import { getGroup, getUser } from "../../lib/functions/getUserFNC.js";
 import { database } from "../../index.js";
-import { c } from "../timeChecker/index.js";
 import { chatcooldown } from "./index.js";
 
 /**================================================================================================
@@ -29,9 +28,9 @@ new cmd({
 */
 
 function getLink(search) {
-  const p = new URLSearchParams()
-  p.append("q", search)
-  return "https://google.com/search?" + p.toString()
+  const p = new URLSearchParams();
+  p.append("q", search);
+  return "https://google.com/search?" + p.toString();
 }
 
 new Command(
@@ -42,14 +41,26 @@ new Command(
     hide: true,
   },
   (ctx, args) => {
-    const text = ctx.message.reply_to_message?.text ?? args.join(' ')
-    if (!text) return ctx.reply(
-      'И что я по твоему загуглить должен?',
-      { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true })
-    const x = new Xitext().Url(text, getLink(text))
-    ctx.reply(...x._Build({ reply_to_message_id: ctx.message.reply_to_message?.message_id ?? ctx.message.message_id, allow_sending_without_reply: true}))
+    /**
+     * @type {{text?: string; caption?: string; message_id?: number}}
+     */
+    const msg = ctx.message.reply_to_message;
+    const text = msg.text ?? args.join(" ");
+    if (!text)
+      return ctx.reply("И что я по твоему загуглить должен?", {
+        reply_to_message_id: ctx.message.message_id,
+        allow_sending_without_reply: true,
+      });
+    const x = new Xitext().Url(text, getLink(text));
+    ctx.reply(
+      ...x._Build({
+        reply_to_message_id:
+          ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
+        allow_sending_without_reply: true,
+      })
+    );
   }
-)
+);
 
 new Command(
   {
@@ -60,13 +71,14 @@ new Command(
   },
   (ctx) => {
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").CommonMessageBundle}
+     * @type {{text?: string; caption?: string; message_id?: number}}
      */
     const msg = ctx.message.reply_to_message;
-    if (!msg) return ctx.reply("Отметь сообщение!", {
-      reply_to_message_id: ctx.message.message_id,
-      allow_sending_without_reply: true,
-    });
+    if (!msg)
+      return ctx.reply("Отметь сообщение!", {
+        reply_to_message_id: ctx.message.message_id,
+        allow_sending_without_reply: true,
+      });
     if (!msg.caption && !msg.text) return ctx.reply("Я не могу это перевести!");
     ctx.reply(abc(msg.text ?? msg.caption), {
       reply_to_message_id: msg.message_id,
@@ -78,14 +90,13 @@ new Command(
 new Command(
   {
     name: "call",
-    prefix: "def",
     description: "Созывает",
     permisson: 1,
     type: "group",
   },
   async (ctx, args) => {
     /**
-     * @type {Array<import("telegraf/typings/core/types/typegram.js").ChatMember>}
+     * @type {Array<import("telegraf/types").ChatMember>}
      */
     const all = [],
       g = (await getGroup(ctx, true)).group,
@@ -114,16 +125,16 @@ new Command(
       if (
         obj.status === "kicked" ||
         obj.status === "left" ||
-        c(obj.user.id) ||
         obj.user.is_bot
       )
         continue;
       const text = new Xitext()
         .Url(
           (await database.get(`User::${e}`, true)).cache.nickname ??
-          `${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""
-          }` ??
-          obj.user.username,
+            `${obj.user.first_name}${
+              obj.user.last_name ? obj.user.last_name : ""
+            }` ??
+            obj.user.username,
           `https://t.me/${obj.user.username}`
         )
         //.Mention(obj.name ?? obj.user.username, obj.user)
@@ -133,7 +144,7 @@ new Command(
       all.push(obj);
     }
     const mbs = all.filter(
-      (e) => e.status != "kicked" && e.status != "left" && !c(e.user.id)
+      (e) => e.status != "kicked" && e.status != "left"
     );
     if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
     group.lastCall = Date.now();
@@ -144,14 +155,13 @@ new Command(
 new Command(
   {
     name: "pin",
-    prefix: "def",
     description: "Закрепляет на 5 часов",
     permisson: 0,
     type: "all",
   },
   async (ctx, _args, data) => {
     const g = (await getGroup(ctx, true)).group,
-      u = data.DBUser ?? (await getUser(ctx, false)).user;
+      u = data.DB.User ?? (await getUser(ctx, false)).user;
     let lp = 0;
     if (typeof g?.cache?.lastPin == "object") {
       lp = g.cache?.lastPin[u.static.id];

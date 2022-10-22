@@ -1,35 +1,23 @@
 import { log } from "./start-stop.js";
 
-const newUsers = {}, newGroups = {};
-
-/**
- * @typedef {Object} DBUser
- * @property {Object} static
- * @property {Number} static.id
- * @property {String} static.nickname
- * @property {String} static.name
- * @property {Object} cache
- * @property {String} cache.nickname
- * @property {String} cache.session
- * @property {String} cache.tag
- * @property {Number} cache.lastActive
- */
+const newUsers = {},
+  newGroups = {};
 
 /**
  *
- * @param {Number} id
- * @param {String} nickname
- * @param {String} name
- * @param {String} customName
- * @param {String} tag
- * @param {Number} active
- * @param {Number} call
- * @param {Number} pin
- * @returns {DBUser}
+ * @param {number} id
+ * @param {string} nickname
+ * @param {string} name
+ * @param {number} active
+ * @returns {DB.User}
  */
 export function CreateUser(id, nickname, name, active = Date.now()) {
-  if (newUsers[id]) return newUsers[id]
-  log("Новый пользователь!\n Имя:"+name+"\n ID: " + id + nickname ? `\n @${nickname}` : '');
+  if (newUsers[id]) return newUsers[id];
+  log(
+    "Новый пользователь!\n Имя:" + name + "\n ID: " + id + nickname
+      ? `\n @${nickname}`
+      : ""
+  );
   const user = {
     static: {
       id: id,
@@ -40,34 +28,19 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
       lastActive: active,
     },
   };
-  newUsers[id] = user
-  return user
+  newUsers[id] = user;
+  return user;
 }
 
 /**
- * @typedef {Object} DBUgroup
- * @property {Object} static
- * @property {Number} static.id
- * @property {String} static.title
- * @property {Object} cache
- * @property {Array<Number>} cache.members
- * @property {Array<String>} cache.titleAnimation
- * @property {Number} cache.titleAnimationSpeed
- * @property {Number} cache.lastCall
- * @property {Object} cache.lastPin
- * @property {String} cache.pin
- */
-
-/**
  *
- * @param {Number} id
- * @param {String} title
- * @param {Array<Number>} members
- * @param {*} call
- * @returns {DBUgroup}
+ * @param {number} id
+ * @param {string} title
+ * @param {Array<number>} members
+ * @returns {DB.Group}
  */
-export function CreateGroup(id, title, members = [], call = Date.now()) {
-  if (newGroups[id]) return newGroups[id]
+export function CreateGroup(id, title, members = []) {
+  if (newGroups[id]) return newGroups[id];
   log("Новая группа\n Название: " + title + "\n ID: " + id);
   const group = {
     static: {
@@ -76,10 +49,10 @@ export function CreateGroup(id, title, members = [], call = Date.now()) {
     },
     cache: {
       members: members,
-      lastCall: call,
+      lastCall: Date.now(),
       lastPin: {},
     },
   };
-  newGroups[id] = group
-  return group
+  newGroups[id] = group;
+  return group;
 }

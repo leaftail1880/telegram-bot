@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "checkJs": true,
+    "target": "es2022",
+    "lib": ["ES2022"],
+    "module": "Node16"
+  },
+  "exclude": ["./src/modules/timeChecker"],
+  "include": ["./src/"]
+}

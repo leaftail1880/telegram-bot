@@ -5,20 +5,20 @@ import { d, format } from "../class/formatterCLS.js";
 
 /**
  * @typedef {Object} getUser
- * @property {import("../models.js").DBUser} user
- * @property {Boolean} saveU
+ * @property {DB.User} user
+ * @property {boolean} saveU
  */
 
 /**
  * @typedef {Object} getGroup
- * @property {import("../models.js").DBUgroup} group
- * @property {Boolean} saveG
+ * @property {DB.Group} group
+ * @property {boolean} saveG
  */
 
 /**
  *
  * @param {Context} ctx
- * @param {Boolean} save
+ * @param {boolean} save
  * @returns {Promise<getUser>}
  */
 export async function getUser(ctx, save = false) {
@@ -37,7 +37,7 @@ export async function getUser(ctx, save = false) {
 /**
  *
  * @param {Context} ctx
- * @param {Boolean} save
+ * @param {boolean} save
  * @returns {Promise<getGroup>}
  */
 export async function getGroup(ctx, save = true) {
@@ -45,13 +45,13 @@ export async function getGroup(ctx, save = true) {
     saveG = false;
   if (!group && (ctx.chat.type == "group" || ctx.chat.type == "supergroup"))
     (group = CreateGroup(ctx.chat.id, ctx.chat.title)), (saveG = true);
-  if (saveG && save) await database.set(d.group(ctx.chat.id), user, true);
+  if (saveG && save) await database.set(d.group(ctx.chat.id), group, true);
   return { group, saveG };
 }
 
 /**
  *
- * @returns {Promise<Array<import("../models.js").DBUgroup>>}
+ * @returns {Promise<Array<DB.Group>>}
  */
 export async function getRegisteredGroups() {
   let groups = [];

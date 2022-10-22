@@ -8,8 +8,8 @@ export class db {
     this.logAdd("create");
   }
   async close() {
-    await this.client.quit()
-    this.client = false
+    await this.client.quit();
+    delete this.client;
   }
   setClient(c, ms) {
     this.client = c;
@@ -79,8 +79,8 @@ export class db {
   }
   /**
    * Запрашивает данные с датабазы
-   * @param {String} key
-   * @returns {Promise<String | Boolean | Object>}
+   * @param {string} key
+   * @returns {Promise<string | boolean | Object>}
    */
   async get(key, jsonparse = false) {
     if (!this.client) throw new SyntaxError("Нет дб");
@@ -97,20 +97,22 @@ export class db {
   }
   /**
    * Запрашивает данные с датабазы
-   * @param {String} key
-   * @returns {Promise<Boolean>}
+   * @param {string} key
+   * @returns {Promise<boolean>}
    */
   async del(key) {
     if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       value = await this.client.del(key);
     this.logAdd("del", start);
-    return value;
+    return !!value;
   }
   /**
    * Устанавливает данные в базу данных
-   * @param {String} key
-   * @param {String | Boolean | Object} value
+   * @param {string} key
+   * @param {string | boolean | Object} value
+   * @param {boolean} [stringify]
+   * @param {number} [lifetime]
    * @returns
    */
   async set(key, value, stringify = false, lifetime) {
@@ -129,15 +131,15 @@ export class db {
     return value;
   }
   /**
-   * @param {String} key
-   * @returns {Promise<Boolean>}
+   * @param {string} key
+   * @returns {Promise<boolean>}
    */
   async has(key) {
     if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
       boolean = await this.client.exists(key);
     this.logAdd("has", start);
-    return boolean;
+    return !!boolean;
   }
   async add(key, number = 1) {
     if (!this.client) throw new SyntaxError("Нет дб");
@@ -153,6 +155,11 @@ export class db {
     this.logAdd("remove", start);
     return result;
   }
+  /**
+   *
+   * @param {function} filter
+   * @returns
+   */
   async keys(filter = () => true) {
     if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
@@ -160,6 +167,11 @@ export class db {
     this.logAdd("keys", start);
     return keys.filter((e) => filter(e));
   }
+  /**
+   *
+   * @param {function} filter
+   * @returns
+   */
   async getValues(filter = () => true) {
     if (!this.client) throw new SyntaxError("Нет дб");
     const start = Date.now(),
@@ -173,7 +185,7 @@ export class db {
   }
   /**
    *
-   * @returns {Object<String, Object>}
+   * @returns {Promise<Object<string, object>>}
    */
   async getPairs() {
     if (!this.client) throw new SyntaxError("Нет дб");

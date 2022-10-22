@@ -1,13 +1,13 @@
 import { Context } from "telegraf";
-import { Command } from "../../app/class/cmdCLS.js";
-import { format, d } from "../../app/class/formatterCLS.js";
-import { Xitext } from "../../app/class/XitextCLS.js";
-import { getUser } from "../../app/functions/getUserFNC.js";
-import { data, SERVISE_error, SERVISE_stop } from "../../app/start-stop.js";
-import { commandClearRegExp } from "../../config.js";
+import { Command } from "../../lib/class/cmdCLS.js";
+import { format, d } from "../../lib/class/formatterCLS.js";
+import { Xitext } from "../../lib/class/XitextCLS.js";
+import { getUser } from "../../lib/functions/getUserFNC.js";
+import { data, SERVISE } from "../../lib/start-stop.js";
+import config from "../../config.js";
+const { commandClearRegExp } = config;
 import { database } from "../../index.js";
 import { lang } from "../OC/index.js";
-import { co } from "../timeChecker/index.js";
 
 /**================================================================================================
  *                                           КОМАНДЫ
@@ -32,13 +32,12 @@ new cmd({
 
 /**
  *
- * @param {Context} ctx
- * @param {*} args
+ * @param {FullContext} ctx
  * @param {*} Dta
- * @param {import("../../app/class/cmdCLS.js").ChatCommand} command
  */
 function sudo(ctx, _args, Dta) {
-  const a = "help, ctx, global, db, data, cdata, Xitext, format, c, r, d, ks, rr",
+  const a =
+      "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
     func = `(async () => {${ctx.message.text
       .replace(commandClearRegExp, "")
       .replace(/\n/g, " ")}})();`;
@@ -52,14 +51,13 @@ function sudo(ctx, _args, Dta) {
       Dta,
       Xitext,
       format,
-      co,
       (m) => format.sendSeparatedMessage(format.toStr(m), (r) => ctx.reply(r)),
       d,
       (o) => Object.keys(o),
       ctx.reply.bind(ctx)
     );
   } catch (error) {
-    SERVISE_error(error);
+    SERVISE.error(error);
   }
 }
 new Command(
@@ -99,7 +97,7 @@ new Command(
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
-        const del = await database.del(args[1]);
+        const del = (await database.del(args[1])) + "";
         console.log(del);
         ctx.reply(del);
         break;
@@ -150,7 +148,7 @@ new Command(
     permisson: 2,
   },
   (_a, args) => {
-    SERVISE_stop("Ручная остановка", null, args[0] ?? false, args[1] ?? false);
+    SERVISE.stop("Ручная остановка", null, args[0] ?? false, args[1] ?? false);
   }
 );
 
