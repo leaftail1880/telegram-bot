@@ -1,8 +1,5 @@
 /node_modules
 /git_test
 .env
-package-lock.json
-test.js
-trash.js
 .gitignore
 src/vendor/Animation/

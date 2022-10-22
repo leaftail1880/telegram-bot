@@ -1,13 +1,13 @@
 import { bot } from "../../lib/setup/tg.js";
 import { data } from "../../lib/start-stop.js";
 import { database } from "../../index.js";
-import { getRegisteredGroups } from "../UserDB/index.js";
+import { getRegisteredGroups } from "../../lib/functions/getUserFNC.js";
 
 const active = {};
 
 /**
  *
- * @param {import("../../lib/models.js").DBUgroup} group
+ * @param {DB.Group} group
  */
 function Animate(group) {
   const id = group.static.id;
@@ -16,7 +16,7 @@ function Animate(group) {
     delete active[id];
   }
   const timer = setInterval(() => {
-    if (data.stopped || !database.client) return 
+    if (data.stopped || !database.client) return;
     active[id].stage++;
     if (!group.cache.titleAnimation[active[id].stage]) active[id].stage = 0;
     bot.telegram.setChatTitle(id, group.cache.titleAnimation[active[id].stage]);
@@ -49,4 +49,4 @@ export async function SetAnimations() {
   }
 }
 
-SetAnimations()
+SetAnimations();

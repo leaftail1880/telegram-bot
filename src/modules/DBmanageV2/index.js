@@ -64,7 +64,7 @@ import { database } from "../../index.js";
     async (_ctx, data, edit) => {
       edit(
         ...lang.main(data[0])
-          .InlineKeyboard(...(await lang.generateMenu(data[0])))
+          .InlineKeyboard(...(await lang.generateMenu(Number(data[0]))))
           ._Build({ disable_web_page_preview: true })
       );
     }
@@ -88,7 +88,7 @@ import { database } from "../../index.js";
     },
     async (_ctx, data, edit) => {
       await database.del(data[0]);
-      edit('Успешно удалено.', {reply_markup: {inline_keyboard: await lang.generateMenu(data[1])}});
+      edit('Успешно удалено.', {reply_markup: {inline_keyboard: await lang.generateMenu(Number(data[1]))}});
     }
   );
 
@@ -105,7 +105,6 @@ import { database } from "../../index.js";
   new Command(
     {
       name: "db2",
-      prefix: "def",
       description: "База данных нового поколения",
       permisson: 2,
       hide: false,

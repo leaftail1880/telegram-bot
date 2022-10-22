@@ -1,16 +1,19 @@
 export class Button {
   constructor(text = "btn") {
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton}
+     * @type {import("telegraf/types").InlineKeyboardButton}
      */
+    // @ts-ignore
     this.btn = {};
     this.btn.text = text;
   }
   url(url) {
+    // @ts-ignore
     if (url) this.btn.url = url;
     return this.btn;
   }
   data(data) {
+    // @ts-ignore
     if (data) this.btn.callback_data = data;
     return this.btn;
   }
@@ -34,7 +37,7 @@ export class Xitext {
   _Group(text) {
     if (!text && this.group) {
       this.group = false;
-      this.offset = this.offset + this.prev.length ?? 0
+      this.offset = this.offset + this.prev.length ?? 0;
       this.prev = null;
     } else if (text) {
       this.group = true;
@@ -48,7 +51,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "bold",
@@ -66,7 +69,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "italic",
@@ -84,7 +87,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "underline",
@@ -102,7 +105,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "strikethrough",
@@ -120,7 +123,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "spoiler",
@@ -138,7 +141,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t || !url) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "text_link",
@@ -157,7 +160,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t || !User) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "text_mention",
@@ -176,7 +179,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "code",
@@ -194,7 +197,7 @@ export class Xitext {
     let t = !this.group ? `${text}` : this.prev;
     if (!t || !language) return this;
     /**
-     * @type {import("telegraf/typings/core/types/typegram.js").MessageEntity}
+     * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
       type: "pre",
@@ -211,7 +214,7 @@ export class Xitext {
   }
   /**
    *
-   * @param  {...Array<Button>} lines
+   * @param  {...Array<import("telegraf/types").InlineKeyboardButton>} lines
    */
   InlineKeyboard(...lines) {
     this._inlineKeyboard = lines;
@@ -219,18 +222,19 @@ export class Xitext {
   }
   /**
    *
-   * @param {import("telegraf/typings/telegram-types.js").ExtraReplyMessage} extra
+   * @param {import("telegraf/types").Convenience.ExtraReplyMessage} extra
+   * @returns {[string, import("telegraf/types").Convenience.ExtraReplyMessage]}
    */
   _Build(extra = {}, move = 0) {
     /**
-     * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
+     * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
      */
     const EXTRA = Object.assign(extra);
     if (move != 0) {
-      this._entities.forEach(e => e.offset += move)
+      this._entities.forEach((e) => (e.offset += move));
     }
     if (!EXTRA.disable_web_page_preview) {
-      EXTRA.disable_web_page_preview = true
+      EXTRA.disable_web_page_preview = true;
     }
     if (Array.isArray(this._entities) && this._entities[0])
       EXTRA.entities = this._entities;
@@ -239,14 +243,15 @@ export class Xitext {
       this._inlineKeyboard[0] &&
       Array.isArray(this._inlineKeyboard[0])
     ) {
-      if (typeof EXTRA.reply_markup != "object") EXTRA.reply_markup = {};
-      EXTRA.reply_markup.inline_keyboard = this._inlineKeyboard;
+      if (typeof EXTRA.reply_markup != "object") EXTRA.reply_markup = {
+        inline_keyboard: this._inlineKeyboard
+      };
     }
-    return [this._text ?? 'empty Xitext()', EXTRA];
+    return [this._text ?? "empty Xitext()", EXTRA];
   }
   /**
    *
-   * @returns {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
+   * @returns {import("telegraf/types").Convenience.ExtraReplyMessage}
    */
   static newExtra() {
     return {};

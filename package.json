@@ -16,6 +16,7 @@
   },
   "DevDependencies": {
     "dotenv": "^16.0.1",
+    "redis": "^4.3.0",
     "telegraf": "^4.8.6"
   },
   "type": "module",

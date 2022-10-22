@@ -1,7 +1,7 @@
 class times {
   /**
    * Выводит время в формате 00:00
-   * @returns {String}
+   * @returns {string}
    */
   shortTime() {
     const time = Number(String(new Date(Date())).split(" ")[4].split(":")[0]),
@@ -10,10 +10,10 @@ class times {
   }
   /**
    * Выводит время в формате [6, 0]
-   * @returns {Array<Number>}
+   * @returns {Array<number>}
    */
   ArrrayTime() {
-    const time = new Date(Date())
+    const time = new Date(Date());
     return [time.getHours(), time.getMinutes()];
   }
 }

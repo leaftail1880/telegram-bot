@@ -1,8 +1,5 @@
 import { db } from "./lib/setup/db.js";
-import {
-  handleError,
-  SERVISE,
-} from "./lib/start-stop.js";
+import { handlers, SERVISE } from "./lib/start-stop.js";
 
 /**======================
  * База данных
@@ -12,7 +9,7 @@ export const database = new db();
 /**======================
  * Всякая хрень
  *========================**/
-process.on("unhandledRejection", handleError);
+process.on("unhandledRejection", handlers.processError);
 
 /**======================
  * Запуск

@@ -17,18 +17,18 @@ export class MultiMenuV1 {
   /**
    *
    * @param {Context} ctx
-   * @param {String} text
-   * @param {import("telegraf/typings/telegram-types.js").ExtraEditMessageText} extra
-   * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
+   * @param {string} text
+   * @param {import("telegraf/types").Convenience.ExtraEditMessageText} extra
+   * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
    */
   async editMsgFromQuery(ctx, text, extra, InlineKeyboard) {
     await editMsg(ctx, ctx.callbackQuery.message, text, extra, InlineKeyboard);
   }
   /**
    *
-   * @param {String} methodName
-   * @param  {...String} args
-   * @returns {String}
+   * @param {string} methodName
+   * @param  {...any} args
+   * @returns {string}
    */
   link(methodName, ...args) {
     return d.query(this.prefix, methodName, ...args);
@@ -37,7 +37,7 @@ export class MultiMenuV1 {
    *
    * @param {Context} ctx
    * @param {*} qq
-   * @param {Number} session
+   * @param {number} session
    * @returns
    */
   notPrivateChat(ctx, qq, session) {
@@ -47,7 +47,7 @@ export class MultiMenuV1 {
   }
   /**
    *
-   * @param {import("../models.js").DBUser} user
+   * @param {DB.User} user
    * @param {number} lvl
    * @returns
    */
@@ -61,13 +61,14 @@ export class MultiMenuV1 {
     pageTo = 1,
     buttonLimit = this.config.maxRows
   ) {
-    const page = Number(pageTo)
+    const page = Number(pageTo);
     const qNext = Math.ceil(buttons.length / buttonLimit) - 1 >= page;
     const qBack = page > 1;
-    const start = buttonLimit * page - buttonLimit, end = buttonLimit * page
+    const start = buttonLimit * page - buttonLimit,
+      end = buttonLimit * page;
     const btns = buttons.slice(start, end);
     const menu = [];
-    if (backButton) menu.push(backButton)
+    if (backButton) menu.push(backButton);
 
     if (qBack)
       menu.unshift(new Button("«").data(this.link(methodName, page - 1)));

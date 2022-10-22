@@ -225,7 +225,7 @@ class formatter {
   }
   /**
    *
-   * @param {String} msg
+   * @param {string} msg
    * @param {Function} method
    */
   async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
@@ -258,15 +258,13 @@ function lowlevelStackParse(el) {
     if (typeof e === "string")
       e =
         count === 0 && typeof e.replaceAll === "function"
-        // @ts-ignore
-          ? e.replaceAll(r, p ?? "")
-          // @ts-ignore
-          : e.replace(r, p ?? "");
+          ? // @ts-ignore
+            e.replaceAll(r, p ?? "")
+          : // @ts-ignore
+            e.replace(r, p ?? "");
   }
   return e;
 }
-
-
 
 export const d = {
   user: (id) => `User::${id}`,

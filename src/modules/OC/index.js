@@ -13,9 +13,9 @@ import { database } from "../../index.js";
 const _data = data;
 /**
  * @typedef {Object} UserOC
- * @property {String} name
- * @property {String} description
- * @property {String} fileid
+ * @property {string} name
+ * @property {string} description
+ * @property {string} fileid
  */
 
 export const m = new MultiMenuV1("OC"),
@@ -100,7 +100,7 @@ export const lang = {
 
 /*------------------------------------------ ФУНКЦИИ ------------------------------------------*/
 /**
- * @returns {Object}
+ * @returns {Promise<Object>}
  */
 async function getOCS() {
   const OCS = (await database.get(d.pn("Module", "OC"), true)) ?? {};
@@ -114,10 +114,9 @@ async function getOCS() {
 
 /**
  *
- * @param {Number} id
+ * @param {number} id
  * @param {UserOC} oc
- * @param {Object} OCS
- * @param {Number} index
+ * @param {number} [index]
  */
 async function saveOC(id, oc, index) {
   console.log(
@@ -132,10 +131,8 @@ async function saveOC(id, oc, index) {
 
 /**
  *
- * @param {Number} id
- * @param {UserOC} oc
- * @param {Object} OCS
- * @param {Number} index
+ * @param {number} id
+ * @param {number} index
  */
 async function delOC(id, index) {
   const OCS = await getOCS(),
@@ -148,12 +145,12 @@ async function delOC(id, index) {
 /**
  *
  * @param {Context} ctx
- * @param {String} text
- * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
+ * @param {string} text
+ * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
  */
 async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard, delType) {
   /**
-   * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
+   * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
    */
   let extra = {
     disable_web_page_preview: true,
@@ -177,8 +174,8 @@ async function sendMsgDelDoc(ctx, text, entities, InlineKeyboard, delType) {
 /**
  *
  * @param {Context} ctx
- * @param {String} text
- * @param {Array<Array<import("telegraf/typings/core/types/typegram.js").InlineKeyboardButton>>} InlineKeyboard
+ * @param {string} text
+ * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
  */
 async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
   await ctx.telegram.deleteMessage(
@@ -187,7 +184,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
   );
   if (getRefType(fileid, text) === "n") {
     /**
-     * @type {import("telegraf/typings/telegram-types.js").ExtraDocument}
+     * @type {import("telegraf/types").Convenience.ExtraDocument}
      */
     let extra = {
       caption: text,
@@ -199,7 +196,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
     await ctx.replyWithDocument(fileid, extra);
   } else {
     /**
-     * @type {import("telegraf/typings/telegram-types.js").ExtraReplyMessage}
+     * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
      */
     let extra = {
       entities: entities,
@@ -214,7 +211,7 @@ async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
 
 /**
  *
- * @param {String} text
+ * @param {string} text
  */
 function getRefType(fileid, text) {
   if (text.length < 980 && fileid.endsWith("QQ")) return "n";
@@ -223,7 +220,7 @@ function getRefType(fileid, text) {
 
 /**
  *
- * @param {import("../../lib/models.js").DBUser} user
+ * @param {DB.User} user
  * @param {*} uOC
  * @returns
  */
@@ -252,6 +249,7 @@ function noOC(ctx) {
 | 
 | 
 */
+// @ts-ignore
 const MENU = {
   MyOC: [
     // Главное меню > Мои персонажи
@@ -315,7 +313,7 @@ const MENU = {
         message: "Персонаж удален",
       },
       async (ctx, data) => {
-        delOC(ctx.callbackQuery.from.id, data[0]);
+        delOC(ctx.callbackQuery.from.id, Number(data[0]));
         await ctx.telegram.deleteMessage(
           ctx.callbackQuery.message.chat.id,
           ctx.callbackQuery.message.message_id
@@ -347,6 +345,7 @@ const MENU = {
       new EventListener("document", 0, async (ctx, next, ow) => {
         if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.DBUser), 10))
           return next();
+        // @ts-ignore
         ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
         ctx.reply(lang.redact.name());
         console.log(
@@ -416,10 +415,13 @@ const MENU = {
         saveOC(
           ctx.from.id,
           {
+            // @ts-ignore
             name: qq.user.cache.sessionCache[2],
+            // @ts-ignore
             fileid: qq.user.cache.sessionCache[1],
             description: ctx.message.text,
           },
+          // @ts-ignore
           qq.user.cache.sessionCache[0]
         );
         ssn.OC.exit(ctx.from.id);
@@ -429,7 +431,7 @@ const MENU = {
       ssn.OC.next(12, async (ctx, user) => {
         const OCS = await getOCS(),
           uOC = OCS[ctx.from.id];
-        if (noCache(user, uOC)) return err(ctx, 422);
+        if (noCache(user, uOC)) return err(422, ctx);
 
         const oc = uOC[user.cache.sessionCache[0]];
 
@@ -440,7 +442,7 @@ const MENU = {
             fileid: user.cache.sessionCache[1],
             description: oc.description,
           },
-          user.cache.sessionCache[0]
+          Number(user.cache.sessionCache[0])
         );
         ssn.OC.exit(ctx.from.id);
         ctx.reply(lang.create.done);
@@ -470,10 +472,10 @@ const MENU = {
         }
         let btns = [],
           page = Number(data[0]) !== 0 ? Number(data[0]) : 1;
-        for (const e of keys.sort((a, b) => a - b)) {
+        for (const e of keys.sort()) {
           try {
             /**
-             * @type {import("../../lib/models.js").DBUser}
+             * @type {DB.User}
              */
             const user = await database.get(d.user(e), true),
               u =
@@ -500,8 +502,6 @@ const MENU = {
           "find",
           page
         );
-
-        
 
         editMsg(ctx, lang.find, {
           reply_markup: { inline_keyboard: btns },
@@ -610,7 +610,9 @@ const MENU = {
         return ctx.reply(...lang.maxLength("Описание", 4000));
 
       saveOC(ctx.from.id, {
+        // @ts-ignore
         name: qq.user.cache.sessionCache[1],
+        // @ts-ignore
         fileid: qq.user.cache.sessionCache[0],
         description: ctx.message.text,
       });
@@ -622,7 +624,6 @@ const MENU = {
     new Command(
       {
         name: "oc",
-        prefix: "def",
         description: "Все действия с OC",
         permisson: 0,
         type: "private",

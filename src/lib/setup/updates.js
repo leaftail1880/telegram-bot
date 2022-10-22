@@ -1,4 +1,4 @@
-import { dbkey, VERSION } from "../../config.js";
+import config from "../../config.js";
 import { database } from "../../index.js";
 
 /**
@@ -19,21 +19,21 @@ export function bigger(array, array2) {
 
 /**
  * Обновляет session
- * @param {import("../start-stop.js").sessionCache} data
+ * @param {SessionData} data
  */
 export async function updateSession(data) {
-  if (!(await database.has(dbkey.session))) {
-    await database.set(dbkey.session, 0);
+  if (!(await database.has(config.dbkey.session))) {
+    await database.set(config.dbkey.session, 0);
   }
 
-  await database.add(dbkey.session, 1);
+  await database.add(config.dbkey.session, 1);
 
-  data.session = await database.get(dbkey.session, true);
+  data.session = await database.get(config.dbkey.session, true);
 }
 
 /**
  * Обновляет data.v, data.versionMSG, data.isLatest и version
- * @param {import("../start-stop.js").sessionCache} data
+ * @param {SessionData} data
  */
 export async function updateVisualVersion(data) {
   // Получаем данные
@@ -41,14 +41,11 @@ export async function updateVisualVersion(data) {
   /**
    * @type {Array}
    */
-  const dbversion = await database.get(dbkey.version, true);
+  const dbversion = await database.get(config.dbkey.version, true);
   if (dbversion.splice) dbversion.splice(3, 10);
 
   // Сравниваем версии
-  data.isLatest = bigger(
-    [VERSION[0], VERSION[1], VERSION[2]],
-    dbversion,
-  );
+  data.isLatest = bigger([config.VERSION[0], config.VERSION[1], config.VERSION[2]], dbversion);
 
   // Если версия новая
   if (data.isLatest) {
@@ -57,12 +54,12 @@ export async function updateVisualVersion(data) {
       console.log(" ");
     } else console.log("> New version!");
     // Прописываем ее в базе данных
-    database.set(dbkey.version, [VERSION[0], VERSION[1], VERSION[2]], true);
-    data.isLatest = true
+    database.set(config.dbkey.version, [config.VERSION[0], config.VERSION[1], config.VERSION[2]], true);
+    data.isLatest = true;
   }
 
   // Записываем значения
-  data.v = `${VERSION.join(".")}.x${
+  data.v = `${config.VERSION.join(".")}.x${
     "0000".substring(0, 4 - `${session}`.length) + session
   }`;
   let d;

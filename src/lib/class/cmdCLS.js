@@ -1,61 +1,32 @@
 import { Context } from "telegraf";
 import { Xitext } from "./XitextCLS.js";
 import { isAdmin } from "../functions/checkFNC.js";
-import { bot, members } from "../setup/tg.js";
-import { data, log, SERVISE_error } from "../start-stop.js";
+import { bot } from "../setup/tg.js";
+import { data } from "../start-stop.js";
 import { d, format } from "./formatterCLS.js";
 import { database } from "../../index.js";
-import { Session, ssn } from "./sessionCLS.js";
+import { ssn } from "./sessionCLS.js";
 import { EventListener } from "./EventsCLS.js";
-import { commandClearRegExp } from "../../config.js";
+import config from "../../config.js";
+const { commandClearRegExp } = config
 import { safeRun } from "../functions/safeRunFNC.js";
 
 /**
- * @type {Array<ChatCommand>}
+ * @type {Array<CommandTypes.Stored>}
  */
 const public_cmds = [];
 
 /**
- * @type {Array<ChatCommand>}
+ * @type {Array<CommandTypes.Stored>}
  */
 const private_cmds = [];
-/**
- * @typedef {Object} CommandType
- * @property {String} group
- * @property {String} private
- * @property {String} all
- */
-
-/**
- * @typedef {function(Context, Array<String>, import("./EventsCLS.js").EventData, ChatCommand)} ChatCommandCallback
- */
-
-/**
- * @typedef {Object} ChatCommand
- * @property {Object} info
- * @property {string} info.name
- * @property {string} info.description
- * @property {CommandType} info.type
- * @property {number}  info.perm
- * @property {boolean} info.hide
- * @property {string} info.session
- * @property {Array<string>} info.aliases
- * @property {ChatCommandCallback} callback
- */
 
 export class Command {
   /**
-   * Создает команду
-   * @param {Object} info
-   * @param {String} info.name Имя
-   * @param {Array<String>} info.aliases Имя
-   * @param {Boolean} info.hide Спрятать ли из листа команд
-   * @param {Boolean} info.specprefix
-   * @param {String} info.description Описание
-   * @param {String} info.session В формате d.session
-   * @param {Number} info.permisson 0 - все, 1 - админы
-   * @param {CommandType} info.type all | group | private
-   * @param {ChatCommandCallback} callback
+   *
+   * @param {CommandTypes.RegistrationInfo} info
+   * @param {CommandTypes.Callback} callback
+   * @returns
    */
   constructor(info, callback) {
     if (!info.name) return;
@@ -69,64 +40,58 @@ export class Command {
         perm: info.permisson ?? 0,
         hide: info.hide,
         session: info.session,
-        aliases: info.aliases
+        aliases: info.aliases,
       },
-      callback: callback
-    }
+      callback: callback,
+    };
 
     // Ы
     if (!info.specprefix) {
-      public_cmds.push(cmd)
+      public_cmds.push(cmd);
     } else {
-      private_cmds.push(cmd)
+      private_cmds.push(cmd);
     }
     return this;
   }
   /**
    *
-   * @param {String} a
-   * @returns {Command}
+   * @param {string} a
+   * @returns {CommandTypes.Stored | boolean}
    */
   static getCmd(a) {
     if (!a) return false;
     /**
-     * @type {Command}
+     * @type {CommandTypes.Stored}
      */
-    let cmd = false;
+    let cmd;
 
     const type = /^\/\S+/.test(a)
       ? "slash"
       : /^\-\S+/.test(a)
-        ? "special"
-        : "message"
-    if (type === "message") return
+      ? "special"
+      : "message";
+    if (type === "message") return;
 
-    const
-      // Команда из сообщения      
+    const // Команда из сообщения
       c = a.replace(/^.([^\@\s]+)\s?.*/, "$1"),
-      // Функция поиска команды в массиве по имени или сокращению      
-      findC = (e) =>
-        e.info?.name == c ||
-        e.info?.aliases?.includes(c);
+      // Функция поиска команды в массиве по имени или сокращению
+      findC = (e) => e.info?.name == c || e.info?.aliases?.includes(c);
 
-    cmd = type === "slash"
-      ? public_cmds.find(findC)
-      : private_cmds.find(findC)
+    cmd = type === "slash" ? public_cmds.find(findC) : private_cmds.find(findC);
 
     return cmd;
-
   }
   /**
    *
-   * @param {Command} command
+   * @param {CommandTypes.Stored} command
    * @param {Context} ctx
    * @returns
    */
   static async cantUse(command, ctx, user = null) {
     // Условия разрешений
     let _lg = // Где
-      command.info.type === "group" &&
-      (ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
+        command.info.type === "group" &&
+        (ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
       _lp = command.info.type === "private" && ctx.chat.type === "private",
       _lc = command.info.type === "channel" && ctx.chat.type === "channel",
       _la = command.info.type === "all" || !command.info.type,
@@ -138,7 +103,7 @@ export class Command {
         (await isAdmin(ctx, ctx.message.from.id, user)),
       // Если команда хильки
       _pxiller =
-        command.info.perm === 2 && ctx.message.from.id == data.logChatId.owner;
+        command.info.perm === 2 && ctx.message.from.id == data.chatIDs.owner;
 
     // Если нет ни одного разрешения, значит нельзя
     return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
@@ -157,7 +122,7 @@ new Command(
   },
   (ctx, _args, data) => {
     ctx.reply(
-      `${data.DBUser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
+      `${data.DB.User.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
     );
   }
 );
@@ -198,7 +163,6 @@ new Command(
 new Command(
   {
     name: "cancel",
-    prefix: "def",
     description: "Выход из пошагового меню",
     permisson: 0,
     hide: true,
@@ -206,9 +170,10 @@ new Command(
   },
   async (ctx, _args, data) => {
     /**
-     * @type {import("../models.js").DBUser}
+     * @type {DB.User}
      */
-    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
+    const user =
+      data.DB.User ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session) {
       await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
       delete user.cache.session;
@@ -220,7 +185,6 @@ new Command(
 new Command(
   {
     name: "next",
-    prefix: "def",
     description: "Переходит на следующий шаг меню",
     permisson: 0,
     hide: true,
@@ -228,13 +192,11 @@ new Command(
   },
   async (ctx, _a, data) => {
     /**
-     * @type {import("../models.js").DBUser}
+     * @type {DB.User}
      */
-    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
+    const user =
+      data.DB.User ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session?.split) {
-      /**
-       * @type {Session}
-       */
       const abst = user.cache.session.split("::"),
         sess = ssn[abst[0]];
       if (sess) {
@@ -247,7 +209,14 @@ new Command(
   }
 );
 
-export function loadCMDS() {
+const V = {
+  "private": "Лc",
+  "channel": "Канал",
+  "group": "Группа",
+  "supergroup": "Группа"
+}
+
+function loadCMDS() {
   //  Общие команды группы
   let groupC = [],
     // Общие команды в лс
@@ -256,12 +225,8 @@ export function loadCMDS() {
     groupAC = [],
     xiller = [],
     allKmds = [];
-  public_cmds.forEach((e) => {
-    /**
-     * @type {Command}
-     */
-    const cmd = e,
-      m = { command: cmd.info.name, description: cmd.info.description };
+  public_cmds.forEach((cmd) => {
+    let m = { command: cmd.info.name, description: cmd.info.description };
     if (!cmd.info.hide) {
       if (
         (cmd.info.type == "group" || cmd.info.type == "all") &&
@@ -274,7 +239,7 @@ export function loadCMDS() {
       )
         groupAC.push(m);
       if (
-        (cmd.info.type == "private" || cmd.info.type == 'all') &&
+        (cmd.info.type == "private" || cmd.info.type == "all") &&
         cmd.info.perm == 0
       )
         privateC.push(m), xiller.push(m);
@@ -297,28 +262,24 @@ export function loadCMDS() {
     });
   if (xiller[0])
     bot.telegram.setMyCommands(xiller.concat(privateC), {
-      scope: { type: "chat", chat_id: data.logChatId.owner },
+      scope: { type: "chat", chat_id: data.chatIDs.owner },
     });
   if (data.isDev)
     console.log(
-      `> Command Кол-во команд: ${allKmds.length}${allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
+      `> Command Кол-во команд: ${allKmds.length}${
+        allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
       }`
     );
 
   new EventListener("text", 9, async (ctx, next, data) => {
-    /**
-     * @type {String}
-     */
     const t = ctx.message.text;
-    /**
-     * @type {ChatCommand}
-     */
-    const command = Command.getCmd(t)
-    if (!command) return next();
-    if (await Command.cantUse(command, ctx, data.userRights))
-      return ctx.reply(
-        "В этом чате эта команда недоступна. /help", { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true }
-      );
+    const command = Command.getCmd(t);
+    if (typeof command === "boolean" || !command) return next();
+    if (await Command.cantUse(command, ctx, data))
+      return ctx.reply("В этом чате эта команда недоступна. /help", {
+        reply_to_message_id: ctx.message.message_id,
+        allow_sending_without_reply: true,
+      });
 
     const // All good, run
       a =
@@ -332,13 +293,17 @@ export function loadCMDS() {
         user?.static?.name ??
         format.getName(ctx.message.from) ??
         ctx.message.from.id,
-      xt = new Xitext().Text(' ').Url(name, d.userLink(ctx.from.username)).Text(': ' + t)._Build({ disableWebPagePreview: true })
-
+      xt = new Xitext()
+        .Text(" ")
+        .Url(name, d.userLink(ctx.from.username))
+        .Text(": " + t);
     safeRun(
-      "CMD",
+      V[ctx.chat.type],
       () => command.callback(ctx, a, data, command),
       ` (${name}: ${t})`,
-      ...xt
+      xt
     );
   });
 }
+
+new EventListener("afterpluginload", 0, loadCMDS);

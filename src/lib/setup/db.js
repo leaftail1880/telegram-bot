@@ -8,8 +8,8 @@ export class db {
     this.logAdd("create");
   }
   async close() {
-    await this.client.quit()
-    delete this.client
+    await this.client.quit();
+    delete this.client;
   }
   setClient(c, ms) {
     this.client = c;
@@ -79,8 +79,8 @@ export class db {
   }
   /**
    * Запрашивает данные с датабазы
-   * @param {String} key
-   * @returns {Promise<String | Boolean | Object>}
+   * @param {string} key
+   * @returns {Promise<string | boolean | Object>}
    */
   async get(key, jsonparse = false) {
     if (!this.client) throw new SyntaxError("Нет дб");
@@ -109,8 +109,8 @@ export class db {
   }
   /**
    * Устанавливает данные в базу данных
-   * @param {String} key
-   * @param {String | Boolean | Object} value
+   * @param {string} key
+   * @param {string | boolean | Object} value
    * @param {boolean} [stringify]
    * @param {number} [lifetime]
    * @returns
@@ -156,9 +156,9 @@ export class db {
     return result;
   }
   /**
-   * 
-   * @param {function} filter 
-   * @returns 
+   *
+   * @param {function} filter
+   * @returns
    */
   async keys(filter = () => true) {
     if (!this.client) throw new SyntaxError("Нет дб");
@@ -168,9 +168,9 @@ export class db {
     return keys.filter((e) => filter(e));
   }
   /**
-   * 
-   * @param {function} filter 
-   * @returns 
+   *
+   * @param {function} filter
+   * @returns
    */
   async getValues(filter = () => true) {
     if (!this.client) throw new SyntaxError("Нет дб");
