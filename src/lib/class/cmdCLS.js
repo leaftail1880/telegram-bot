@@ -122,7 +122,7 @@ new Command(
   },
   (ctx, _args, data) => {
     ctx.reply(
-      `${data.DB.User.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
+      `${data.DBUser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
     );
   }
 );

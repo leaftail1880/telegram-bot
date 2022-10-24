@@ -3,7 +3,7 @@ export default {
   VERSION: [
     8, //
     0, //
-    0, //
+    1, //
   ],
 
   commandClearRegExp: /^[\.\-\+\/\$]\S+\s?/g,
