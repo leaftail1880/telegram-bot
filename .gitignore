@@ -2,4 +2,6 @@
 /git_test
 .env
 .gitignore
-src/vendor/Animation/
+/src/vendor/Animation/
+/src/vendor/Migrate/
+migration.json

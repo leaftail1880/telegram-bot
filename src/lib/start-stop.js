@@ -317,35 +317,40 @@ async function stop(
 
 /**
  *
- * @param {{type?: string, message: string, stack: string, on?: object}} error
+ * @param {{name?: string, message: string, stack: string, on?: object}} error
  */
 function error(error) {
-  console.warn(
-    `${error?.message}: ${error?.stack.replace(error.message, "") ?? error}`
-  );
-  const PeR = format.errParse(error, true),
-    text = new Xitext()
-      ._Group(PeR[0])
-      .Bold()
-      .Url(null, "https://dashboard.render.com")
-      ._Group()
-      ._Group(PeR[1])
-      .Bold()
-      .Mono()
-      ._Group()
-      .Text(` ${PeR[2]}`);
-  if (data.started) {
-    bot.telegram.sendMessage(
-      data.chatIDs.log,
-      ...text._Build({ disable_web_page_preview: true })
-    );
-    if (PeR[3]) {
-      format.sendSeparatedMessage(PeR[3], (a) =>
-        bot.telegram.sendMessage(data.chatIDs.log, a, {
-          disable_web_page_preview: true,
-        })
+  try {
+    console.warn(" ");
+    console.warn(error);
+    console.warn(" ");
+
+    const PeR = format.errParse(error, true),
+      text = new Xitext()
+        ._Group(PeR[0])
+        .Bold()
+        .Url(null, "https://dashboard.render.com")
+        ._Group()
+        ._Group(PeR[1])
+        .Bold()
+        .Mono()
+        ._Group()
+        .Text(` ${PeR[2]}`);
+    if (data.started) {
+      bot.telegram.sendMessage(
+        data.chatIDs.log,
+        ...text._Build({ disable_web_page_preview: true })
       );
+      if (PeR[3]) {
+        format.sendSeparatedMessage(PeR[3], (a) =>
+          bot.telegram.sendMessage(data.chatIDs.log, a, {
+            disable_web_page_preview: true,
+          })
+        );
+      }
     }
+  } catch (e) {
+    console.warn(e);
   }
 }
 
@@ -434,11 +439,16 @@ async function freeze() {
 async function handleError(err) {
   if (OnErrorActions.codes[err?.response?.error_code]) {
     OnErrorActions.codes[err?.response?.error_code](err);
-  } else if (OnErrorActions.messages.includes(err?.stack?.split(":")[0])) {
-    SERVISE.error(err);
-  } else SERVISE.stop(err, null, true);
+  } //if (OnErrorActions.messages.includes(err?.name)) {
+  else SERVISE.error(err);
+  // } else SERVISE.stop(err, null, true);
 }
 
+/**
+ *
+ * @param {Error & {code: string}} err
+ * @returns
+ */
 async function handleDB(err) {
   if (err.message == "Client IP address is not in the allowlist.") {
     lang.runLOG.error.renderRegister();
@@ -446,11 +456,15 @@ async function handleDB(err) {
     return;
   }
   if (err.code == "ENOTFOUND") {
-    return OnErrorActions.codes.ECONNRESET()
+    return OnErrorActions.codes.ECONNRESET();
   }
   if (err.message == "Socket closed unexpectedly") {
     await database.client.connect();
     return;
   }
-  lang.runLOG.error.renderError(err);
+  SERVISE.error({
+    name: "◔ " + err.name,
+    message: err.message,
+    stack: err.stack,
+  });
 }

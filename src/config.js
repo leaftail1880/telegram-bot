@@ -1,9 +1,8 @@
 export default {
-
   VERSION: [
     8, //
     0, //
-    1, //
+    2, //
   ],
 
   commandClearRegExp: /^[\.\-\+\/\$]\S+\s?/g,
@@ -19,6 +18,7 @@ export default {
     "OC", // Модуль для команды /oc
     "DBmanageV2",
     "Cooldowns", // Таймеры
+    // "Migrate",
     /*"Animation"*/
   ],
 

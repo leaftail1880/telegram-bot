@@ -6,7 +6,7 @@ export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
     if (result?.catch)
       result.catch((e) => {
         SERVISE.error({
-          type: `Promise ${runnerName} error: `,
+          name: `Promise ${runnerName} error: `,
           message: e.message + dataOnError,
           stack: e.stack,
         });
@@ -24,7 +24,7 @@ export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
     return true;
   } catch (error) {
     SERVISE.error({
-      type: `${runnerName} error: `,
+      name: `${runnerName} error: `,
       message: error.message + dataOnError,
       stack: error.stack,
     });

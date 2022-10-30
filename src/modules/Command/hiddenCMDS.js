@@ -36,8 +36,7 @@ new cmd({
  * @param {*} Dta
  */
 function sudo(ctx, _args, Dta) {
-  const a =
-      "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
+  const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
     func = `(async () => {${ctx.message.text
       .replace(commandClearRegExp, "")
       .replace(/\n/g, " ")}})();`;

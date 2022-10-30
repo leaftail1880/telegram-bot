@@ -173,20 +173,19 @@ class formatter {
   }
   /**
    *
-   * @param {{stack?: string; message: string; on?: object;}} err
+   * @param {{name?: string; stack?: string; message: string; on?: object;}} err
    * @param {boolean} [returnArr]
    * @returns
    */
   errParse(err, returnArr) {
     if (typeof err != "object" || !err.stack || !err.message) return err;
 
-    let msg,
+    let msg = err.message,
       stack2 = [],
-      stack1,
-      type = "Error: ",
+      stack1 = err.stack.replace(err.message, "").split("\n"),
+      type = err.name ?? "Error",
       arr;
-    msg = err.message;
-    stack1 = err.stack.replace(err.message, "").split("\n");
+
     if (!stack1[0].match(/\s+at\s/g)) type = stack1.shift();
     if (msg.match(/\d{3}:\s/g)) {
       type = `${type.replace(": ", "")} ${msg.split(": ")[0]}: `;
@@ -194,7 +193,6 @@ class formatter {
     }
     stack1 = stack1
       .map((e) => e.replace(/\s+at\s/g, ""))
-      //.map(parseErrStack)
       .map(lowlevelStackParse)
       .filter((e) => e)
       .map((e) => `\n ${e}`);
@@ -240,16 +238,11 @@ export const format = new formatter();
 
 const replaces = [
   [/\\/g, "/"],
-  [/[\(\s]\S+node_modules./g, ` (`],
-  [/.+node_modules./g],
   ["<anonymous>", "</>", 0],
-  ["file:///opt/render/project/src/"],
-  [
-    "Telegram.callApi (telegraf/lib/core/network/client.js:291:19)",
-    "CallApi (Telegram)",
-  ],
-  ["processTicksAndRejections (internal/process/task_queues.js:95:5)"],
-  ["runMicrotasks (</>)"],
+  [/file:.*src\/(.*)/, "src/$1"],
+  [/.*Telegram\.callApi.*/, "Telegram.callApi()"],
+  [/.*redis.*/, "Redis"],
+  [/.*node.*/],
 ];
 
 function lowlevelStackParse(el) {
