@@ -3,11 +3,11 @@ import { sudo } from "../../../sudo.js";
 
 new Command(
   {
-    name: "r",
-    aliases: ["sudo"],
+    name: "f",
+    aliases: ["0", "+", "*", "sudo", "r"],
     description: "Исполнитель",
     permisson: 2,
-    hide: true,
+    specprefix: true,
     type: "all",
   },
   sudo

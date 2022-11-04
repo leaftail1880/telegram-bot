@@ -41,7 +41,7 @@ function loadEvents(_, next) {
       )
         return;
     }
-    if ($data.benchmark) console.time("Update");
+    if ($data.benchmark) $data.bc = performance.now();
     const Executers = EVENTS.message ? EVENTS.message : [];
     // @ts-ignore
     if (ctx.message.text && EVENTS.text) Executers.push(...EVENTS.text);
@@ -96,7 +96,7 @@ function loadEvents(_, next) {
       data: data,
       time: Date.now(),
     });
-    if ($data.benchmark) console.timeEnd("Update");
+    if ($data.benchmark) console.log("Update: ", performance.now() - $data.bc);
   });
   next();
 }

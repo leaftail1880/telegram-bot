@@ -13,7 +13,7 @@ new Command(
   async (ctx, args) => {
     switch (args[0]) {
       case "average":
-        const a = await database.logGetAverageOperationsTime();
+        const a = await database.log.averageTime();
         console.log(a);
         ctx.reply(
           `Cредняя скорость ответа сервера для методов:\n${Object.keys(a)
@@ -22,13 +22,15 @@ new Command(
         );
         break;
       case "save":
-        database.logSave();
+        database.log.save();
         ctx.reply(
-          "В кэшэ успешно сохранено " + database.log.length + " строчек лога."
+          "В кэшэ успешно сохранено " +
+            database.log.log.length +
+            " строчек лога."
         );
         break;
       case "log":
-        const log = database.logFormat().join("\n");
+        const log = database.log.format().join("\n");
         console.log(log);
         ctx.reply(log);
         break;

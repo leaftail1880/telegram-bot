@@ -9,7 +9,7 @@ const from = 0;
 (async () => {
   // @ts-ignore
   if (from === 1) {
-    const values = await database.getPairs();
+    const values = await database.pairs();
 
     fs.writeFile("migration.json", JSON.stringify(values), (err) =>
       console.warn(err)

@@ -1,98 +1,57 @@
+/**
+ * @typedef {import("redis").RedisClientType} cli
+ */
+
+/**
+ * @typedef {{type: string, time: number}} logEl
+ */
+
 export class db {
+  /**
+   * @type {cli}
+   */
+  #cli;
+  y = {
+    close: this.#close.bind(this),
+    connect: this.#connect.bind(this),
+    time: performance.now(),
+  };
+
   constructor() {
-    /**
-     * @type {import("redis").RedisClientType}
-     */
-    this.client = null;
-    this.log = [];
-    this.logAdd("create");
+    this.log = new logger(this);
+    this.log.write("create");
   }
-  async close() {
+  get client() {
+    this.y.time = performance.now();
+    const cli = this.#cli;
+    if (!cli) throw new Error("DBClient doesnt exist");
+    return cli;
+  }
+  async #close() {
     await this.client.quit();
-    delete this.client;
+    // @ts-ignore
+    this.#cli = false;
   }
-  setClient(c, ms) {
-    this.client = c;
-    this.logAdd("connect", ms);
-  }
-  logAdd(msg = "</>", startMS = Date.now(), dopmsg = null) {
-    const push = {
-      msg: msg,
-      time: Date.now() - startMS,
-      dopmsg: dopmsg,
-    };
-    this.log.push(push);
-  }
-  async logGetAverageOperationsTime(oldLogs = true) {
-    let logs = this.log,
-      output = {};
-    if (oldLogs) {
-      try {
-        const a = await this.logGetFromCache();
-        a.forEach((e) => logs.push(e));
-      } catch (error) {
-        console.warn(error);
-      }
-    }
-    logs.forEach((e) => {
-      delete e.start;
-      delete e.end;
-    });
-    for (const log of logs) {
-      if (!output[log.msg]) output[log.msg] = [];
-      output[log.msg].push(log.time);
-    }
-    for (const key of Object.keys(output)) {
-      let value = 0,
-        length = output[key].length;
-      output[key].forEach((e) => {
-        value = value + e;
-      });
-      output[key] = Math.round((value / length) * 1000) / 1000;
-    }
-    return output;
-  }
-  logFormat(prefix = "db") {
-    this.logAdd("logFormat");
-    return this.log.map(
-      (e) =>
-        `[${prefix}] ${e.msg} ${e.time > 0 ? e.time + " ms" : ""} ${
-          e.dopmsg ? e.dopmsg : ""
-        }`
-    );
+  async #connect(c, ms) {
+    await c.connect();
+    this.#cli = c;
+    this.log.write("connect", ms);
   }
 
-  logParse(logString) {
-    return {
-      msg: logString.split(" ")[1],
-      time: Number(logString.split(" ")[2]),
-    };
-  }
-  async logGetFromCache() {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const val = await this.getValues((e) => e.startsWith("Cache::log:"));
-    return val.map((e) => this.logParse(e));
-  }
-
-  async logSave(name = Date.now()) {
-    await this.set(`Cache::log:${name}`, this.logFormat(), true);
-  }
   /**
    * Запрашивает данные с датабазы
    * @param {string} key
    * @returns {Promise<string | boolean | Object>}
    */
   async get(key, jsonparse = false) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      value = await this.client.get(key);
+    const value = await this.client.get(key);
     let ret;
     try {
       ret = jsonparse ? JSON.parse(value) : value;
     } catch (error) {
       ret = value;
     }
-    this.logAdd("get", start);
+    this.log.write("get");
     return ret;
   }
   /**
@@ -101,10 +60,8 @@ export class db {
    * @returns {Promise<boolean>}
    */
   async del(key) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      value = await this.client.del(key);
-    this.logAdd("del", start);
+    const value = await this.client.del(key);
+    this.log.write("del");
     return !!value;
   }
   /**
@@ -116,18 +73,16 @@ export class db {
    * @returns
    */
   async set(key, value, stringify = false, lifetime) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now();
     await this.client.set(
       key,
-      typeof value == "string"
+      typeof value === "string"
         ? value
         : stringify
         ? JSON.stringify(value)
         : value
     );
-    if (typeof lifetime == "number") this.client.expire(key, lifetime);
-    this.logAdd("set", start);
+    if (typeof lifetime === "number") this.client.expire(key, lifetime);
+    this.log.write("set");
     return value;
   }
   /**
@@ -135,76 +90,108 @@ export class db {
    * @returns {Promise<boolean>}
    */
   async has(key) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      boolean = await this.client.exists(key);
-    this.logAdd("has", start);
+    const boolean = await this.client.exists(key);
+    this.log.write("has");
     return !!boolean;
   }
   async add(key, number = 1) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      result = await this.client.incrBy(key, number);
-    this.logAdd("add", start);
+    const result = await this.client.incrBy(key, number);
+    this.log.write("add");
     return result;
   }
   async remove(key, number = 1) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      result = await this.client.decrBy(key, number);
-    this.logAdd("remove", start);
+    const result = await this.client.decrBy(key, number);
+    this.log.write("remove");
     return result;
   }
-  /**
-   *
-   * @param {function} filter
-   * @returns
-   */
-  async keys(filter = () => true) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      keys = await this.client.keys("*");
-    this.logAdd("keys", start);
-    return keys.filter((e) => filter(e));
+  async keys(filter = "*") {
+    const keys = await this.client.keys(filter);
+    this.log.write("keys");
+    return keys;
   }
-  /**
-   *
-   * @param {function} filter
-   * @returns
-   */
-  async getValues(filter = () => true) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      collection = [],
-      keys = await this.keys();
-    for (const a of keys.filter((e) => filter(e))) {
+  async values(filter = "*") {
+    const collection = [];
+    const keys = await this.keys(filter);
+    for (const a of keys) {
       collection.push(await this.client.get(a));
     }
-    this.logAdd("getValues", start);
+    this.log.write("getValues");
     return collection;
   }
   /**
    *
    * @returns {Promise<Object<string, object>>}
    */
-  async getPairs() {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(),
-      collection = {},
-      arg = (await this.keys()).sort();
+  async pairs() {
+    const start = performance.now();
+    const collection = {};
+    const arg = (await this.keys()).sort();
+
     for (const a of arg) {
       collection[a] = await this.client.get(a);
     }
-    this.logAdd("getPairs", start);
+    this.log.write("getPairs");
     return collection;
   }
+}
 
-  /*
-  async (key) {
-    if (!this.client) throw new SyntaxError("Нет дб");
-    const start = Date.now(), a = await this.client(key);
-    this.logAdd('', start);
-    return a;
-  }
+class logger {
+  /**
+   * @type {logEl[]}
    */
+  log = [];
+  /**
+   *
+   * @param {db} parent
+   */
+  constructor(parent) {
+    this.parent = parent;
+  }
+  write(type = "</>", time) {
+    const push = {
+      type: type,
+      time: performance.now() - (time ?? this.parent.y.time),
+    };
+    this.log.push(push);
+  }
+  async averageTime(oldLogs = true) {
+    let logs = this.log,
+      output = {};
+    if (oldLogs) {
+      try {
+        const a = await this.cachedLog();
+        a.forEach((e) => logs.push(e));
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+    for (const log of logs) {
+      output[log.type] = output[log.type] || [];
+      output[log.type].push(log.time);
+    }
+    for (const key of Object.keys(output)) {
+      let value = 0;
+      const length = output[key].length;
+      output[key].forEach((e) => (value = value + e));
+      output[key] = Math.round(value / length).toFixed(3);
+    }
+    return output;
+  }
+  format() {
+    this.write("format");
+    return this.log.map((e) => `${e.type} ${e.time > 0 ? e.time + " ms" : ""}`);
+  }
+  parse(log) {
+    return {
+      type: log.split(" ")[1],
+      time: Number(log.split(" ")[2]),
+    };
+  }
+  async cachedLog() {
+    const val = await this.parent.values("Cache::log:*");
+    return val.map((e) => this.parse(e));
+  }
+  async save(name = performance.now()) {
+    await this.parent.set(`Cache::log:${name}`, this.format(), true);
+  }
 }

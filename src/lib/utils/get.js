@@ -40,7 +40,7 @@ export async function getGroup(ctx) {
 export async function getRegisteredGroups() {
   const groups = [];
 
-  const keys = (await database.keys()).filter((e) => e.startsWith(`Group::`));
+  const keys = await database.keys(`Group::*`);
 
   for (const key of keys) groups.push(await database.get(key, true));
 

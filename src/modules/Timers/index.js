@@ -6,7 +6,7 @@ import { cooldown } from "../Command/index.js";
 
 setInterval(async () => {
   if (data.stopped || !database.client) return;
-  const groups = (await database.keys((e) => e.startsWith("Group::")))
+  const groups = (await database.keys("Group::*"))
     .map((e) => Number(e.split("::")[1]))
     .filter((e) => typeof e === "number");
   groups.forEach(async (e) => {

@@ -30,6 +30,7 @@ export const data = {
   updateTimer: null,
   debug: false,
   benchmark: true,
+  bc: performance.now(),
   chatID: {
     // Айди чата, куда будут поступать сообщения
     owner: Number(env.ownerID),
@@ -73,16 +74,17 @@ async function start() {
    * Подключение к базе данных
    *========================**/
 
-  const s = Date.now(),
-    client = createClient({
-      url: process.env.REDIS_URL,
-    });
+  const s = performance.now();
+
+  const client = createClient({
+    url: process.env.REDIS_URL,
+  });
 
   client.on("error", handlers.dbError);
 
   // Сохранение клиента
-  await client.connect();
-  database.setClient(client, s);
+  await database.y.connect(client, s);
+
   if (data.isDev) lang.startLOG.dev[1]();
 
   // Обновляет сессию
@@ -141,7 +143,7 @@ async function checkInterval() {
       return await database.set(config.dbkey.request, "terminate_you");
     if (q === false || q === 0) {
       await database.set(config.dbkey.request, "terminate_me");
-      await database.close();
+      await database.y.close();
       clearInterval(data.updateTimer);
       SERVISE.stop(lang.stop.old(), null, true, false);
       return;
@@ -191,7 +193,7 @@ async function stop(
     data.stopped = true;
     bot.stop(reason);
   }
-  if (stopApp) {
+  if (stopApp || (stopApp === "false" && env.whereImRunning.includes("("))) {
     process.exit(0);
   }
 }
@@ -256,7 +258,7 @@ async function freeze() {
     const answer = await database.get(config.dbkey.request);
     if (answer === "terminate_you") {
       await database.del(config.dbkey.request);
-      await database.close();
+      await database.y.close();
       clearInterval(timeout);
       return SERVISE.stop(lang.stop.terminate(), null, true, data.isDev, false);
     }

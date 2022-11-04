@@ -65,15 +65,16 @@ export class Command {
      */
     let cmd;
 
-    const type = /^\/\S+/.test(a)
+    const type = /^\/\w+/.test(a)
       ? "slash"
-      : /^\-\S+/.test(a)
+      : /^\-\w*/.test(a)
       ? "special"
       : "message";
     if (type === "message") return;
 
     const // Команда из сообщения
-      c = a.replace(/^.([^\@\s]+)\s?.*/, "$1"),
+      cc = a.match(/^.([^@\s]*)/),
+      c = cc[1],
       // Функция поиска команды в массиве по имени или сокращению
       findC = (e) => e.info?.name == c || e.info?.aliases?.includes(c);
 
@@ -142,7 +143,8 @@ new Command(
       a = new Xitext();
 
     for (const e of Object.values(public_cmds)) {
-      if (await Command.cantUse(e, ctx, data.userRights) || e.info.hide) continue;
+      if ((await Command.cantUse(e, ctx, data.userRights)) || e.info.hide)
+        continue;
       if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
       a.Text(`  /${e.info.name}`);
       a.Italic(` - ${e.info.description}\n`);

@@ -2,7 +2,7 @@ export default {
   version: [
     8, //
     1, //
-    0, //
+    1, //
   ],
 
   commandClearRegExp: /^[\.\-\+\/\$]\S+\s?/g,
