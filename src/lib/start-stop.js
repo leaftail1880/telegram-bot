@@ -145,7 +145,7 @@ async function checkInterval() {
       await database.set(config.dbkey.request, "terminate_me");
       await database.y.close();
       clearInterval(data.updateTimer);
-      SERVISE.stop(lang.stop.old(), null, true, false);
+      SERVISE.stop(lang.stop.old(), null, true, data.isDev);
       return;
     }
   }
@@ -161,14 +161,14 @@ async function stop(
   let log = `✕  `;
   const text = new Xitext()
     ._Group("✕  ")
-    .Url(null, "https://dashboard.render.com")
+    .Url(null, "https://t.me")
     .Bold()
     ._Group();
 
   if (stopApp) text.Bold("ALL. "), (log = `${log}ALL. `);
   else if (stopBot) text.Text("BOT. "), (log = `${log}BOT. `);
 
-  text.Mono(reason + "");
+  text.Text(reason + "");
   log = `${log}${reason}`;
 
   if (extra)
@@ -193,7 +193,7 @@ async function stop(
     data.stopped = true;
     bot.stop(reason);
   }
-  if (stopApp || (stopApp === "false" && env.whereImRunning.includes("("))) {
+  if (stopApp) {
     process.exit(0);
   }
 }
@@ -212,7 +212,7 @@ function error(error) {
       text = new Xitext()
         ._Group(PeR[0])
         .Bold()
-        .Url(null, "https://dashboard.render.com")
+        .Url(null, "https://t.me")
         ._Group()
         ._Group(PeR[1])
         .Bold()

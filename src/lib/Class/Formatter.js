@@ -1,9 +1,11 @@
 class formatter {
   /**
-   * @param {any} obj
+   * @param {any} target
+   * @returns {string}
    */
-  toStr(obj, space = "  ", cw = "", funcCode = false, depth = 0) {
-    if (depth > 10 || typeof obj !== "object") return rep(obj) ?? obj ?? "{}";
+  toStr(target, space = "  ", cw = "", funcCode = false, depth = 0) {
+    if (depth > 10 || typeof target !== "object")
+      return `${rep(target)}` ?? `${target}` ?? "{}";
 
     function rep(value) {
       switch (typeof value) {
@@ -87,7 +89,7 @@ class formatter {
     // avoid Circular structure error
     const visited = new WeakSet();
 
-    return JSON.stringify(obj, (_, value) => rep(value), space)?.replace(
+    return JSON.stringify(target, (_, value) => rep(value), space)?.replace(
       /"/g,
       cw
     );
