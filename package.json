@@ -1,10 +1,9 @@
 {
-  "name": "tg-bot",
+  "name": "telegram-bot",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "START": "node app.js",
-    "test": "node test.js"
+    "run": "node app.js"
   },
   "keywords": [],
   "author": "",

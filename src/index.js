@@ -1,4 +1,4 @@
-import { db } from "./lib/setup/db.js";
+import { db } from "./lib/launch/db.js";
 import { handlers, SERVISE } from "./lib/start-stop.js";
 
 /**======================

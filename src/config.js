@@ -1,8 +1,8 @@
 export default {
-  VERSION: [
+  version: [
     8, //
     0, //
-    2, //
+    4, //
   ],
 
   commandClearRegExp: /^[\.\-\+\/\$]\S+\s?/g,
@@ -12,12 +12,12 @@ export default {
   cacheUpdateTime: 2000,
 
   // Имя папки, в которой содержатся скрипты. Нужно для парсинга ошибок.
-  Plugins: [
+  plugins: [
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
     "OC", // Модуль для команды /oc
     "DBmanageV2",
-    "Cooldowns", // Таймеры
+    "Timers", // Таймеры
     // "Migrate",
     /*"Animation"*/
   ],

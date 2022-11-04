@@ -1,24 +1,50 @@
 import { database } from "../../index.js";
-import { getGroup, getUser } from "../../lib/functions/getUserFNC.js";
-import { d, format } from "../../lib/class/formatterCLS.js";
-import { EventListener } from "../../lib/class/EventsCLS.js";
+import { d, format } from "../../lib/Class/Formatter.js";
+import { EventListener } from "../../lib/Class/Events.js";
+import { CreateGroup } from "../../lib/utils/models.js";
 
 new EventListener("message", 10, async (ctx, next, data) => {
-  const user = data.DBUser ?? (await getUser(ctx, false)).user;
-  if (ctx.chat.type == "group" || ctx.chat.type == "supergroup") {
-    const g = await getGroup(ctx, false),
-      group = g.group;
-    if (group.static.id !== ctx.chat.id)
-      (group.static.id = ctx.chat.id), (g.saveG = true);
-    if (!group.cache.members.includes(user.static.id))
-      (group.cache.members = format.add(group.cache.members, user.static.id)),
-        (g.saveG = true);
-    if (g.saveG) database.set(d.group(ctx.chat.id), group, true);
+  if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {
+    /**
+     * @type {DB.Group}
+     */
+    let group = await database.get(d.group(ctx.chat.id), true);
+    let update = false;
+
+    if (!group) {
+      group = CreateGroup(ctx.chat.id, ctx.chat.title, [ctx.from.id]);
+      update = true;
+    }
+
+    if (group.static.id !== ctx.chat.id) {
+      group.static.id = ctx.chat.id;
+      update = true;
+    }
+
+    if (!group.cache.members.includes(ctx.from.id)) {
+      group.cache.members = format.add(group.cache.members, ctx.from.id);
+      update = true;
+    }
+
+    if (group.static.title != ctx.chat.title) {
+      group.static.title = ctx.chat.title;
+      update = true;
+    }
+
+    if (update) database.set(d.group(ctx.chat.id), group, true);
+    data.DBGroup = group;
   }
-  user.static.name = format.getName(ctx.from);
-  user.static.nickname = ctx.from.username;
-  user.cache.lastActive = Date.now();
+  const user = data.DBUser;
+  const detectUpdate = (_1, _2) =>
+    _1 != _2 ? ((_1 = _2), (user.needSafe = true)) : "";
+
+  detectUpdate(user.static.name, format.getName(ctx.from));
+  detectUpdate(user.static.nickname, ctx.from.username);
+
   data.DBUser = user;
-  await database.set(d.user(ctx.from.id), user, true);
+  if (user.needSafe) {
+    delete data.DBUser.needSafe;
+    await database.set(d.user(ctx.from.id), user, true);
+  }
   next();
 });

@@ -1,18 +1,19 @@
-import { Command } from "../../lib/class/cmdCLS.js";
-import { d, format } from "../../lib/class/formatterCLS.js";
-import { editMsg, MultiMenuV1 } from "../../lib/class/menuCLS.js";
-import { Query } from "../../lib/class/queryCLS.js";
-import { Button, Xitext } from "../../lib/class/XitextCLS.js";
-import { bot } from "../../lib/setup/tg.js";
+import { Command } from "../../lib/Class/Cmd.js";
+import { d, format } from "../../lib/Class/Formatter.js";
+import { editMsg, MultiMenuV1 } from "../../lib/Class/Menu.js";
+import { Query } from "../../lib/Class/Query.js";
+import { Button, Xitext } from "../../lib/Class/Xitext.js";
+import { bot } from "../../lib/launch/tg.js";
 import { database } from "../../index.js";
 
 (async () => {
   const m = new MultiMenuV1("DB"),
     me = await bot.telegram.getMe(),
     lang = {
-      main: (page) => new Xitext()
-        .Text(`(${page}) База данных `)
-        .Url(format.getName(me), d.userLink(me.username)),
+      main: (page) =>
+        new Xitext()
+          .Text(`(${page}) База данных `)
+          .Url(format.getName(me), d.userLink(me.username)),
       generateMenu: async (page = 1) => {
         let keys = await database.keys(),
           btns = [];
@@ -63,7 +64,8 @@ import { database } from "../../index.js";
     },
     async (_ctx, data, edit) => {
       edit(
-        ...lang.main(data[0])
+        ...lang
+          .main(data[0])
           .InlineKeyboard(...(await lang.generateMenu(Number(data[0]))))
           ._Build({ disable_web_page_preview: true })
       );
@@ -76,7 +78,7 @@ import { database } from "../../index.js";
       prefix: m.prefix,
     },
     async (_ctx, data, edit) => {
-      const dat = format.stringifyEx(await database.get(data[0], true));
+      const dat = format.toStr(await database.get(data[0], true));
       edit(...lang.see(data[0], dat, data[1]));
     }
   );
@@ -88,7 +90,11 @@ import { database } from "../../index.js";
     },
     async (_ctx, data, edit) => {
       await database.del(data[0]);
-      edit('Успешно удалено.', {reply_markup: {inline_keyboard: await lang.generateMenu(Number(data[1]))}});
+      edit("Успешно удалено.", {
+        reply_markup: {
+          inline_keyboard: await lang.generateMenu(Number(data[1])),
+        },
+      });
     }
   );
 
@@ -115,7 +121,8 @@ import { database } from "../../index.js";
       editMsg(
         ctx,
         newMsg,
-        ...lang.main(1)
+        ...lang
+          .main(1)
           .InlineKeyboard(...(await lang.generateMenu(1)))
           ._Build({ disable_web_page_preview: true })
       );

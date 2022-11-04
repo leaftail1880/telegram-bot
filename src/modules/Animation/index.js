@@ -1,7 +1,7 @@
-import { bot } from "../../lib/setup/tg.js";
+import { bot } from "../../lib/launch/tg.js";
 import { data } from "../../lib/start-stop.js";
 import { database } from "../../index.js";
-import { getRegisteredGroups } from "../../lib/functions/getUserFNC.js";
+import { getRegisteredGroups } from "../../lib/utils/get.js";
 
 const active = {};
 

@@ -15,7 +15,7 @@ namespace CommandTypes {
   type Callback = (
     ctx: FullContext,
     args: Array<string>,
-    data: EventData,
+    data: Event.Data,
     self: CommandTypes.Stored
   ) => void;
 
@@ -36,13 +36,18 @@ namespace CommandTypes {
 namespace Event {
   type Type = "message" | "text" | "document" | "afterpluginload";
   type Stored = {
-    lvl: number;
-    callback: EventCallback;
+    position: number;
+    callback: Event.Callback;
   };
 
-  type Callback = (ctx: FullContext & {message: DM}, next: () => void, data: Event.Data) => any;
+  type Callback = (
+    ctx: FullContext & { message: DM },
+    next: () => void,
+    data: Event.Data
+  ) => any;
   type Data = {
     DBUser: DB.User;
+    DBGroup?: DB.Group;
     userRights: import("telegraf/types").ChatMember;
     user: import("telegraf/types").User;
   };
@@ -67,6 +72,7 @@ namespace DB {
       tag?: string;
       lastActive: number;
     };
+    needSafe?: true;
   };
 
   type Group = {
@@ -95,10 +101,10 @@ type DM = import("telegraf/types").Message.DocumentMessage;
 
 type CTM = C & TM;
 
-type FullContext = Context & {message: CTM}
+type FullContext = Context & { message: CTM };
 
 namespace QueryTypes {
-  type Callback = (ctx: Context, path: string[], callback: QueryNext) => void;
+  type Callback = (ctx: Context, path: string[], callback: Query.Next) => void;
 
   type Next = (
     a: string,
