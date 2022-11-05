@@ -1,6 +1,6 @@
 # @Koboldie
 
-NodeJS based telegram bot. You can test it [here](https://t.me/Koboldiebot)
+NodeJS and telegraf based telegram bot. You can test it [here](https://t.me/Koboldiebot)
 
 
 ## Features
