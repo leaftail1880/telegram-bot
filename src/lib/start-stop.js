@@ -31,7 +31,6 @@ export const data = {
   updateTimer: null,
   debug: false,
   benchmark: true,
-  me: bot.botInfo,
   bc: performance.now(),
   chatID: {
     // Айди чата, куда будут поступать сообщения
