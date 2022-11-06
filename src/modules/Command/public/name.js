@@ -5,7 +5,6 @@ import { lang } from "../../OC/index.js";
 new Command(
   {
     name: "name",
-    hide: true,
     description: "Меняет ник",
     permisson: 0,
     type: "all",

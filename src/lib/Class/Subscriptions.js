@@ -51,7 +51,7 @@ export const Subscriptions = {
    * @param {keyof Settings} key
    * @param {number[] | undefined} [IDs]
    * @param {*} [searchValue]
-   * @returns
+   * @returns {Promise<number[]>}
    */
   async list(key, IDs, searchValue = true) {
     const users = Array.isArray(IDs)

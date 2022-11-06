@@ -43,7 +43,8 @@ namespace Event {
   type Callback = (
     ctx: FullContext & { message: DM },
     next: () => void,
-    data: Event.Data
+    data: Event.Data,
+    extraData?: Object
   ) => any;
   type Data = {
     DBUser: DB.User;

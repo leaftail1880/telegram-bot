@@ -4,7 +4,7 @@ import { database } from "../../index.js";
 /**
  * @type {1 | 2 | 0} 1 - from, 2 - to, 0 - not
  */
-const from = 0;
+const from = 1;
 
 (async () => {
   // @ts-ignore

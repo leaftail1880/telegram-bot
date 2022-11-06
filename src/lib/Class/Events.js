@@ -120,8 +120,10 @@ function execute(ctx, f, data) {
  * @param {Event.Type} type
  */
 export function emitEvents(type, data) {
-  // @ts-ignore
-  for (const { callback } of EVENTS[type]) callback({}, () => void 0, {}, data);
+  if (EVENTS[type])
+    for (const { callback } of EVENTS[type])
+      // @ts-ignore
+      callback({}, () => void 0, {}, data);
 }
 
 new EventListener("modules.load", 0, loadEvents);
