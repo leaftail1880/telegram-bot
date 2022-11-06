@@ -1,5 +1,5 @@
 import { database } from "../../../../index.js";
-import { d, format } from "../../../../lib/Class/Formatter.js";
+import { d, util } from "../../../../lib/Class/Utils.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { Button } from "../../../../lib/Class/Xitext.js";
 import { data as _data } from "../../../../lib/start-stop.js";
@@ -18,8 +18,8 @@ new Query(
     const OCS = await getOCS(),
       keys = Object.keys(OCS);
     if (!keys[0]) {
-      editMsg(ctx, lang.main._text, {
-        entities: lang.main._entities,
+      editMsg(ctx, lang.main._.text, {
+        entities: lang.main._.entities,
         reply_markup: {
           inline_keyboard: lang.mainKeyboard,
         },
@@ -41,12 +41,12 @@ new Query(
             user?.static?.nickname;
         if (u)
           btns.push([
-            new Button(format.capitalizeFirstLetter(u)).data(
+            new Button(util.capitalizeFirstLetter(u)).data(
               link(
                 "uOC",
                 e,
                 page,
-                format.capitalizeFirstLetter(u),
+                util.capitalizeFirstLetter(u),
                 user?.static?.nickname
               )
             ),

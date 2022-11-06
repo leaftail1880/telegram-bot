@@ -34,7 +34,7 @@ namespace CommandTypes {
 }
 
 namespace Event {
-  type Type = "message" | "text" | "document" | "afterpluginload";
+  type Type = "message" | "text" | "document" | "modules.load" | "release";
   type Stored = {
     position: number;
     callback: Event.Callback;
@@ -104,11 +104,13 @@ type CTM = C & TM;
 type FullContext = Context & { message: CTM };
 
 namespace QueryTypes {
-  type Callback = (ctx: Context, path: string[], callback: Query.Next) => void;
-
-  type Next = (
-    a: string,
-    b: import("telegraf/types").Convenience.ExtraEditMessageText
+  type Callback = (
+    ctx: Context,
+    path: string[],
+    callback: (
+      text: string,
+      extra: import("telegraf/types").Convenience.ExtraReplyMessage
+    ) => Promise<void>
   ) => void;
 }
 

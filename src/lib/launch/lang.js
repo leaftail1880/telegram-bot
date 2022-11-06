@@ -3,14 +3,17 @@ import { Xitext } from "../Class/Xitext.js";
 import { data } from "../start-stop.js";
 
 export const start_stop_lang = {
-  launchLOG: (reason) => `> ${data.versionLOG} [${reason}]`,
-  stopRes: (reason) => `% ${data.versionLOG} stopped. ${reason}`,
+  launchLOG: (reason) => `⌬ ${data.versionLOG} ${reason}`,
   stop: {
-    noRespLog: () => start_stop_lang.stopRes("No response"),
-    terminate: () => start_stop_lang.stopRes(`Terminated`),
-    old: () => `${data.versionLOG} stopped. OLD`,
-    freeze: () => `$ ${data.versionMSG} freezed.`,
-    freezeLOG: () => start_stop_lang.stopRes(`FRZ!`),
+    terminate: () => `${data.versionLOG} принудительно остановлена.`,
+    old: () => `${data.versionLOG} выключена как старая`,
+    freeze: () =>
+      new Xitext()._.group(`$`)
+        .url("https://t.me")
+        .bold()
+        ._.group()
+        .text(` ${data.versionMSG} заморожена.`)
+        ._.build(),
   },
   runLOG: {
     error: {
@@ -24,11 +27,13 @@ export const start_stop_lang = {
   startLOG: {
     render: [
       () => console.log(`v${config.version.join(".")}`),
-      (plgs) =>
+      (modules) =>
         console.log(
-          `${(Date.now() - data.start_time) / 1000} sec, Session: ${
-            data.session
-          }, plugins: ${plgs.join(", ")}`
+          `${((Date.now() - data.start_time) / 1000).toFixed(
+            2
+          )} sec, Session: ${data.session}, Modules:${modules
+            .map((e) => `\n [+] ${e}`)
+            .join("")}`
         ),
     ],
     dev: [
@@ -44,7 +49,7 @@ export const start_stop_lang = {
         console.log(" ");
       },
       () => {
-        console.log("Plugins: ");
+        console.log("Modules: ");
         console.log(" ");
       },
       (plugin, error) => {
@@ -68,12 +73,12 @@ export const start_stop_lang = {
   },
   start: (info, prefix = "⌬") =>
     new Xitext()
-      .Text(`${prefix} Кобольдя `)
-      ._Group(data.versionMSG.split(" ")[0])
-      .Url(null, `https://koboldie-bot.onrender.com/stop${data.start_time}`)
-      .Bold()
-      ._Group()
-      .Text(" ")
-      .Italic(info ? info : data.versionMSG.split(" ")[1] ?? false)
-      ._Build({ disable_web_page_preview: true }),
+      .text(`${prefix} Кобольдя `)
+      ._.group(data.versionMSG.split(" ")[0])
+      .url(null, `https://t.me/${data.me}`)
+      .bold()
+      ._.group()
+      .text(" ")
+      .italic(info ? info : data.versionMSG.split(" ")[1] ?? false)
+      ._.build(),
 };

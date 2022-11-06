@@ -16,10 +16,10 @@ new Query(
 
     const OC = OCS[data[0]][data[1]],
       capt = lang.myOC(OC.name, OC.description, data[2]),
-      refType = getRefType(OC.fileid, capt._text);
+      refType = getRefType(OC.fileid, capt._.text);
 
     ctx.answerCbQuery(OC.name);
-    sendRef(ctx, OC.fileid, capt._text, capt._entities, [
+    sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
       [new Button("Изменить").data(link("edit", data[1], data[2]))],
       [new Button("Удалить").data(link("del", data[1], refType))],
       [new Button("↩️").data(link("backdoc", refType))],

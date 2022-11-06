@@ -2,12 +2,12 @@ import { Xitext } from "../Class/Xitext.js";
 import { SERVISE, log } from "../start-stop.js";
 
 /**
- * 
- * @param {string} runnerName 
- * @param {Function} callback 
- * @param {Xitext | string} dataOnError 
- * @param {Xitext | string} dataOnSuccesfull 
- * @returns 
+ *
+ * @param {string} runnerName
+ * @param {Function} callback
+ * @param {Xitext | string} dataOnError
+ * @param {Xitext | string} dataOnSuccesfull
+ * @returns
  */
 export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
   try {
@@ -22,10 +22,10 @@ export function safeRun(runnerName, callback, dataOnError, dataOnSuccesfull) {
       });
     let txt = `> ${runnerName}. `,
       extra = {};
-    if (typeof dataOnSuccesfull === "string" || !dataOnSuccesfull._Build) {
+    if (typeof dataOnSuccesfull === "string" || !dataOnSuccesfull._.build) {
       txt += dataOnSuccesfull;
     } else {
-      const temp = dataOnSuccesfull._Build({}, txt.length);
+      const temp = dataOnSuccesfull._.build({}, txt.length);
       txt += temp[0];
       extra = temp[1];
     }

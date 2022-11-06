@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import { d } from "./Formatter.js";
+import { d } from "./Utils.js";
 import { Button } from "./Xitext.js";
 
 export class MultiMenuV1 {
@@ -56,11 +56,11 @@ export class MultiMenuV1 {
   }
   /**
    *
-   * @param {*} buttons
-   * @param {*} backButton
-   * @param {*} methodName
-   * @param {*} pageTo
-   * @param {*} buttonLimit
+   * @param {import("telegraf/types").InlineKeyboardButton[][]} buttons
+   * @param {import("telegraf/types").InlineKeyboardButton} backButton
+   * @param {string} methodName
+   * @param {string | number} pageTo
+   * @param {number} buttonLimit
    * @returns
    */
   generatePageSwitcher(
@@ -73,15 +73,19 @@ export class MultiMenuV1 {
     const page = Number(pageTo);
     const qNext = Math.ceil(buttons.length / buttonLimit) - 1 >= page;
     const qBack = page > 1;
-    const start = buttonLimit * page - buttonLimit,
-      end = buttonLimit * page;
+
+    const start = buttonLimit * page - buttonLimit;
+    const end = buttonLimit * page;
+
     const btns = buttons.slice(start, end);
     const menu = [];
+
     if (backButton) menu.push(backButton);
 
     if (qBack)
       menu.unshift(new Button("«").data(this.link(methodName, page - 1)));
     if (qNext) menu.push(new Button("»").data(this.link(methodName, page + 1)));
+
     btns.push(menu);
 
     return btns;

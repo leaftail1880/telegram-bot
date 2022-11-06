@@ -1,5 +1,5 @@
 import { EventListener } from "../../../../lib/Class/Events.js";
-import { format } from "../../../../lib/Class/Formatter.js";
+import { util } from "../../../../lib/Class/Utils.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { ssn } from "../../../../lib/Class/Session.js";
 import { err } from "../../../../lib/utils/err.js";
@@ -15,7 +15,7 @@ new Query(
   },
   (ctx) => {
     ssn.OC.enter(ctx.callbackQuery.from.id, 0);
-    ctx.reply(...lang.reg0._Build({ disable_web_page_preview: true }));
+    ctx.reply(...lang.reg0._.build({ disable_web_page_preview: true }));
   }
 );
 
@@ -25,7 +25,7 @@ new EventListener("document", 0, async (ctx, next, ow) => {
   ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
   ctx.reply(lang.create.name);
   console.log(
-    `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended reference`
+    `> OC. [${util.getName(ctx.from) ?? ctx.from.id}] sended reference`
   );
 });
 
@@ -39,7 +39,7 @@ new EventListener("text", 0, async (ctx, next, ow) => {
 
   ssn.OC.enter(ctx.from.id, 2, ctx.message.text);
   ctx.reply(lang.create.description);
-  console.log(`> OC. [${format.getName(ctx.from) ?? ctx.from.id}] sended name`);
+  console.log(`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] sended name`);
 });
 
 // 3 этап - описание

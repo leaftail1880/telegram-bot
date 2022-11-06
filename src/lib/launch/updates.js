@@ -1,5 +1,6 @@
 import config from "../../config.js";
 import { database } from "../../index.js";
+import { emitEvents } from "../Class/Events.js";
 
 /**
  *
@@ -26,7 +27,7 @@ export async function updateSession(data) {
     await database.set(config.dbkey.session, 0);
   }
 
-  await database.add(config.dbkey.session, 1);
+  await database.increase(config.dbkey.session, 1);
 
   data.session = await database.get(config.dbkey.session, true);
 }
@@ -56,6 +57,7 @@ export async function updateVisualVersion(data) {
       console.log("⍚ New version! ⍚");
       console.log(" ");
     } else console.log("> New version!");
+    emitEvents("release");
     // Прописываем ее в базе данных
     database.set(
       config.dbkey.version,
@@ -67,7 +69,7 @@ export async function updateVisualVersion(data) {
 
   // Записываем значения
   data.v = `${config.version.join(".")}.x${
-    "00000".substring(0, 4 - `${session}`.length) + session
+    "00000".substring(0, 5 - `${session}`.length) + session
   }`;
   let d;
   if (data.isLatest === 0) d = "Рабочая";

@@ -41,7 +41,8 @@ function loadEvents(_, next) {
       )
         return;
     }
-    if ($data.benchmark) $data.bc = performance.now();
+    const start = performance.now();
+    let speed = false;
     const Executers = EVENTS.message ? EVENTS.message : [];
     // @ts-ignore
     if (ctx.message.text && EVENTS.text) Executers.push(...EVENTS.text);
@@ -56,8 +57,8 @@ function loadEvents(_, next) {
 
     // Если да, значит бот обрабатывает сообщения, написанные до его запуска.
     const find = GetCache.find((e) => e.id === ctx.message.from.id);
-    if (find && Date.now() - find.time <= config.cacheUpdateTime) {
-      console.log("Обработка сообщений...");
+    if (find && Date.now() - find.time <= config.cache.updateTime) {
+      speed = true;
       const cache = find.data;
       const R =
         cache.userRights ??
@@ -96,7 +97,8 @@ function loadEvents(_, next) {
       data: data,
       time: Date.now(),
     });
-    if ($data.benchmark) console.log("Update: ", performance.now() - $data.bc);
+    if ($data.benchmark)
+      console.log(speed ? "F:" : "N:", (performance.now() - start).toFixed(2));
   });
   next();
 }
@@ -109,7 +111,7 @@ function loadEvents(_, next) {
  * @returns
  */
 function execute(ctx, f, data) {
-  if (!f?.map || !f.filter((e) => typeof e === "function")[0]) return;
+  if (!Array.isArray(f) || typeof f[0] !== "function") return;
   f[0](ctx, () => execute(ctx, f.slice(1), data), data);
 }
 
@@ -117,9 +119,9 @@ function execute(ctx, f, data) {
  *
  * @param {Event.Type} type
  */
-export function emitEvents(type) {
+export function emitEvents(type, data) {
   // @ts-ignore
-  for (const { callback } of EVENTS[type]) callback({}, () => void 0, {});
+  for (const { callback } of EVENTS[type]) callback({}, () => void 0, {}, data);
 }
 
-new EventListener("afterpluginload", 0, loadEvents);
+new EventListener("modules.load", 0, loadEvents);

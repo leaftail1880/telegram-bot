@@ -1,24 +1,33 @@
+import config from "../../config.js";
+
 /**
  * @typedef {import("redis").RedisClientType} cli
  */
 
 /**
- * @typedef {{type: string, time: number}} logEl
+ * @typedef {{type: string, time: number}} logObj
  */
 
-export class db {
+export class RedisDatabase {
   /**
    * @type {cli}
    */
   #cli;
   y = {
+    /**
+     * @type {() => Promise<void>}
+     */
     close: this.#close.bind(this),
+    /**
+     * @type {(client: object, ms: number) => Promise<void>}
+     */
     connect: this.#connect.bind(this),
     time: performance.now(),
   };
+  cache = new CachedDB(this);
+  log = new Logger(this);
 
   constructor() {
-    this.log = new logger(this);
     this.log.write("create");
   }
   get client() {
@@ -51,6 +60,7 @@ export class db {
     } catch (error) {
       ret = value;
     }
+    this.cache.set(key, ret);
     this.log.write("get");
     return ret;
   }
@@ -59,9 +69,10 @@ export class db {
    * @param {string} key
    * @returns {Promise<boolean>}
    */
-  async del(key) {
+  async delete(key) {
     const value = await this.client.del(key);
-    this.log.write("del");
+    this.cache.del(key);
+    this.log.write("delete");
     return !!value;
   }
   /**
@@ -73,17 +84,17 @@ export class db {
    * @returns
    */
   async set(key, value, stringify = false, lifetime) {
-    await this.client.set(
-      key,
+    this.cache.set(key, value);
+    const v$ =
       typeof value === "string"
         ? value
         : stringify
         ? JSON.stringify(value)
-        : value
-    );
+        : value;
+
+    await this.client.set(key, v$);
     if (typeof lifetime === "number") this.client.expire(key, lifetime);
     this.log.write("set");
-    return value;
   }
   /**
    * @param {string} key
@@ -94,14 +105,16 @@ export class db {
     this.log.write("has");
     return !!boolean;
   }
-  async add(key, number = 1) {
+  async increase(key, number = 1) {
     const result = await this.client.incrBy(key, number);
-    this.log.write("add");
+    this.cache.set(key, result);
+    this.log.write("increase");
     return result;
   }
-  async remove(key, number = 1) {
+  async decrease(key, number = 1) {
     const result = await this.client.decrBy(key, number);
-    this.log.write("remove");
+    this.cache.set(key, result);
+    this.log.write("decrease");
     return result;
   }
   async keys(filter = "*") {
@@ -115,7 +128,7 @@ export class db {
     for (const a of keys) {
       collection.push(await this.client.get(a));
     }
-    this.log.write("getValues");
+    this.log.write("values");
     return collection;
   }
   /**
@@ -123,34 +136,34 @@ export class db {
    * @returns {Promise<Object<string, object>>}
    */
   async pairs() {
-    const start = performance.now();
     const collection = {};
     const arg = (await this.keys()).sort();
 
     for (const a of arg) {
       collection[a] = await this.client.get(a);
     }
-    this.log.write("getPairs");
+    this.log.write("pairs");
     return collection;
   }
 }
 
-class logger {
+class Logger {
   /**
-   * @type {logEl[]}
+   * @type {logObj[]}
    */
   log = [];
+  #parent;
   /**
    *
-   * @param {db} parent
+   * @param {RedisDatabase} parent
    */
   constructor(parent) {
-    this.parent = parent;
+    this.#parent = parent;
   }
   write(type = "</>", time) {
     const push = {
       type: type,
-      time: performance.now() - (time ?? this.parent.y.time),
+      time: performance.now() - (time ?? this.#parent.y.time),
     };
     this.log.push(push);
   }
@@ -188,10 +201,80 @@ class logger {
     };
   }
   async cachedLog() {
-    const val = await this.parent.values("Cache::log:*");
+    const val = await this.#parent.values("Cache::log:*");
     return val.map((e) => this.parse(e));
   }
   async save(name = performance.now()) {
-    await this.parent.set(`Cache::log:${name}`, this.format(), true);
+    await this.#parent.set(`Cache::log:${name}`, this.format(), true);
+  }
+}
+
+class CachedDB {
+  /**
+   * @type {Record<string, {getDate: number; value: any}>}
+   */
+  #cache = {};
+  #parent;
+
+  /**
+   *
+   * @param {RedisDatabase} parent
+   */
+  constructor(parent) {
+    this.#parent = parent;
+  }
+  /**
+   *
+   * @param {string} key
+   * @returns
+   */
+  tryget(key) {
+    return this.#getter(key);
+  }
+  /**
+   *
+   * @param {string} key
+   * @returns {Promise<Object | string | number | undefined | boolean>}
+   */
+  async get(key) {
+    return this.#getter(key, true);
+  }
+  /**
+   *
+   * @param {string} key
+   * @param {boolean} [alwaysReturn]
+   * @returns
+   */
+  #getter(key, alwaysReturn) {
+    if (this.#cache[key]) {
+      const c = this.#cache[key];
+      if (Date.now() - c.getDate <= config.cache.updateTime) {
+        return c.value;
+      } else {
+        delete this.#cache[key];
+      }
+    }
+
+    if (alwaysReturn) return this.#parent.get(key, true);
+  }
+  /**
+   *
+   * @param {string} key
+   * @param {any} value
+   * @returns
+   */
+  set(key, value) {
+    this.#cache[key] = {
+      getDate: Date.now(),
+      value: value,
+    };
+  }
+  /**
+   *
+   * @param {string} key
+   * @returns
+   */
+  del(key) {
+    delete this.#cache[key];
   }
 }

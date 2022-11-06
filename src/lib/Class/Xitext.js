@@ -1,223 +1,202 @@
 export class Button {
-  constructor(text = "btn") {
-    /**
-     * @type {import("telegraf/types").InlineKeyboardButton}
-     */
-    // @ts-ignore
-    this.btn = {};
-    this.btn.text = text;
+  /**
+   * @type {Object}
+   */
+  #button;
+  /**
+   *
+   * @param {string} text
+   */
+  constructor(text) {
+    this.#button = {};
+    this.#button.text = text;
   }
+  /**
+   *
+   * @param {string} url
+   * @returns {import("telegraf/types").InlineKeyboardButton.UrlButton}
+   */
   url(url) {
-    // @ts-ignore
-    if (url) this.btn.url = url;
-    return this.btn;
+    if (url) this.#button.url = url;
+    return this.#button;
   }
+  /**
+   *
+   * @param {string} data
+   * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+   */
   data(data) {
-    // @ts-ignore
-    if (data) this.btn.callback_data = data;
-    return this.btn;
+    if (data) this.#button.callback_data = data;
+    return this.#button;
+  }
+  /**
+   *
+   * @param {string} e
+   * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+   */
+  switchInline(e) {
+    if (e) this.#button.switch_inline_query_current_chat = e;
+    return this.#button;
   }
 }
 
+/**
+ * @typedef {(text?: string) => Xitext} Xgroup
+ */
+
+/**
+ * @typedef {(extra?: import("telegraf/types").Convenience.ExtraReplyMessage, move?: number) => [string, import("telegraf/types").Convenience.ExtraReplyMessage]} Xbuild
+ */
+
 export class Xitext {
-  constructor() {
-    this._text = "";
-    this._entities = [];
-    this.offset = 0;
-    this.prev = null;
-    this.group = false;
-    this._inlineKeyboard = [];
-  }
-  Text(text) {
-    let t = `${text}`;
-    this.offset = this.offset + t.length;
-    this._text = this._text + t;
-    return this;
-  }
-  _Group(text) {
-    if (!text && this.group) {
-      this.group = false;
-      this.offset = this.offset + this.prev.length ?? 0;
-      this.prev = null;
-    } else if (text) {
-      this.group = true;
-      const t = `${text}`;
-      this.prev = t;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Bold(text) {
-    let t = !this.group ? `${text}` : this.prev;
+  /**
+   * @type {{group: Xgroup; build: Xbuild; text: string; entities: Array<import("telegraf/types").MessageEntity>;}}
+   */
+  _ = {
+    group: this.#group.bind(this),
+    build: this.#build.bind(this),
+    text: "",
+    entities: [],
+  };
+  __ = {
+    group: false,
+    previous: null,
+    offset: 0,
+    /**
+     * @type {import("telegraf/types").InlineKeyboardButton[][]}
+     */
+    inlineKeyboard: [],
+  };
+  constructor() {}
+  /**
+   *
+   * @param {string} text
+   * @param {Object} obj
+   * @returns
+   */
+  #entity(text, obj) {
+    let t = !this.__.group ? `${text}` : this.__.previous;
     if (!t) return this;
     /**
      * @type {import("telegraf/types").MessageEntity}
      */
     const ent = {
-      type: "bold",
       length: t.length,
-      offset: this.offset,
+      offset: this.__.offset,
+      ...obj,
     };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
+    this._.entities.push(ent);
+    if (!this.__.group) {
+      this.__.offset += ent.length;
+      this._.text += t;
     }
     return this;
   }
-  Italic(text) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "italic",
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Underline(text) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "underline",
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Strike(text) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "strikethrough",
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Spoiler(text) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "spoiler",
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Url(text, url) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t || !url) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "text_link",
-      length: t.length,
-      offset: this.offset,
-      url: url,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Mention(text, User) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t || !User) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "text_mention",
-      length: t.length,
-      offset: this.offset,
-      user: User,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Mono(text) {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "code",
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
-    }
-    return this;
-  }
-  Code(text, language = "JavaScript") {
-    let t = !this.group ? `${text}` : this.prev;
-    if (!t || !language) return this;
-    /**
-     * @type {import("telegraf/types").MessageEntity}
-     */
-    const ent = {
-      type: "pre",
-      language: language,
-      length: t.length,
-      offset: this.offset,
-    };
-    this._entities.push(ent);
-    if (!this.group) {
-      this.offset = this.offset + ent.length;
-      this._text = this._text + t;
+  get endgroup() {
+    if (this.__.group) {
+      this.__.group = false;
+      this.__.offset = this.__.offset + this.__.previous.length ?? 0;
     }
     return this;
   }
   /**
    *
+   * @param {string} [text]
+   * @returns {this}
+   */
+  #group(text) {
+    if (!text && this.__.group) {
+      this.__.group = false;
+      this.__.offset = this.__.offset + this.__.previous.length ?? 0;
+      this.__.previous = null;
+    } else if (text) {
+      this.__.group = true;
+      const t = `${text}`;
+      this.__.previous = t;
+      this._.text += t;
+    }
+    return this;
+  }
+  text(text) {
+    let t = `${text}`;
+    this.__.offset = this.__.offset + t.length;
+    this._.text += t;
+    return this;
+  }
+
+  bold(text) {
+    return this.#entity(text, {
+      type: "bold",
+    });
+  }
+  italic(text) {
+    const ent = {
+      type: "italic",
+    };
+
+    return this.#entity(text, ent);
+  }
+  underline(text) {
+    const ent = {
+      type: "underline",
+    };
+
+    return this.#entity(text, ent);
+  }
+  strike(text) {
+    const ent = {
+      type: "strikethrough",
+    };
+
+    return this.#entity(text, ent);
+  }
+  spoiler(text) {
+    const ent = {
+      type: "spoiler",
+    };
+
+    return this.#entity(text, ent);
+  }
+  url(text, url) {
+    if (!url) return this;
+    const ent = {
+      type: "text_link",
+      url: url,
+    };
+
+    return this.#entity(text, ent);
+  }
+  mention(text, User) {
+    if (!User) return this;
+    const ent = {
+      type: "text_mention",
+      user: User,
+    };
+
+    return this.#entity(text, ent);
+  }
+  mono(text) {
+    const ent = {
+      type: "code",
+    };
+
+    return this.#entity(text, ent);
+  }
+  code(text, language = "JavaScript") {
+    if (!language) return this;
+    const ent = {
+      type: "pre",
+      language: language,
+    };
+
+    return this.#entity(text, ent);
+  }
+  /**
+   *
    * @param  {...Array<import("telegraf/types").InlineKeyboardButton>} lines
    */
-  InlineKeyboard(...lines) {
-    this._inlineKeyboard = lines;
+  inlineKeyboard(...lines) {
+    this.__.inlineKeyboard = lines;
     return this;
   }
   /**
@@ -225,35 +204,24 @@ export class Xitext {
    * @param {import("telegraf/types").Convenience.ExtraReplyMessage} extra
    * @returns {[string, import("telegraf/types").Convenience.ExtraReplyMessage]}
    */
-  _Build(extra = {}, move = 0) {
+  #build(extra = {}, move = 0) {
     /**
      * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
      */
     const EXTRA = Object.assign(extra);
-    if (move != 0) {
-      this._entities.forEach((e) => (e.offset += move));
+    if (move !== 0) {
+      this._.entities.forEach((e) => (e.offset += move));
     }
     if (!EXTRA.disable_web_page_preview) {
       EXTRA.disable_web_page_preview = true;
     }
-    if (Array.isArray(this._entities) && this._entities[0])
-      EXTRA.entities = this._entities;
-    if (
-      Array.isArray(this._inlineKeyboard) &&
-      this._inlineKeyboard[0] &&
-      Array.isArray(this._inlineKeyboard[0])
-    ) {
-      if (typeof EXTRA.reply_markup != "object") EXTRA.reply_markup = {
-        inline_keyboard: this._inlineKeyboard
-      };
+    if (this._.entities.length > 0) EXTRA.entities = this._.entities;
+    if (Array.isArray(this.__.inlineKeyboard[0])) {
+      if (typeof EXTRA.reply_markup !== "object")
+        EXTRA.reply_markup = {
+          inline_keyboard: this.__.inlineKeyboard,
+        };
     }
-    return [this._text ?? "empty Xitext()", EXTRA];
-  }
-  /**
-   *
-   * @returns {import("telegraf/types").Convenience.ExtraReplyMessage}
-   */
-  static newExtra() {
-    return {};
+    return [this._.text ?? "empty Xitext()", EXTRA];
   }
 }

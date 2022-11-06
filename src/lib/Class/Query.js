@@ -1,9 +1,9 @@
-import { Context } from "telegraf";
 import { safeRun } from "../utils/safeRun.js";
 import { bot } from "../launch/tg.js";
 import { EventListener } from "./Events.js";
-import { d, format } from "./Formatter.js";
+import { d, util } from "./Utils.js";
 import { editMsg } from "./Menu.js";
+import { database } from "../../index.js";
 
 /**
  * @type {Object<string, Query>}
@@ -46,16 +46,21 @@ function loadQuerys() {
 
     const q = ques[data.split(d.separator.linkToData)[0]];
     if (!q) {
-      ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден", {
-        show_alert: true,
-      });
-      console.warn("No btn parser for " + data);
+      ctx.answerCbQuery(
+        "Ошибка 400!\nОбработчик кнопки не найден. Возможно, вы нажали на старую кнопку.",
+        {
+          show_alert: true,
+        }
+      );
+      console.warn("Cannot find parser for " + data);
       return next();
     }
 
     activeQueries[data] = Date.now();
-    const name =
-      format.getName(ctx.callbackQuery.from) ?? ctx.callbackQuery.from.id;
+    const name = util.getFullName(
+      database.cache.tryget(d.user(ctx.callbackQuery.from.id)),
+      ctx.callbackQuery.from
+    );
 
     function run() {
       q.callback(
@@ -81,4 +86,4 @@ new Query(
   }
 );
 
-new EventListener("afterpluginload", 0, loadQuerys);
+new EventListener("modules.load", 0, loadQuerys);

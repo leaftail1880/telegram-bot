@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import { d } from "../../lib/Class/Formatter.js";
+import { d } from "../../lib/Class/Utils.js";
 import { database } from "../../index.js";
 
 /**

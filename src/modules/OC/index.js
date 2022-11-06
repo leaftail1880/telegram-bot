@@ -1,4 +1,4 @@
-import { d } from "../../lib/Class/Formatter.js";
+import { d } from "../../lib/Class/Utils.js";
 import { MultiMenuV1 } from "../../lib/Class/Menu.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
@@ -38,57 +38,55 @@ export const lang = {
     [new Button("Мои персонажи").data(link("my"))],
   ],
   main: new Xitext()
-    .Text("Меню ")
-    ._Group("OC")
-    .Bold()
-    .Url(null, d.guide(6))
-    .Text(" (Или гифтменю):"),
+    .text("Меню ")
+    ._.group("OC")
+    .bold()
+    .url(null, d.guide(6))
+    .text(" (Или гифтменю):"),
   reg0: new Xitext()
-    .Text(
+    .text(
       "Что бы прикрепить своего ОС к этому боту, отправь референс ОС ввиде "
     )
-    ._Group("файла")
-    .Bold()
-    .Url(null, d.guide(5))
-    ._Group()
-    .Text("\n Что бы выйти из этого пошагового меню используй команду /cancel"),
+    ._.group("файла")
+    .bold()
+    .url(null, d.guide(5))
+    ._.group()
+    .text("\n Что бы выйти из этого пошагового меню используй команду /cancel"),
   edit0: new Xitext()
-    .Text("Отправь новый референс персонажа ввиде ")
-    ._Group("файла")
-    .Bold()
-    .Url(null, d.guide(5))
-    ._Group()
-    .Text(
+    .text("Отправь новый референс персонажа ввиде ")
+    ._.group("файла")
+    .bold()
+    .url(null, d.guide(5))
+    ._.group()
+    .text(
       "\n\n Если хочешь оставить прошлый референс, используй /next\n Что бы выйти из этого пошагового меню используй команду /cancel"
     ),
   maxLength: (type, length) =>
     new Xitext()
-      .Text(`${type} должно быть `)
-      ._Group("НЕ")
-      .Bold()
-      ._Group()
-      .Text(` больше ${length} символов в длину`)
-      ._Build(),
+      .text(`${type} должно быть `)
+      ._.group("НЕ")
+      .bold()
+      ._.group()
+      .text(` больше ${length} символов в длину`)
+      ._.build(),
   find: "Список владельцев ОС",
   userOCS: (name) => `Персонажи ${name}`,
   myOCS: "Ваши персонажи",
   OC: (name, description, ownerName, owner) =>
-    new Xitext()
-      ._Group(name)
-      .Bold()
-      .Url(null, `t.me/${owner}`)
-      ._Group()
-      .Text(`\n  ${description}\n\n`)
-      .Bold(`Владелец: `)
-      .Url(ownerName, `t.me/${owner}`),
+    new Xitext()._.group(name)
+      .bold()
+      .url(null, `t.me/${owner}`)
+      ._.group()
+      .text(`\n  ${description}\n\n`)
+      .bold(`Владелец: `)
+      .url(ownerName, `t.me/${owner}`),
   myOC: (name, description, owner) =>
-    new Xitext()
-      ._Group(name)
-      .Bold()
-      .Url(null, `t.me/${owner}`)
-      ._Group()
-      .Text(`\n  ${description}\n\n`)
-      .Bold(`Это Ваш персонаж`),
+    new Xitext()._.group(name)
+      .bold()
+      .url(null, `t.me/${owner}`)
+      ._.group()
+      .text(`\n  ${description}\n\n`)
+      .bold(`Это Ваш персонаж`),
 };
 
 import "./menu/Find/find.js";

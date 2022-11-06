@@ -1,5 +1,5 @@
 import { database } from "../../index.js";
-import { d, format } from "../../lib/Class/Formatter.js";
+import { d, util } from "../../lib/Class/Utils.js";
 import { EventListener } from "../../lib/Class/Events.js";
 import { CreateGroup } from "../../lib/utils/models.js";
 
@@ -22,7 +22,7 @@ new EventListener("message", 10, async (ctx, next, data) => {
     }
 
     if (!group.cache.members.includes(ctx.from.id)) {
-      group.cache.members = format.add(group.cache.members, ctx.from.id);
+      group.cache.members = util.add(group.cache.members, ctx.from.id);
       update = true;
     }
 
@@ -38,7 +38,7 @@ new EventListener("message", 10, async (ctx, next, data) => {
   const detectUpdate = (_1, _2) =>
     _1 != _2 ? ((_1 = _2), (user.needSafe = true)) : "";
 
-  detectUpdate(user.static.name, format.getName(ctx.from));
+  detectUpdate(user.static.name, util.getName(ctx.from));
   detectUpdate(user.static.nickname, ctx.from.username);
 
   data.DBUser = user;

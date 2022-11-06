@@ -3,7 +3,7 @@ import config from "../config.js";
 import { database } from "../index.js";
 import "./Class/Cmd.js";
 import { emitEvents } from "./Class/Events.js";
-import { format } from "./Class/Formatter.js";
+import { util } from "./Class/Utils.js";
 import "./Class/Query.js";
 import { Xitext } from "./Class/Xitext.js";
 import { bot, env } from "./launch/tg.js";
@@ -18,6 +18,7 @@ import {
  *========================**/
 export const data = {
   v: config.version.join("."),
+
   /** @type {boolean | number} */
   isLatest: true,
   versionMSG: `v${config.version.join(".")} (Инит)`,
@@ -30,6 +31,7 @@ export const data = {
   updateTimer: null,
   debug: false,
   benchmark: true,
+  me: bot.botInfo,
   bc: performance.now(),
   chatID: {
     // Айди чата, куда будут поступать сообщения
@@ -107,7 +109,7 @@ async function start() {
   if (data.isDev) {
     lang.startLOG.dev[2]();
   }
-  for (const plugin of config.plugins) {
+  for (const plugin of config.modules) {
     const start = Date.now();
 
     await import(`../modules/${plugin}/index.js`).catch((error) => {
@@ -118,7 +120,7 @@ async function start() {
       : plgs.push(`${plugin} (${Date.now() - start} ms)`);
   }
   // Инициализация команд и списков
-  emitEvents("afterpluginload");
+  emitEvents("modules.load");
 
   /**======================
    * Запуск бота
@@ -159,34 +161,30 @@ async function stop(
   sendMessage = true
 ) {
   let log = `✕  `;
-  const text = new Xitext()
-    ._Group("✕  ")
-    .Url(null, "https://t.me")
-    .Bold()
-    ._Group();
+  const text = new Xitext()._.group("✕  ")
+    .url(null, "https://t.me")
+    .bold()
+    ._.group();
 
-  if (stopApp) text.Bold("ALL. "), (log = `${log}ALL. `);
-  else if (stopBot) text.Text("BOT. "), (log = `${log}BOT. `);
+  if (stopApp) text.bold("ALL. "), (log = `${log}ALL. `);
+  else if (stopBot) text.text("BOT. "), (log = `${log}BOT. `);
 
-  text.Text(reason + "");
+  text.text(reason + "");
   log = `${log}${reason}`;
 
   if (extra)
     text
-      .Text(": ")
-      .Text(
-        format.toStr(
-          format.isError(extra) ? format.errParse(extra) : extra,
-          " "
-        )
+      .text(": ")
+      .text(
+        util.toStr(util.isError(extra) ? util.errParse(extra) : extra, " ")
       ),
-      (log = `${log}: ${format.toStr(extra, " ")}`);
+      (log = `${log}: ${util.toStr(extra, " ")}`);
 
   console.log(log);
   if (data.started && sendMessage)
     await bot.telegram.sendMessage(
       data.chatID.log,
-      ...text._Build({ disable_web_page_preview: true })
+      ...text._.build({ disable_web_page_preview: true })
     );
 
   if ((stopBot || stopApp) && data.started && !data.stopped) {
@@ -202,33 +200,34 @@ async function stop(
  *
  * @param {{name?: string, message: string, stack: string, on?: object}} error
  */
-function error(error) {
+async function error(error) {
   try {
     console.warn(" ");
     console.warn(error);
     console.warn(" ");
 
-    const PeR = format.errParse(error, true),
-      text = new Xitext()
-        ._Group(PeR[0])
-        .Bold()
-        .Url(null, "https://t.me")
-        ._Group()
-        ._Group(PeR[1])
-        .Bold()
-        .Mono()
-        ._Group()
-        .Text(` ${PeR[2]}`);
+    const PeR = util.errParse(error, true),
+      text = new Xitext()._.group(PeR[0])
+        .bold()
+        .url(null, "https://t.me")
+        ._.group()
+        ._.group(PeR[1])
+        .bold()
+        .mono()
+        ._.group()
+        .text(` ${PeR[2]}`);
     if (data.started) {
-      bot.telegram.sendMessage(
+      await bot.telegram.sendMessage(
         data.chatID.log,
-        ...text._Build({ disable_web_page_preview: true })
+        ...text._.build({ disable_web_page_preview: true })
       );
       if (PeR[3]) {
-        format.sendSeparatedMessage(PeR[3], (a) =>
-          bot.telegram.sendMessage(data.chatID.log, a, {
-            disable_web_page_preview: true,
-          })
+        util.sendSeparatedMessage(
+          PeR[3],
+          async (a) =>
+            await bot.telegram.sendMessage(data.chatID.log, a, {
+              disable_web_page_preview: true,
+            })
         );
       }
     }
@@ -240,8 +239,8 @@ function error(error) {
 async function freeze() {
   clearInterval(data.updateTimer);
   if (data.started)
-    await bot.telegram.sendMessage(data.chatID.log, lang.stop.freeze()),
-      console.log(lang.stop.freezeLOG());
+    await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()),
+      console.log(lang.stop.freeze()[0]);
   if (data.started && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
@@ -257,7 +256,7 @@ async function freeze() {
   const timeout = setInterval(async () => {
     const answer = await database.get(config.dbkey.request);
     if (answer === "terminate_you") {
-      await database.del(config.dbkey.request);
+      await database.delete(config.dbkey.request);
       await database.y.close();
       clearInterval(timeout);
       return SERVISE.stop(lang.stop.terminate(), null, true, data.isDev, false);
@@ -280,11 +279,14 @@ async function freeze() {
 
       data.stopped = false;
       data.started = true;
-      console.log(lang.launchLOG("[Запущена как новый]"));
-      bot.telegram.sendMessage(data.chatID.log, ...lang.start("Newest"));
+      console.log(lang.launchLOG("as newest"));
+      bot.telegram.sendMessage(
+        data.chatID.log,
+        ...lang.start("Запущена как новая")
+      );
 
       data.updateTimer = setInterval(checkInterval, 5000);
-      database.del(config.dbkey.request);
+      database.delete(config.dbkey.request);
       return;
     }
 
@@ -308,12 +310,12 @@ async function freeze() {
       data.started = true;
       bot.telegram.sendMessage(
         data.chatID.log,
-        ...lang.start("[Не дождаласьи запустилась]", "↩️")
+        ...lang.start("Нет ответа", "↩️")
       );
-      console.log(lang.launchLOG("No response"));
+      console.log(lang.launchLOG("no response"));
 
       data.updateTimer = setInterval(checkInterval, 5000);
-      database.del(config.dbkey.request);
+      database.delete(config.dbkey.request);
       return;
     }
   }, 5000);

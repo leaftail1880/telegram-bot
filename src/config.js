@@ -2,24 +2,27 @@ export default {
   version: [
     8, //
     1, //
-    2, //
+    3, //
   ],
 
-  commandClearRegExp: /^.\w*\s?/g,
+  command: {
+    clearCommand: /^.\w*\s?/g,
+    parseArgs: /"[^"]+"|[^\s]+/g,
+  },
 
   // Время в миллисекундах, которое должно пройти что бы данные пользователя обновились.
   // Чем меньше, тем дольше будет обработка сообщений при запуске.
-  cacheUpdateTime: 2000,
+  cache: { updateTime: 2000 },
 
-  // Имя папки, в которой содержатся скрипты. Нужно для парсинга ошибок.
-  plugins: [
+  modules: [
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
     "OC", // Модуль для команды /oc
     "DBmanageV2",
+    "Subscribe",
     "Timers", // Таймеры
     // "Migrate",
-    /*"Animation"*/
+    // "Animation"
   ],
 
   dbkey: {

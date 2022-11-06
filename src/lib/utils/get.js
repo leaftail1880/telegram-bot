@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
 import { CreateGroup, CreateUser } from "./models.js";
 import { database } from "../../index.js";
-import { d, format } from "../Class/Formatter.js";
+import { d, util } from "../Class/Utils.js";
 
 /**
  *
@@ -12,7 +12,7 @@ export async function getUser(ctx) {
   let user = await database.get(d.user(ctx.from.id), true);
 
   if (!user) {
-    user = CreateUser(ctx.from.id, ctx.from.username, format.getName(ctx.from));
+    user = CreateUser(ctx.from.id, ctx.from.username, util.getName(ctx.from));
     user.needSafe = true;
   }
 

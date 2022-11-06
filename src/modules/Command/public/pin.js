@@ -1,6 +1,6 @@
 import { database } from "../../../index.js";
 import { Command } from "../../../lib/Class/Cmd.js";
-import { d, format } from "../../../lib/Class/Formatter.js";
+import { d, util } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 import { chatcooldown } from "../index.js";
 
@@ -27,29 +27,28 @@ new Command(
 
     if (time <= chatcooldown) {
       const min = Math.round((chatcooldown - time) / 60000),
-        reply = new Xitext()
-          ._Group(min)
-          .Bold()
-          .Url(null, d.guide(7))
-          ._Group()
-          .Text(" ")
-          .Text(
-            format
+        reply = new Xitext()._.group(min + "")
+          .bold()
+          .url(null, d.guide(7))
+          ._.group()
+          .text(" ")
+          .text(
+            util
               .toMinString(min, "осталось", "осталась", "осталось")
               .split(" ")
               .slice(1)
               .join(" ")
           );
-      return ctx.reply(...reply._Build());
+      return ctx.reply(...reply._.build());
     }
     if (!ctx.message?.reply_to_message?.message_id) {
       const text = new Xitext()
-        .Bold("Отметь")
-        .Text(" сообщение которое хочешь закрепить!");
-      return ctx.reply(text._text, {
+        .bold("Отметь")
+        .text(" сообщение которое хочешь закрепить!");
+      return ctx.reply(text._.text, {
         reply_to_message_id: ctx.message.from.id,
         allow_sending_without_reply: true,
-        entities: text._entities,
+        entities: text._.entities,
       });
     }
     if (g.cache.pin)

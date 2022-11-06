@@ -1,5 +1,5 @@
 import { EventListener } from "../../../../lib/Class/Events.js";
-import { format } from "../../../../lib/Class/Formatter.js";
+import { util } from "../../../../lib/Class/Utils.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { ssn } from "../../../../lib/Class/Session.js";
 import { err } from "../../../../lib/utils/err.js";
@@ -15,7 +15,7 @@ new Query(
   },
   (ctx, data) => {
     ssn.OC.enter(ctx.callbackQuery.from.id, 10, [data[0]], true);
-    ctx.reply(...lang.edit0._Build());
+    ctx.reply(...lang.edit0._.build());
   }
 );
 
@@ -28,7 +28,7 @@ new EventListener("document", 0, async (ctx, next, ow) => {
   ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
   ctx.reply(lang.edit.name());
   console.log(
-    `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted reference`
+    `> OC. [${util.getName(ctx.from) ?? ctx.from.id}] redacted reference`
   );
 }),
   ssn.OC.next(10, async (ctx, user) => {
@@ -40,7 +40,7 @@ new EventListener("document", 0, async (ctx, next, ow) => {
     ssn.OC.enter(ctx.from.id, 11, oc.fileid);
     ctx.reply(lang.edit.name());
     console.log(
-      `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped reference`
+      `> OC. [${util.getName(ctx.from) ?? ctx.from.id}] skipped reference`
     );
   });
 /*---------------------------------------------------
@@ -59,9 +59,7 @@ new EventListener("text", 0, async (ctx, next, ow) => {
 
   ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
   ctx.reply(lang.edit.description());
-  console.log(
-    `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] redacted name`
-  );
+  console.log(`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] redacted name`);
 });
 
 ssn.OC.next(11, async (ctx, user) => {
@@ -71,9 +69,7 @@ ssn.OC.next(11, async (ctx, user) => {
   const oc = uOC[user?.cache?.sessionCache[0]];
   ssn.OC.enter(ctx.from.id, 12, oc.name);
   ctx.reply(lang.edit.description());
-  console.log(
-    `> OC. [${format.getName(ctx.from) ?? ctx.from.id}] skipped name`
-  );
+  console.log(`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] skipped name`);
 });
 /*---------------------------------------------------
 

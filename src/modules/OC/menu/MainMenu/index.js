@@ -14,8 +14,8 @@ new Command(
   (ctx) => {
     ctx.reply(
       ...lang.main
-        .InlineKeyboard(...lang.mainKeyboard)
-        ._Build({ disable_web_page_preview: true })
+        .inlineKeyboard(...lang.mainKeyboard)
+        ._.build({ disable_web_page_preview: true })
     );
   }
 );
@@ -27,8 +27,8 @@ new Query(
     message: "Назад",
   },
   async (ctx) => {
-    editMsg(ctx, lang.main._text, {
-      entities: lang.main._entities,
+    editMsg(ctx, lang.main._.text, {
+      entities: lang.main._.entities,
       reply_markup: {
         inline_keyboard: lang.mainKeyboard,
       },
@@ -46,8 +46,8 @@ new Query(
   (ctx, data) => {
     sendMsgDelDoc(
       ctx,
-      lang.main._text,
-      lang.main._entities,
+      lang.main._.text,
+      lang.main._.entities,
       lang.mainKeyboard,
       data[0]
     );

@@ -1,10 +1,10 @@
-import { db } from "./lib/launch/db.js";
+import { RedisDatabase } from "./lib/launch/db.js";
 import { handlers, SERVISE } from "./lib/start-stop.js";
 
 /**======================
  * База данных
  *========================**/
-export const database = new db();
+export const database = new RedisDatabase();
 
 /**======================
  * Всякая хрень

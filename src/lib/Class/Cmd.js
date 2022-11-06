@@ -3,12 +3,11 @@ import { Xitext } from "./Xitext.js";
 import { isAdmin } from "../utils/check.js";
 import { bot } from "../launch/tg.js";
 import { data } from "../start-stop.js";
-import { d, format } from "./Formatter.js";
+import { d, util } from "./Utils.js";
 import { database } from "../../index.js";
 import { ssn } from "./Session.js";
 import { EventListener } from "./Events.js";
 import config from "../../config.js";
-const { commandClearRegExp } = config;
 import { safeRun } from "../utils/safeRun.js";
 
 /**
@@ -145,20 +144,20 @@ new Command(
     for (const e of Object.values(public_cmds)) {
       if ((await Command.cantUse(e, ctx, data.userRights)) || e.info.hide)
         continue;
-      if (!c) a.Text(`Доступные везде команды:\n`), (c = true);
-      a.Text(`  /${e.info.name}`);
-      a.Italic(` - ${e.info.description}\n`);
+      if (!c) a.text(`Доступные везде команды:\n`), (c = true);
+      a.text(`  /${e.info.name}`);
+      a.italic(` - ${e.info.description}\n`);
     }
 
     for (const e of Object.values(private_cmds)) {
       if (await Command.cantUse(e, ctx, data.userRights)) continue;
-      if (!p) a.Text(`\nДоступные вам в этом чате команды:\n`), (p = true);
-      a.Text(`  `);
-      a.Mono(`-${e.info.name}`);
-      a.Italic(` - ${e.info.description}\n`);
+      if (!p) a.text(`\nДоступные вам в этом чате команды:\n`), (p = true);
+      a.text(`  `);
+      a.mono(`-${e.info.name}`);
+      a.italic(` - ${e.info.description}\n`);
     }
-    if (!a._text) return ctx.reply("А доступных команд то и нет");
-    ctx.reply(...a._Build());
+    if (!a._.text) return ctx.reply("А доступных команд то и нет");
+    ctx.reply(...a._.build());
   }
 );
 
@@ -216,15 +215,18 @@ const V = {
   supergroup: "Группа",
 };
 
-new EventListener("afterpluginload", 0, (_, next) => {
+new EventListener("modules.load", 0, (_, next) => {
   //  Общие команды группы
-  let groupC = [],
-    // Общие команды в лс
-    privateC = [],
+  let groupCommands = [],
     // Админские в группах
-    groupAC = [],
-    xiller = [],
-    allKmds = [];
+    groupAdminCommands = [],
+    // Общие команды в лс
+    privateCommands = [],
+    // Команды для управления ботом
+    botAdminCommands = [],
+    // Команды которые будут выведены в лог
+    all = [];
+
   public_cmds.forEach((cmd) => {
     let m = { command: cmd.info.name, description: cmd.info.description };
     if (!cmd.info.hide) {
@@ -232,71 +234,75 @@ new EventListener("afterpluginload", 0, (_, next) => {
         (cmd.info.type == "group" || cmd.info.type == "all") &&
         cmd.info.perm == 0
       )
-        groupC.push(m);
+        groupCommands.push(m);
       if (
         (cmd.info.type == "group" || cmd.info.type == "all") &&
         cmd.info.perm == 1
       )
-        groupAC.push(m);
+        groupAdminCommands.push(m);
       if (
         (cmd.info.type == "private" || cmd.info.type == "all") &&
         cmd.info.perm == 0
       )
-        privateC.push(m), xiller.push(m);
-      if (cmd.info.perm == 2) xiller.push(m);
+        privateCommands.push(m), botAdminCommands.push(m);
+      if (cmd.info.perm == 2) botAdminCommands.push(m);
     }
 
-    allKmds.push(cmd.info.name);
+    all.push(cmd.info.name);
   });
-  private_cmds.forEach((e) => allKmds.push(e.info.name));
+  private_cmds.forEach((e) => all.push(e.info.name));
 
-  if (groupC[0])
-    bot.telegram.setMyCommands(groupC, { scope: { type: "all_group_chats" } });
-  if (groupAC[0])
-    bot.telegram.setMyCommands(groupAC.concat(groupC), {
+  if (groupCommands[0])
+    bot.telegram.setMyCommands(groupCommands, {
+      scope: { type: "all_group_chats" },
+    });
+  if (groupAdminCommands[0])
+    bot.telegram.setMyCommands(groupAdminCommands.concat(groupCommands), {
       scope: { type: "all_chat_administrators" },
     });
-  if (privateC[0])
-    bot.telegram.setMyCommands(privateC, {
+  if (privateCommands[0])
+    bot.telegram.setMyCommands(privateCommands, {
       scope: { type: "all_private_chats" },
     });
-  if (xiller[0])
-    bot.telegram.setMyCommands(xiller.concat(privateC), {
+  if (botAdminCommands[0])
+    bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
       scope: { type: "chat", chat_id: data.chatID.owner },
     });
   if (data.isDev)
     console.log(
-      `> Command Кол-во команд: ${allKmds.length}${
-        allKmds[0] ? `, список: ${allKmds.join(", ")}` : ""
+      `> Command Кол-во команд: ${all.length}${
+        all[0] ? `, список: ${all.join(", ")}` : ""
       }`
     );
 
   new EventListener("text", 9, async (ctx, next, data) => {
-    const t = ctx.message.text;
-    const command = Command.getCmd(t);
-    if (typeof command === "boolean" || !command) return next();
+    const text = ctx.message.text;
+
+    const command = Command.getCmd(text);
+
+    if (typeof command !== "object") return next();
     if (await Command.cantUse(command, ctx, data))
       return ctx.reply("В этом чате эта команда недоступна. /help", {
         reply_to_message_id: ctx.message.message_id,
         allow_sending_without_reply: true,
       });
 
-    const // All good, run
-      a =
-        t
-          .replace(commandClearRegExp, "")
-          ?.match(/"[^"]+"|[^\s]+/g)
-          ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [],
-      user = data.DBUser,
-      name = user?.cache?.nickname ?? user?.static?.name,
-      xt = new Xitext()
-        .Text(" ")
-        .Url(name, d.userLink(ctx.from.username))
-        .Text(": " + t);
+    // All good, run
+    const args =
+      text
+        .replace(config.command.clearCommand, "")
+        ?.match(config.command.parseArgs)
+        ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
+    const name = util.getFullName(data.DBUser, ctx.from);
+    const xt = new Xitext()
+      .text(" ")
+      .url(name, d.userLink(ctx.from.username))
+      .text(": " + text);
+
     safeRun(
       V[ctx.chat.type],
-      () => command.callback(ctx, a, data, command),
-      ` (${name}: ${t})`,
+      () => command.callback(ctx, args, data, command),
+      ` (${name}: ${text})`,
       xt
     );
   });

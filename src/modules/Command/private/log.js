@@ -37,13 +37,13 @@ new Command(
       default:
         ctx.reply(
           ...new Xitext()
-            .Text("Доступные методы:\n ")
-            .Mono("average")
-            .Text("\n ")
-            .Mono("save")
-            .Text("\n ")
-            .Mono("log")
-            ._Build()
+            .text("Доступные методы:\n ")
+            .mono("average")
+            .text("\n ")
+            .mono("save")
+            .text("\n ")
+            .mono("log")
+            ._.build()
         );
         break;
     }

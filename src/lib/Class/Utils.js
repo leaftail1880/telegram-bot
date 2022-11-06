@@ -1,4 +1,4 @@
-class formatter {
+export const util = {
   /**
    * @param {any} target
    * @returns {string}
@@ -93,7 +93,7 @@ class formatter {
       /"/g,
       cw
     );
-  }
+  },
 
   /**
    * Convert Durations to milliseconds
@@ -108,7 +108,7 @@ class formatter {
     else if (/\d+(?=m)/i.test(value)) return number * 60000;
     else if (/\d+(?=s)/i.test(value)) return number * 1000;
     else if (/\d+(?=ms|milliseconds?)/i.test(value)) return number;
-  }
+  },
   /**
    *
    * @param {number | string} hours
@@ -128,7 +128,7 @@ class formatter {
       o = `часов${left3 ? ` ${left3}` : ""}`;
     }
     return `${hrs} ${o}`;
-  }
+  },
   /**
    *
    * @param {number | string} seconds
@@ -146,7 +146,7 @@ class formatter {
       s = `секунды${left3 ? ` ${left3}` : ""}`;
     }
     return `${sec} ${s}`;
-  }
+  },
   /**
    *
    * @param {number | string} minutes
@@ -164,7 +164,7 @@ class formatter {
       m = `минуты${left3 ? ` ${left3}` : ""}`;
     }
     return `${min} ${m}`;
-  }
+  },
   add(array, value) {
     const a = Array.isArray(array) ? array : [],
       es = [];
@@ -173,11 +173,11 @@ class formatter {
       if (!es.includes(e)) es.push(e);
     });
     return es;
-  }
+  },
 
   isError(error) {
     return typeof error === "object" && error !== null && "message" in error;
-  }
+  },
   /**
    *
    * @param {{name?: string; stack?: string; message: string; on?: object;}} err
@@ -187,37 +187,34 @@ class formatter {
   errParse(err, returnArr) {
     if (typeof err != "object" || !err.stack || !err.message) return err;
 
-    let msg = err.message,
-      stack2 = [],
-      stack1 = err.stack.replace(err.message, "").split("\n"),
-      type = err.name ?? "Error",
-      arr;
+    let message = err.message,
+      stack = err.stack.replace(err.message, "").split("\n"),
+      type = err.name ?? stack[0].match(/\s+at\s/g) ? stack.shift() : "Error";
 
-    if (!stack1[0].match(/\s+at\s/g)) type = stack1.shift();
-    if (msg.match(/\d{3}:\s/g)) {
-      type = `${type.replace(": ", "")} ${msg.split(": ")[0]}: `;
-      msg = msg.split(": ").slice(1).join(": ");
+    if (message.match(/\d{3}:\s/g)) {
+      type = `${type.replace(": ", "")} ${message.split(": ")[0]}: `;
+      message = message.split(": ").slice(1).join(": ");
     }
-    stack1 = stack1
-      .map((e) => e.replace(/\s+at\s/g, ""))
-      .map(lowlevelStackParse)
-      .filter((e) => e)
-      .map((e) => `\n ${e}`);
 
-    stack1.forEach((e) => {
-      if (!stack2.includes(e)) stack2.push(e);
-    });
+    const stringStack = [
+      ...new Set(
+        stack
+          .map((e) => e.replace(/\s+at\s/g, ""))
+          .map(lowlevelStackParse)
+          .filter((e) => e)
+          .map((e) => `\n ${e}`)
+      ).values(),
+    ].join("");
 
-    arr = [
-      type,
-      msg,
-      stack2.join(""),
-      err.on ? format.toStr(err.on, " ") : undefined,
-    ];
     return returnArr
-      ? arr
-      : `${type}${type.includes(":") ? " " : ": "}${msg} ${stack2}`;
-  }
+      ? [
+          type,
+          message,
+          stringStack,
+          err.on ? util.toStr(err.on, " ") : undefined,
+        ]
+      : `${type.includes(":") ? type : `${type}: `}${message}${stringStack}`;
+  },
   /**
    *
    * @param {import("telegraf/types").User} user
@@ -230,10 +227,18 @@ class formatter {
       res += user.last_name;
 
     return res;
-  }
+  },
+  /**
+   *
+   * @param {DB.User} dbuser
+   * @param {import("telegraf/types").User} user
+   */
+  getFullName(dbuser, user) {
+    return dbuser?.cache?.nickname ?? this.getName(user);
+  },
   capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
-  }
+  },
   /**
    *
    * @param {string} msg
@@ -245,9 +250,8 @@ class formatter {
     for (let p = 1; p <= Math.ceil(msg.length / limit) && p <= safeCount; p++) {
       await method(msg.substring(p * limit - limit, p * limit));
     }
-  }
-}
-export const format = new formatter();
+  },
+};
 
 const replaces = [
   [/\\/g, "/"],

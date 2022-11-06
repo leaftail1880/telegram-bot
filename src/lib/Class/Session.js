@@ -1,5 +1,5 @@
 import { database } from "../../index.js";
-import { d } from "./Formatter.js";
+import { d } from "./Utils.js";
 
 export class Session {
   constructor(name) {

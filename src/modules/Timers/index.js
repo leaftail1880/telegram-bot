@@ -1,4 +1,4 @@
-import { d } from "../../lib/Class/Formatter.js";
+import { d } from "../../lib/Class/Utils.js";
 import { bot } from "../../lib/launch/tg.js";
 import { data, SERVISE } from "../../lib/start-stop.js";
 import { database } from "../../index.js";

@@ -1,6 +1,6 @@
 import { database } from "../../../index.js";
 import { Command } from "../../../lib/Class/Cmd.js";
-import { format } from "../../../lib/Class/Formatter.js";
+import { util } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 
 new Command(
@@ -14,31 +14,31 @@ new Command(
       case "pairs":
         const a = await database.pairs();
         console.log(a);
-        format.sendSeparatedMessage(format.toStr(a, " "), ctx.reply);
+        util.sendSeparatedMessage(util.toStr(a, " "), ctx.reply);
         break;
       case "get":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
         const get = await database.get(args[1], true);
         console.log(get);
-        format.sendSeparatedMessage(format.toStr(get, " "), (msg) =>
-          ctx.reply(...new Xitext().Code(msg)._Build())
+        util.sendSeparatedMessage(util.toStr(get, " "), (msg) =>
+          ctx.reply(...new Xitext().code(msg)._.build())
         );
         break;
       case "del":
         if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
-        const del = (await database.del(args[1])) + "";
+        const del = (await database.delete(args[1])) + "";
         console.log(del);
         ctx.reply(del);
         break;
       case "keys":
         const keys = await database.keys(),
-          text = new Xitext().Text("Ключи:");
+          text = new Xitext().text("Ключи:");
         keys.sort().forEach((e) => {
-          text.Text("\n");
-          text.Mono(e);
+          text.text("\n");
+          text.mono(e);
         });
         console.log(keys.sort());
-        ctx.reply(...text._Build());
+        ctx.reply(...text._.build());
         break;
       case "set":
         if (!args[1] || !args[2])
@@ -53,16 +53,16 @@ new Command(
       default:
         ctx.reply(
           ...new Xitext()
-            .Text("Доступные методы:")
-            .Mono("\n pairs")
-            .Mono("\n get")
-            .Text(" <key>")
-            .Mono("\n set")
-            .Text(" <key> <value>")
-            .Mono("\n del")
-            .Text(" <key>")
-            .Mono("\n keys")
-            ._Build()
+            .text("Доступные методы:")
+            .mono("\n pairs")
+            .mono("\n get")
+            .text(" <key>")
+            .mono("\n set")
+            .text(" <key> <value>")
+            .mono("\n del")
+            .text(" <key>")
+            .mono("\n keys")
+            ._.build()
         );
     }
   }

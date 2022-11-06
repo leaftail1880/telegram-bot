@@ -29,14 +29,13 @@ export function err(code, ctx) {
   ssn.OC.exit(ctx.from.id);
   if (ctx)
     ctx.reply(
-      ...new Xitext()
-        ._Group(`Ошибка ${code}`)
-        .Bold()
-        .Mono()
-        ._Group()
-        .Text(" ")
-        .Text(ERRCODES[code].user ?? ERRCODES[800].user)
-        ._Build()
+      ...new Xitext()._.group(`Ошибка ${code}`)
+        .bold()
+        .mono()
+        ._.group()
+        .text(" ")
+        .text(ERRCODES[code].user ?? ERRCODES[800].user)
+        ._.build()
     );
   console.warn(
     `ERR ${code} ${ERRCODES[code].log ?? ERRCODES[800].log}${
