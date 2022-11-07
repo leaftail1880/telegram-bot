@@ -18,7 +18,7 @@ export default {
     "UpdateUser", // Обновление пользователей и групп в базах данных
     "Command", // Команды
     "OC", // Модуль для команды /oc
-    "DBmanageV2",
+    "ManageDB",
     "Subscribe",
     "Timers", // Таймеры
     "Updates",

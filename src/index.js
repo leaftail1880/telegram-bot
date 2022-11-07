@@ -1,23 +1,20 @@
-import { RedisDatabase } from "./lib/launch/db.js";
-import { handlers, SERVISE } from "./lib/start-stop.js";
+import {
+    RedisDatabase
+} from "./lib/launch/db.js";
+import {
+    handlers,
+    SERVISE
+} from "./lib/start-stop.js";
 
-/**======================
- * База данных
- *========================**/
+// Database
 export const database = new RedisDatabase();
 
-/**======================
- * Всякая хрень
- *========================**/
+// Global error handler
 process.on("unhandledRejection", handlers.processError);
 
-/**======================
- * Запуск
- *========================**/
-SERVISE.start();
-
-/**======================
- * Остановка
- *========================**/
+// Gracefull stop
 process.once("SIGINT", () => SERVISE.stop("SIGINT"));
 process.once("SIGTERM", () => SERVISE.stop("SIGTERM"));
+
+// All done, start
+SERVISE.start();
