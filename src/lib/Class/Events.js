@@ -1,127 +1,97 @@
-import { getUser } from "../utils/get.js";
-import { bot } from "../launch/tg.js";
+import {
+    getUser
+} from "../utils/get.js";
+import {
+    bot
+} from "../launch/tg.js";
 import config from "../../config.js";
-import { data as $data } from "../SERVISE.js";
+import {
+    data as $data
+} from "../SERVISE.js";
 
 /**
- * @type {Array<Event.CacheUser>}
- */
-let GetCache = [];
-
-/**
- * @type {Object<string, Array<Event.Stored>>}
- */
+* @type {Object<string, Array<Event.Stored>>}
+*/
 const EVENTS = {};
 
 export class EventListener {
-  /**
-   *
-   * @param {Event.Type} type
-   * @param {number} position
-   * @param {Event.Callback} callback
-   */
-  constructor(type, position, callback) {
-    let evs = EVENTS[type];
-    if (!evs?.map) evs = [];
-    let event = { position, callback };
-    evs.push(event);
-    EVENTS[type] = evs.sort((a, b) => b.position - a.position);
-  }
+    /**
+    *
+    * @param {Event.Type} type
+    * @param {number} position
+    * @param {Event.Callback} callback
+    */
+    constructor(type, position, callback) {
+        let evs = EVENTS[type];
+        if (!evs?.map) evs = [];
+        let event = {
+            position,
+            callback
+        };
+        evs.push(event);
+        EVENTS[type] = evs.sort((a, b) => b.position - a.position);
+    }
 }
 
-function loadEvents(_, next) {
-  bot.on("message", async (ctx) => {
+
+bot.on("message", async (ctx) => {
     if (ctx.from.is_bot) {
-      if (
-        ctx.from.id != ctx.botInfo.id ||
-        // @ts-ignore
-        !ctx.message.text ||
-        // @ts-ignore
-        !ctx.message.text.includes("--emit")
-      )
-        return;
+        if (
+            ctx.from.id != ctx.botInfo.id ||
+            // @ts-ignore
+            !ctx.message.text ||
+            // @ts-ignore
+            !ctx.message.text.includes("--emit")
+        )
+            return;
     }
 
     const start = performance.now();
-    const Executors = EVENTS.message ? EVENTS.message : [];
+    const Executors = EVENTS.message ? EVENTS.message: [];
     // @ts-ignore
     if (ctx.message.text && EVENTS.text) Executors.push(...EVENTS.text);
     // @ts-ignore
     if (ctx.message.document && EVENTS.document)
-      Executors.push(...EVENTS.document);
+        Executors.push(...EVENTS.document);
     /** @type {Event.Data} */
     let data;
-    let speed = false;
 
-    const find = GetCache.find((e) => e.id === ctx.message.from.id);
-    if (find && Date.now() - find.time <= config.cache.updateTime) {
-      // Бот обрабатывает много сообщений, берем данные из кэша.
-      speed = true;
-      const cache = find.data;
-      const R =
-        cache.userRights ??
-        (await ctx.telegram.getChatMember(ctx.message.chat.id, ctx.from.id));
-
-      data = {
-        DBUser: cache.DBUser ?? (await getUser(ctx)),
-        user: R.user,
-        userRights: R,
-      };
-    } else {
-      const R = await ctx.telegram.getChatMember(
-        ctx.message.chat.id,
-        ctx.from.id
-      );
-
-      data = {
-        DBUser: await getUser(ctx),
-        user: R.user,
-        userRights: R,
-      };
-    }
 
     execute(
-      ctx,
-      Executors.map((e) => e.callback),
-      data
+        ctx,
+        Executors.map((e) => e.callback),
+        data
     );
 
-    // Removes previos cache
-    GetCache = GetCache.filter((e) => e.id !== ctx.from.id);
-
-    // Adds current cache
-    GetCache.push({
-      id: ctx.from.id,
-      data: data,
-      time: Date.now(),
-    });
     if ($data.benchmark)
-      console.log(speed ? "F:" : "N:", (performance.now() - start).toFixed(2));
-  });
-  next();
-}
+        console.log(speed ? "F:": "N:", (performance.now() - start).toFixed(2));
+});
+
+
 
 /**
- * @template T
- * @param {T} ctx
- * @param {Array<function>} f
- * @param {Event.Data} data
- * @returns
- */
+* @template T
+* @param {T} ctx
+* @param {Array<function>} f
+* @param {Event.Data} data
+* @returns
+*/
 function execute(ctx, f, data) {
-  if (!Array.isArray(f) || typeof f[0] !== "function") return;
-  f[0](ctx, () => execute(ctx, f.slice(1), data), data);
+    if (!Array.isArray(f) || typeof f[0] !== "function") return;
+    f[0](ctx, () => execute(ctx, f.slice(1), data), data);
 }
 
 /**
- *
- * @param {Event.Type} type
- */
+*
+* @param {Event.Type} type
+*/
 export function emitEvents(type, data) {
-  if (EVENTS[type])
-    for (const { callback } of EVENTS[type]) {
-      // @ts-expect-error
-      callback({}, () => void 0, {}, data);
+    if (EVENTS[type])
+        for (const {
+        callback
+    } of EVENTS[type]) {
+        // @ts-expect-error
+        callback({}, () => void 0, {}, data);
     }
 }
 

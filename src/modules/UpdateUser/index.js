@@ -3,7 +3,46 @@ import { d, util } from "../../lib/Class/Utils.js";
 import { EventListener } from "../../lib/Class/Events.js";
 import { CreateGroup } from "../../lib/utils/models.js";
 
+/**
+ * @type {Object<string, Event.CacheUser>}
+ */
+const GetCache = {};
+
 new EventListener("message", 10, async (ctx, next, data) => {
+    /** @type {Event.Data} */
+    let data;
+   
+    let speed = false;
+
+    const find = GetCache[ctx.message.from.id];
+    if (find && Date.now() - find.time <= config.cache.updateTime) {
+        // Бот обрабатывает много сообщений, берем данные из кэша.
+        speed = true;
+        const cache = find.data;
+        const R =
+        cache.userRights ??
+        (await ctx.telegram.getChatMember(ctx.message.chat.id, ctx.from.id));
+
+        data = {
+            DBUser: cache.DBUser ?? (await getUser(ctx)),
+            user: R.user,
+            userRights: R,
+        };
+    } else {
+        const R = await ctx.telegram.getChatMember(
+            ctx.message.chat.id,
+            ctx.from.id
+        );
+
+        data = {
+            DBUser: await getUser(ctx),
+            user: R.user,
+            userRights: R,
+        };
+    }
+    
+
+    
   if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {
     /**
      * @type {DB.Group}
@@ -47,5 +86,17 @@ new EventListener("message", 10, async (ctx, next, data) => {
     delete data.DBUser.needSafe;
     await database.set(d.user(ctx.from.id), user, true);
   }
+  
+    // Removes previos cache
+    GetCache = GetCache.filter((e) => e.id !== ctx.from.id);
+
+    // Adds current cache
+    GetCache.push({
+        id: ctx.from.id,
+        data: data,
+        time: Date.now(),
+    });
+  
+  
   next();
 });
