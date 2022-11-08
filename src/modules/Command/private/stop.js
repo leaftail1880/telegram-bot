@@ -1,5 +1,5 @@
 import { Command } from "../../../lib/Class/Cmd.js";
-import { SERVISE } from "../../../lib/start-stop.js";
+import { SERVISE } from "../../../lib/SERVISE.js";
 
 new Command(
   {

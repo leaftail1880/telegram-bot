@@ -1,10 +1,5 @@
-import {
-    RedisDatabase
-} from "./lib/launch/db.js";
-import {
-    handlers,
-    SERVISE
-} from "./lib/start-stop.js";
+import { RedisDatabase } from "./lib/launch/db.js";
+import { handlers, SERVISE } from "./lib/SERVISE.js";
 
 // Database
 export const database = new RedisDatabase();

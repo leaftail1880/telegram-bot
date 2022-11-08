@@ -1,7 +1,7 @@
 import { getUser } from "../utils/get.js";
 import { bot } from "../launch/tg.js";
 import config from "../../config.js";
-import { data as $data } from "../start-stop.js";
+import { data as $data } from "../SERVISE.js";
 
 /**
  * @type {Array<Event.CacheUser>}
@@ -41,23 +41,21 @@ function loadEvents(_, next) {
       )
         return;
     }
+
     const start = performance.now();
-    let speed = false;
-    const Executers = EVENTS.message ? EVENTS.message : [];
+    const Executors = EVENTS.message ? EVENTS.message : [];
     // @ts-ignore
-    if (ctx.message.text && EVENTS.text) Executers.push(...EVENTS.text);
+    if (ctx.message.text && EVENTS.text) Executors.push(...EVENTS.text);
     // @ts-ignore
     if (ctx.message.document && EVENTS.document)
-      Executers.push(...EVENTS.document);
-
-    /**
-     * @type {Event.Data}
-     */
+      Executors.push(...EVENTS.document);
+    /** @type {Event.Data} */
     let data;
+    let speed = false;
 
-    // Если да, значит бот обрабатывает сообщения, написанные до его запуска.
     const find = GetCache.find((e) => e.id === ctx.message.from.id);
     if (find && Date.now() - find.time <= config.cache.updateTime) {
+      // Бот обрабатывает много сообщений, берем данные из кэша.
       speed = true;
       const cache = find.data;
       const R =
@@ -84,7 +82,7 @@ function loadEvents(_, next) {
 
     execute(
       ctx,
-      Executers.map((e) => e.callback),
+      Executors.map((e) => e.callback),
       data
     );
 
@@ -121,9 +119,10 @@ function execute(ctx, f, data) {
  */
 export function emitEvents(type, data) {
   if (EVENTS[type])
-    for (const { callback } of EVENTS[type])
-      // @ts-ignore
+    for (const { callback } of EVENTS[type]) {
+      // @ts-expect-error
       callback({}, () => void 0, {}, data);
+    }
 }
 
 new EventListener("modules.load", 0, loadEvents);

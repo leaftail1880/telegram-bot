@@ -40,23 +40,20 @@ export async function updateVisualVersion(data) {
   // Получаем данные
   let session = data.session;
   /**
-   * @type {Array}
+   * @type {number[]}
    */
   const dbversion = await database.get(config.dbkey.version, true);
   if (dbversion.splice) dbversion.splice(3, 10);
 
   // Сравниваем версии
-  data.isLatest = bigger(
+  data.latest = bigger(
     [config.version[0], config.version[1], config.version[2]],
     dbversion
   );
 
   // Если версия новая
-  if (data.isLatest) {
-    if (data.isDev) {
-      console.log("⍚ New version! ⍚");
-      console.log(" ");
-    } else console.log("> New version!");
+  if (data.latest) {
+    console.log("> New version!");
     emitEvents("release");
     // Прописываем ее в базе данных
     database.set(
@@ -64,17 +61,27 @@ export async function updateVisualVersion(data) {
       [config.version[0], config.version[1], config.version[2]],
       true
     );
-    data.isLatest = true;
+    data.latest = true;
   }
 
   // Записываем значения
-  data.v = `${config.version.join(".")}.x${
-    "00000".substring(0, 5 - `${session}`.length) + session
-  }`;
+  data.v = `${data.v}.x${`${session}`.padStart(5, "0")}`;
+
   let d;
-  if (data.isLatest === 0) d = "Рабочая";
-  if (data.isLatest === true) d = "Релиз";
-  if (data.isLatest === false) d = "Старая";
-  data.versionMSG = `v${data.v} ${d}`;
-  data.versionLOG = `v${data.v}`;
+  switch (data.latest) {
+    case 0:
+      d = "Рабочая";
+      break;
+
+    case true:
+      d = "Релиз";
+      break;
+
+    case false:
+      d = "Старая";
+      break;
+  }
+
+  data.publicVersion = `v${data.v} ${d}`;
+  data.logVersion = `v${data.v}`;
 }

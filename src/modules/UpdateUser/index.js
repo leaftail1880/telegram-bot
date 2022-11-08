@@ -42,6 +42,7 @@ new EventListener("message", 10, async (ctx, next, data) => {
   detectUpdate(user.static.nickname, ctx.from.username);
 
   data.DBUser = user;
+
   if (user.needSafe) {
     delete data.DBUser.needSafe;
     await database.set(d.user(ctx.from.id), user, true);

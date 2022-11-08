@@ -1,5 +1,5 @@
 import { bot } from "../../lib/launch/tg.js";
-import { data } from "../../lib/start-stop.js";
+import { data } from "../../lib/SERVISE.js";
 import { database } from "../../index.js";
 import { getRegisteredGroups } from "../../lib/utils/get.js";
 

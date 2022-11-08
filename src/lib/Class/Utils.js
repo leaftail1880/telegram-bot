@@ -182,11 +182,9 @@ export const util = {
    *
    * @param {{name?: string; stack?: string; message: string; on?: object;}} err
    * @param {boolean} [returnArr]
-   * @returns
+   * @returns {string | [string, string, string, string]}
    */
   errParse(err, returnArr) {
-    if (typeof err != "object" || !err.stack || !err.message) return err;
-
     let message = err.message,
       stack = err.stack.replace(err.message, "").split("\n"),
       type = err.name ?? stack[0].match(/\s+at\s/g) ? stack.shift() : "Error";

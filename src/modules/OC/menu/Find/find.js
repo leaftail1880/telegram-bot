@@ -2,7 +2,7 @@ import { database } from "../../../../index.js";
 import { d, util } from "../../../../lib/Class/Utils.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { Button } from "../../../../lib/Class/Xitext.js";
-import { data as _data } from "../../../../lib/start-stop.js";
+import { data as _data } from "../../../../lib/SERVISE.js";
 import { editMsg, link, m } from "../../index.js";
 import { lang } from "../../index.js";
 import { getOCS, noOC } from "../../utils.js";

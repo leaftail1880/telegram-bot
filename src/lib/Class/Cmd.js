@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import { Xitext } from "./Xitext.js";
 import { isAdmin } from "../utils/check.js";
 import { bot } from "../launch/tg.js";
-import { data } from "../start-stop.js";
+import { data } from "../SERVISE.js";
 import { d, util } from "./Utils.js";
 import { database } from "../../index.js";
 import { ssn } from "./Session.js";

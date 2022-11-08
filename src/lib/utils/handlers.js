@@ -1,7 +1,7 @@
 import { database } from "../../index.js";
 import { start_stop_lang as lang } from "../launch/lang.js";
 import { bot } from "../launch/tg.js";
-import { data, SERVISE } from "../start-stop.js";
+import { data, SERVISE } from "../SERVISE.js";
 
 const OnErrorActions = {
   cache: {
@@ -70,7 +70,6 @@ export async function handleError(err) {
  */
 export async function handleDB(err) {
   if (err.message == "Client IP address is not in the allowlist.") {
-    lang.runLOG.error.renderRegister();
     await SERVISE.stop(
       "Put your ip addres to db allowlist",
       null,
