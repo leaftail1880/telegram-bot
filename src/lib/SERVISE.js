@@ -114,7 +114,7 @@ async function start() {
   data.launched = true;
 
   lang.log.end(m);
-  updateTimer = setInterval(checkInterval, config.update.timeTime);
+  updateTimer = setInterval(checkInterval, config.update.timerTime);
 }
 
 async function checkInterval() {
@@ -224,12 +224,16 @@ async function freeze() {
     bot.stop("freeze");
   }
 
-  await database.set(
-    config.dbkey.request,
-    [config.version[0], config.version[1], config.version[2]],
-    true,
-    300
-  );
+  function updateRequest() {
+    return database.set(
+      config.dbkey.request,
+      [config.version[0], config.version[1], config.version[2]],
+      true,
+      300
+    );
+  }
+
+  await updateRequest();
 
   let times = 0,
     devTimes = 0;
@@ -250,6 +254,7 @@ async function freeze() {
       );
       devTimes++;
       times = 0;
+      updateRequest();
       return;
     }
 
@@ -259,7 +264,7 @@ async function freeze() {
       await launch("No response", "Нет ответа", "↩️");
       return;
     }
-  }, config.update.timeTime);
+  }, config.update.timerTime);
 
   /**
    *
@@ -287,7 +292,7 @@ async function freeze() {
     console.log(lang.logLaunch(log));
     bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat));
 
-    updateTimer = setInterval(checkInterval, config.update.timeTime);
+    updateTimer = setInterval(checkInterval, config.update.timerTime);
     database.delete(config.dbkey.request);
   }
 }
