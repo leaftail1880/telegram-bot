@@ -22,7 +22,7 @@ export const data = {
   start_time: Date.now(),
   session: 0,
 
-  started: false,
+  launched: false,
   stopped: false,
 
   development: env.dev || env.dev == "true" ? true : false,
@@ -111,7 +111,7 @@ async function start() {
    * Запуск бота
    *========================**/
   await bot.launch();
-  data.started = true;
+  data.launched = true;
 
   lang.log.end(m);
   updateTimer = setInterval(checkInterval, config.update.timeTime);
@@ -162,10 +162,10 @@ async function stop(reason = "Остановка", type = "none", message = true
   text.text(reason);
 
   console.log(text._.text);
-  if (data.started && message)
+  if (data.launched && message)
     await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
-  if (type !== "none" && data.started && !data.stopped) {
+  if (type !== "none" && data.launched && !data.stopped) {
     data.stopped = true;
     bot.stop(reason);
   }
@@ -195,7 +195,7 @@ async function error(error) {
       ._.group()
       .text(` ${stack}`);
 
-    if (!data.started) return;
+    if (!data.launched) return;
 
     await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
@@ -215,11 +215,11 @@ async function error(error) {
 
 async function freeze() {
   clearInterval(updateTimer);
-  if (data.started)
+  if (data.launched)
     await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()),
       console.log(lang.stop.freeze()[0]);
 
-  if (data.started && !data.stopped) {
+  if (data.launched && !data.stopped) {
     data.stopped = true;
     bot.stop("freeze");
   }
@@ -268,6 +268,7 @@ async function freeze() {
    */
   async function launch(log, ...chat) {
     clearInterval(timeout);
+    if (data.launched === true) return;
     data.start_time = Date.now();
 
     // Обновляет сессию
@@ -282,7 +283,7 @@ async function freeze() {
     await bot.launch();
 
     data.stopped = false;
-    data.started = true;
+    data.launched = true;
     console.log(lang.logLaunch(log));
     bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat));
 

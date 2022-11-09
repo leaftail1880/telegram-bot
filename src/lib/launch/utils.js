@@ -66,7 +66,7 @@ export async function updateVisualVersion(data) {
   }
 
   // Записываем значения
-  data.v = `${data.v}.x${`${session}`.padStart(5, "0")}`;
+  data.v = `v${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
 
   let d;
   switch (data.latest) {
