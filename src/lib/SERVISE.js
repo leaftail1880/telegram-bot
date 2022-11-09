@@ -231,7 +231,8 @@ async function freeze() {
     300
   );
 
-  let times = 0;
+  let times = 0,
+    devTimes = 0;
   const timeout = setInterval(async () => {
     const answer = await database.get(config.dbkey.request);
     if (answer === "terminate_you") {
@@ -240,18 +241,22 @@ async function freeze() {
     }
 
     if (answer === "terminate_me") {
-      await launch("as newest", "Запущена как новая");
+      await launch("As newest", "Запущена как новая");
       return;
     }
     if (answer === "development") {
       await database.delete(config.dbkey.request);
+      console.log(
+        `(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`
+      );
+      devTimes++;
       times = 0;
       return;
     }
 
     times++;
-    if (times >= 10) {
-      await launch("no response", "Нет ответа", "↩️");
+    if (times >= 3) {
+      await launch("No response", "Нет ответа", "↩️");
       return;
     }
   }, 5000);

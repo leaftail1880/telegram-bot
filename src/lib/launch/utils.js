@@ -54,7 +54,7 @@ export async function updateVisualVersion(data) {
   );
 
   // Если версия новая
-  if (data.latest) {
+  if (data.latest === "realese") {
     console.log("> New version!");
     triggerEvent("new.release");
     // Прописываем ее в базе данных
