@@ -259,8 +259,8 @@ async function freeze() {
     }
 
     times++;
+    console.log("No response", times);
     if (times >= 3) {
-      console.log("No response ", times);
       await launch("No response", "Нет ответа", "↩️");
       return;
     }
@@ -273,7 +273,7 @@ async function freeze() {
    */
   async function launch(log, ...chat) {
     clearInterval(timeout);
-    if (data.launched === true) return;
+    if (data.stopped === false) return;
     data.start_time = Date.now();
 
     // Обновляет сессию
