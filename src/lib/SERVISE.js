@@ -114,7 +114,7 @@ async function start() {
   data.started = true;
 
   lang.log.end(m);
-  updateTimer = setInterval(checkInterval, 5000);
+  updateTimer = setInterval(checkInterval, config.update.timeTime);
 }
 
 async function checkInterval() {
@@ -134,7 +134,7 @@ async function checkInterval() {
     return database.set(config.dbkey.request, message);
   }
 
-  if (data.development && q === "realese") return await answer("development");
+  if (data.development && q !== "work") return await answer("development");
 
   if (q === "realese") return await answer("terminate_you");
 
@@ -245,7 +245,6 @@ async function freeze() {
       return;
     }
     if (answer === "development") {
-      await database.delete(config.dbkey.request);
       console.log(
         `(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`
       );
@@ -256,10 +255,11 @@ async function freeze() {
 
     times++;
     if (times >= 3) {
+      console.log("No response ", times);
       await launch("No response", "Нет ответа", "↩️");
       return;
     }
-  }, 5000);
+  }, config.update.timeTime);
 
   /**
    *
@@ -286,7 +286,7 @@ async function freeze() {
     console.log(lang.logLaunch(log));
     bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat));
 
-    updateTimer = setInterval(checkInterval, 5000);
+    updateTimer = setInterval(checkInterval, config.update.timeTime);
     database.delete(config.dbkey.request);
   }
 }
