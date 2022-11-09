@@ -10,6 +10,8 @@ new Command(
     permisson: 2,
   },
   (_a, args) => {
-    SERVISE.stop("Ручная остановка", null, args[0] ?? false, args[1] ?? false);
+    const c = args[0];
+    if (c !== "BOT" && c !== "ALL" && c !== "none") return;
+    SERVISE.stop("Ручная остановка", c);
   }
 );

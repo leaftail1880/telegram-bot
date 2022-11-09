@@ -1,33 +1,40 @@
-import { log } from "../SERVISE.js";
+import { triggerEvent } from "../../lib/Class/Events.js";
+import { util } from "../../lib/Class/Utils.js";
+import { log } from "../../lib/SERVISE.js";
 
-const newUsers = {},
-  newGroups = {};
+const newUsers = {};
+
+const newGroups = {};
 
 /**
  *
- * @param {number} id
- * @param {string} nickname
- * @param {string} name
- * @param {number} active
+ * @param {Context} ctx
  * @returns {DB.User}
  */
-export function CreateUser(id, nickname, name, active = Date.now()) {
+export function CreateUser(ctx) {
+  const id = ctx.from.id;
+  const name = util.getName(ctx.from);
+  const nickname = ctx.from.username;
+
   if (newUsers[id]) return newUsers[id];
+
   log(
     `Новый пользователь!\n Имя: ${name}\n ID: ${id}${
       nickname ? `\n @${nickname}` : ""
     }`
   );
+
+  triggerEvent("new.member", ctx);
+
   const user = {
     static: {
       id: id,
       nickname: nickname,
       name: name,
     },
-    cache: {
-      lastActive: active,
-    },
+    cache: {},
   };
+
   newUsers[id] = user;
   return user;
 }
@@ -41,7 +48,7 @@ export function CreateUser(id, nickname, name, active = Date.now()) {
  */
 export function CreateGroup(id, title, members = []) {
   if (newGroups[id]) return newGroups[id];
-  log(`Новая группа\n Название: ${title}\n ID: ${id}`);
+  log(`Новая группа!\n Название: ${title}\n ID: ${id}`);
   const group = {
     static: {
       id: id,

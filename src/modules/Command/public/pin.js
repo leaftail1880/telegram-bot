@@ -12,12 +12,12 @@ new Command(
     type: "group",
   },
   async (ctx, _args, data) => {
-    const g = data.DBGroup;
+    const g = data.Egroup;
 
     if (!("cache" in g))
       throw new TypeError("Pin cannot be called in non-group chats");
 
-    const u = data.DBUser;
+    const u = data.Euser;
     let lp = 0;
     if (typeof g?.cache?.lastPin === "object") {
       lp = g.cache?.lastPin[u.static.id];

@@ -34,7 +34,13 @@ namespace CommandTypes {
 }
 
 namespace Event {
-  type Type = "message" | "text" | "document" | "modules.load" | "release";
+  type Type =
+    | "message"
+    | "text"
+    | "document"
+    | "modules.load"
+    | "new.release"
+    | "new.member";
   type Stored = {
     position: number;
     callback: Event.Callback;
@@ -47,13 +53,12 @@ namespace Event {
     extraData?: Object
   ) => any;
   type Data = {
-    DBUser: DB.User;
-    DBGroup?: DB.Group;
+    Euser: DB.User;
+    Egroup?: DB.Group;
     userRights: import("telegraf/types").ChatMember;
     user: import("telegraf/types").User;
   };
   type CacheUser = {
-    id: number;
     time: number;
     data: Event.Data;
   };
@@ -71,7 +76,6 @@ namespace DB {
       session?: string;
       sessionCache?: string[];
       tag?: string;
-      lastActive: number;
     };
     needSafe?: true;
   };
@@ -108,9 +112,9 @@ namespace QueryTypes {
   type Callback = (
     ctx: Context,
     path: string[],
-    callback: (
+    edit: (
       text: string,
-      extra: import("telegraf/types").Convenience.ExtraReplyMessage
+      extra?: import("telegraf/types").Convenience.ExtraReplyMessage
     ) => Promise<void>
   ) => void;
 }

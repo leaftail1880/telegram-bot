@@ -122,7 +122,7 @@ new Command(
   },
   (ctx, _args, data) => {
     ctx.reply(
-      `${data.DBUser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
+      `${data.Euser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
     );
   }
 );
@@ -173,7 +173,7 @@ new Command(
     /**
      * @type {DB.User}
      */
-    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
+    const user = data.Euser ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session) {
       await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
       delete user.cache.session;
@@ -194,7 +194,7 @@ new Command(
     /**
      * @type {DB.User}
      */
-    const user = data.DBUser ?? (await database.get(d.user(ctx.from.id), true));
+    const user = data.Euser ?? (await database.get(d.user(ctx.from.id), true));
     if (user?.cache?.session?.split) {
       const abst = user.cache.session.split("::"),
         sess = ssn[abst[0]];
@@ -268,43 +268,37 @@ new EventListener("modules.load", 0, (_, next) => {
     bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
       scope: { type: "chat", chat_id: data.chatID.owner },
     });
-  if (data.isDev)
-    console.log(
-      `> Command Кол-во команд: ${all.length}${
-        all[0] ? `, список: ${all.join(", ")}` : ""
-      }`
-    );
-
-  new EventListener("text", 9, async (ctx, next, data) => {
-    const text = ctx.message.text;
-
-    const command = Command.getCmd(text);
-
-    if (typeof command !== "object") return next();
-    if (await Command.cantUse(command, ctx, data))
-      return ctx.reply("В этом чате эта команда недоступна. /help", {
-        reply_to_message_id: ctx.message.message_id,
-        allow_sending_without_reply: true,
-      });
-
-    // All good, run
-    const args =
-      text
-        .replace(config.command.clearCommand, "")
-        ?.match(config.command.parseArgs)
-        ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
-    const name = util.getFullName(data.DBUser, ctx.from);
-    const xt = new Xitext()
-      .text(" ")
-      .url(name, d.userLink(ctx.from.username))
-      .text(": " + text);
-
-    safeRun(
-      V[ctx.chat.type],
-      () => command.callback(ctx, args, data, command),
-      ` (${name}: ${text})`,
-      xt
-    );
-  });
   next();
+});
+
+new EventListener("text", 9, async (ctx, next, data) => {
+  const text = ctx.message.text;
+
+  const command = Command.getCmd(text);
+
+  if (typeof command !== "object") return next();
+  if (await Command.cantUse(command, ctx, data))
+    return ctx.reply("В этом чате эта команда недоступна. /help", {
+      reply_to_message_id: ctx.message.message_id,
+      allow_sending_without_reply: true,
+    });
+
+  // All good, run
+  const args =
+    text
+      .replace(config.command.clearCommand, "")
+      ?.match(config.command.parseArgs)
+      ?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
+  const name = util.getFullName(data.Euser, ctx.from);
+  const xt = new Xitext()
+    .text(" ")
+    .url(name, d.userLink(ctx.from.username))
+    .text(": " + text);
+
+  safeRun(
+    V[ctx.chat.type],
+    () => command.callback(ctx, args, data, command),
+    ` (${name}: ${text})`,
+    xt
+  );
 });

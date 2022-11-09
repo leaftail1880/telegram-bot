@@ -2,7 +2,6 @@ import { database } from "../../../index.js";
 import { Command } from "../../../lib/Class/Cmd.js";
 import { d, util } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
-import { getGroup } from "../../../lib/utils/get.js";
 
 new Command(
   {
@@ -12,7 +11,7 @@ new Command(
     type: "group",
   },
   async (ctx, args, data) => {
-    const g = data.DBGroup;
+    const g = data.Egroup;
 
     if (!("cache" in g))
       throw new TypeError("Pin cannot be called in non-group chats");
@@ -27,7 +26,7 @@ new Command(
     const time = Date.now() - group.lastCall;
     if (time <= 60000) {
       const sec = Math.round((60000 - time) / 1000),
-        reply = new Xitext()._.group(sec)
+        reply = new Xitext()._.group(sec + "")
           .bold()
           .url(null, d.guide(7))
           ._.group()

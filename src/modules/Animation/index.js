@@ -1,7 +1,19 @@
 import { bot } from "../../lib/launch/tg.js";
 import { data } from "../../lib/SERVISE.js";
 import { database } from "../../index.js";
-import { getRegisteredGroups } from "../../lib/utils/get.js";
+/**
+ *
+ * @returns {Promise<Array<DB.Group>>}
+ */
+async function getRegisteredGroups() {
+  const groups = [];
+
+  const keys = await database.keys(`Group::*`);
+
+  for (const key of keys) groups.push(await database.get(key, true));
+
+  return groups;
+}
 
 const active = {};
 

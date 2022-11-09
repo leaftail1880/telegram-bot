@@ -10,10 +10,14 @@ import config from "../../config.js";
 
 export class RedisDatabase {
   /**
-   * @type {cli}
+   * @type {cli | 'closed'}
    */
-  #cli;
-  y = {
+  #cli = "closed";
+  /**
+   * @type {cli | 'closed'}
+   */
+  #closedcli = "closed";
+  _ = {
     /**
      * @type {() => Promise<void>}
      */
@@ -31,19 +35,22 @@ export class RedisDatabase {
     this.log.write("create");
   }
   get client() {
-    this.y.time = performance.now();
-    const cli = this.#cli;
-    if (!cli) throw new Error("DBClient doesnt exist");
-    return cli;
+    this._.time = performance.now();
+    if (this.#cli === "closed") throw new Error("DBClient closed");
+    return this.#cli;
   }
   async #close() {
     await this.client.quit();
-    // @ts-ignore
-    this.#cli = false;
+    [this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
   }
-  async #connect(c, ms) {
-    await c.connect();
-    this.#cli = c;
+  async #connect(c, ms = Date.now()) {
+    if (c) {
+      await c.connect();
+      this.#cli = c;
+    } else if (this.#closedcli !== "closed") {
+      [this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
+    }
+
     this.log.write("connect", ms);
   }
 
@@ -163,7 +170,7 @@ class Logger {
   write(type = "</>", time) {
     const push = {
       type: type,
-      time: performance.now() - (time ?? this.#parent.y.time),
+      time: performance.now() - (time ?? this.#parent._.time),
     };
     this.log.push(push);
   }

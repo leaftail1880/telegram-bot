@@ -70,13 +70,7 @@ export async function handleError(err) {
  */
 export async function handleDB(err) {
   if (err.message == "Client IP address is not in the allowlist.") {
-    await SERVISE.stop(
-      "Put your ip addres to db allowlist",
-      null,
-      true,
-      true,
-      false
-    );
+    await SERVISE.stop("Put your ip addres to db allowlist", "ALL");
     return;
   }
   if (err.code == "ENOTFOUND") {

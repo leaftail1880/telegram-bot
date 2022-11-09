@@ -2,22 +2,21 @@ import { createClient } from "redis";
 import config from "../config.js";
 import { database } from "../index.js";
 import "./Class/Cmd.js";
-import { emitEvents } from "./Class/Events.js";
-import { util } from "./Class/Utils.js";
+import { triggerEvent } from "./Class/Events.js";
+import { d, util } from "./Class/Utils.js";
 import "./Class/Query.js";
 import { Xitext } from "./Class/Xitext.js";
 import { bot, env } from "./launch/tg.js";
-import {
-  bigger,
-  updateSession,
-  updateVisualVersion,
-} from "./launch/updates.js";
+import { bigger, updateSession, updateVisualVersion } from "./launch/utils.js";
+
+/** @type {NodeJS.Timer} */
+let updateTimer;
 
 export const data = {
   v: config.version.join("."),
 
-  /** @type {boolean | number} */
-  latest: true,
+  /** @type {'work' | 'realese' | 'old'} */
+  latest: "realese",
   publicVersion: `v${config.version.join(".")}`,
   logVersion: `v${config.version.join(".")} I`,
   start_time: Date.now(),
@@ -26,16 +25,17 @@ export const data = {
   started: false,
   stopped: false,
 
-  isDev: env.dev ? true : false,
-  debug: false,
+  development: env.dev || env.dev == "true" ? true : false,
   benchmark: true,
+  private: true,
 
   chatID: {
     // Айди чата, куда будут поступать сообщения
     owner: Number(env.ownerID),
     log: Number(env.logID),
   },
-
+  /** @type {Object<number, 'accepted' | 'waiting'>} */
+  joinCodes: {},
   errorLog: {},
   updateTimer: null,
 };
@@ -56,9 +56,9 @@ export const handlers = {
   bot: SERVISE.error,
 };
 
-export function log(msg, extra = {}) {
+export function log(msg, extra = {}, owner = false) {
   console.log(msg);
-  data.debug
+  owner
     ? bot.telegram.sendMessage(data.chatID.owner, msg, extra)
     : bot.telegram.sendMessage(data.chatID.log, msg, extra);
 }
@@ -82,7 +82,7 @@ async function start() {
   client.on("error", handlers.dbError);
 
   // Сохранение клиента
-  await database.y.connect(client, time);
+  await database._.connect(client, time);
 
   // Обновляет сессию
   await updateSession(data);
@@ -105,7 +105,7 @@ async function start() {
     m.push(`${module} (${(performance.now() - start).toFixed(2)} ms)`);
   }
   // Инициализация команд и списков
-  emitEvents("modules.load");
+  triggerEvent("modules.load");
 
   /**======================
    * Запуск бота
@@ -114,69 +114,64 @@ async function start() {
   data.started = true;
 
   lang.log.end(m);
-  data.updateTimer = setInterval(checkInterval, 5000);
+  updateTimer = setInterval(checkInterval, 5000);
 }
 
 async function checkInterval() {
   if (!database.client) return;
   const query = await database.get(config.dbkey.request, true);
   if (!query?.map) return;
+  /**
+   * @type {typeof data.latest}
+   */
   const q = bigger(
     [config.version[0], config.version[1], config.version[2]],
-    query
+    query,
+    ["realese", "old", "work"]
   );
-  if (q === true)
-    return await database.set(config.dbkey.request, "terminate_you");
-  if (q === false || q === 0) {
-    await database.set(config.dbkey.request, "terminate_me");
-    await database.y.close();
-    clearInterval(data.updateTimer);
-    SERVISE.stop(lang.stop.old(), null, true, data.isDev);
-    return;
+
+  function answer(message) {
+    return database.set(config.dbkey.request, message);
+  }
+
+  if (data.development && q === "realese") return await answer("development");
+
+  if (q === "realese") return await answer("terminate_you");
+
+  if (q === "old" || q === "work") {
+    await answer("terminate_me");
+    return SERVISE.stop(lang.stop.old(), "ALL");
   }
 }
 
-async function stop(
-  reason = "Остановка",
-  extra = null,
-  stopBot,
-  stopApp,
-  sendMessage = true
-) {
-  let log = `✕  `;
+/**
+ *
+ * @param {string} reason
+ * @param {"ALL" | "BOT" | "none"} type
+ * @param {boolean} message
+ */
+async function stop(reason = "Остановка", type = "none", message = true) {
+  clearTimeout(updateTimer);
   const text = new Xitext()._.group("✕  ")
     .url(null, "https://t.me")
     .bold()
     ._.group();
 
-  if (stopApp) text.bold("ALL. "), (log = `${log}ALL. `);
-  else if (stopBot) text.text("BOT. "), (log = `${log}BOT. `);
+  text.text(`${type}. `);
 
-  text.text(reason + "");
-  log = `${log}${reason}`;
+  text.text(reason);
 
-  if (extra)
-    text
-      .text(": ")
-      .text(
-        util.toStr(util.isError(extra) ? util.errParse(extra) : extra, " ")
-      ),
-      (log = `${log}: ${util.toStr(extra, " ")}`);
+  console.log(text._.text);
+  if (data.started && message)
+    await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
-  console.log(log);
-  if (data.started && sendMessage)
-    await bot.telegram.sendMessage(
-      data.chatID.log,
-      ...text._.build({
-        disable_web_page_preview: true,
-      })
-    );
-
-  if ((stopBot || stopApp) && data.started && !data.stopped) {
+  if (type !== "none" && data.started && !data.stopped) {
     data.stopped = true;
     bot.stop(reason);
   }
-  if (stopApp) {
+
+  if (type === "ALL") {
+    await database._.close();
     process.exit(0);
   }
 }
@@ -202,12 +197,7 @@ async function error(error) {
 
     if (!data.started) return;
 
-    await bot.telegram.sendMessage(
-      data.chatID.log,
-      ...text._.build({
-        disable_web_page_preview: true,
-      })
-    );
+    await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
     if (extra) {
       await util.sendSeparatedMessage(
@@ -224,7 +214,7 @@ async function error(error) {
 }
 
 async function freeze() {
-  clearInterval(data.updateTimer);
+  clearInterval(updateTimer);
   if (data.started)
     await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()),
       console.log(lang.stop.freeze()[0]);
@@ -233,6 +223,7 @@ async function freeze() {
     data.stopped = true;
     bot.stop("freeze");
   }
+
   await database.set(
     config.dbkey.request,
     [config.version[0], config.version[1], config.version[2]],
@@ -245,66 +236,52 @@ async function freeze() {
     const answer = await database.get(config.dbkey.request);
     if (answer === "terminate_you") {
       await database.delete(config.dbkey.request);
-      await database.y.close();
-      clearInterval(timeout);
-      return SERVISE.stop(lang.stop.terminate(), null, true, data.isDev, false);
+      return SERVISE.stop(lang.stop.terminate(), "ALL");
     }
 
     if (answer === "terminate_me") {
-      clearInterval(timeout);
-      data.start_time = Date.now();
-
-      // Обновляет сессию
-      await updateSession(data);
-
-      // Обновляет data.v, data.versionMSG, data.isLatest, version и session
-      await updateVisualVersion(data);
-
-      /**======================
-       * Запуск бота
-       *========================**/
-      await bot.launch();
-
-      data.stopped = false;
-      data.started = true;
-      console.log(lang.logLaunch("as newest"));
-      bot.telegram.sendMessage(
-        data.chatID.log,
-        ...lang.start("Запущена как новая")
-      );
-
-      data.updateTimer = setInterval(checkInterval, 5000);
-      database.delete(config.dbkey.request);
+      await launch("as newest", "Запущена как новая");
+      return;
+    }
+    if (answer === "development") {
+      await database.delete(config.dbkey.request);
+      times = 0;
       return;
     }
 
     times++;
     if (times >= 10) {
-      clearInterval(timeout);
-      data.start_time = Date.now();
-
-      // Обновляет сессию
-      await updateSession(data);
-
-      // Обновляет data.v, data.versionMSG, data.isLatest, version и session
-      await updateVisualVersion(data);
-
-      /**======================
-       * Запуск бота
-       *========================**/
-      await bot.launch();
-
-      data.stopped = false;
-      data.started = true;
-      bot.telegram.sendMessage(
-        data.chatID.log,
-        ...lang.start("Нет ответа", "↩️")
-      );
-      console.log(lang.logLaunch("no response"));
-
-      data.updateTimer = setInterval(checkInterval, 5000);
-      database.delete(config.dbkey.request);
+      await launch("no response", "Нет ответа", "↩️");
       return;
     }
   }, 5000);
+
+  /**
+   *
+   * @param {string} log
+   * @param {...string} chat
+   */
+  async function launch(log, ...chat) {
+    clearInterval(timeout);
+    data.start_time = Date.now();
+
+    // Обновляет сессию
+    await updateSession(data);
+
+    // Обновляет data.v, data.versionMSG, data.isLatest, version и session
+    await updateVisualVersion(data);
+
+    /**======================
+     * Запуск бота
+     *========================**/
+    await bot.launch();
+
+    data.stopped = false;
+    data.started = true;
+    console.log(lang.logLaunch(log));
+    bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat));
+
+    updateTimer = setInterval(checkInterval, 5000);
+    database.delete(config.dbkey.request);
+  }
 }

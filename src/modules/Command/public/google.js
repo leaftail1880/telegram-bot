@@ -25,12 +25,13 @@ new Command(
         reply_to_message_id: ctx.message.message_id,
         allow_sending_without_reply: true,
       });
-    const x = new Xitext().url(text, getLink(text));
+    const x = new Xitext().url('Поиск в google', getLink(text));
     ctx.reply(
       ...x._.build({
         reply_to_message_id:
           ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
         allow_sending_without_reply: true,
+        disable_web_page_preview: false
       })
     );
   }
