@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import { CreateGroup, CreateUser } from "./objects.js";
+import { CreateGroup, CreateUser } from "./create.js";
 import { database } from "../../index.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { data, log } from "../../lib/SERVISE.js";
