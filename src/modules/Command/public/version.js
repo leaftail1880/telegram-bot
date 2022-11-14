@@ -10,6 +10,7 @@ new Command(
     description: "Версия бота",
     permisson: 0,
     type: "all",
+    hide: true,
   },
   (ctx) => {
     ctx.reply(

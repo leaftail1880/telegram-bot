@@ -1,5 +1,5 @@
 export const cooldown = 5 * 3.6e6,
-  chatcooldown = 3.6e6;
+chatcooldown = 3.6e6;
 
 /*
 |--------------------------------------------------------------------------
@@ -7,8 +7,8 @@ export const cooldown = 5 * 3.6e6,
 |--------------------------------------------------------------------------
 |
 | Этот файл содержит в себе импорты всех команд из других файлов папки
-| 
-| 
+|
+|
 
 new cmd({
   name: '',
@@ -18,11 +18,10 @@ new cmd({
   hide: false,
   type: 'all'
 }, (ctx, args, data, command) => {
-  
 })
 */
 
-const public_commands = ["abc", "call", "google", "name", "pin", "version"];
+const public_commands = ["abc", "call", "google", "name", "pin", "version", "ping"];
 
 for (const cmd of public_commands) import(`./public/${cmd}.js`);
 

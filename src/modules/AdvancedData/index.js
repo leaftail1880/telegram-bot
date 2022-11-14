@@ -54,7 +54,7 @@ new EventListener("message", 10, async (ctx, next, _DATA) => {
     await database.set(d.user(ctx.from.id), data.Euser, true);
   }
 
-  _DATA = data;
+  for (const key in data) _DATA[key] = data[key]
 
   // Adds current GET
   PreviousGet[ctx.from.id] = {
