@@ -5,25 +5,25 @@ import { lang } from "../../index.js";
 import { getOCS, noOC, getRefType, sendRef } from "../../utils.js";
 
 new Query(
-  {
-    name: "oc",
-    prefix: "OC",
-  },
-  async (ctx, data) => {
-    const OCS = await getOCS();
-    if (!data[1] || !OCS[data[0]]?.map || !OCS[data[0]][data[1]])
-      return noOC(ctx);
+	{
+		name: "oc",
+		prefix: "OC",
+	},
+	async (ctx, data) => {
+		const OCs = await getOCS();
+		const [page, oc_pos, id, name] = data;
+		if (!oc_pos || !OCs[id]?.map || !OCs[id][oc_pos]) return noOC(ctx);
 
-    const OC = OCS[data[0]][data[1]],
-      capt = lang.OC(OC.name, OC.description, data[2], data[3]),
-      refType = getRefType(OC.fileid, capt._.text);
+		const OC = OCs[id][oc_pos];
+		const capt = lang.OC(OC.name, OC.description, name, Number(id));
+		const refType = getRefType(OC.fileid, capt._.text);
 
-    ctx.answerCbQuery(OC.name);
-    sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-      [
-        new Button("↩️↩️").data(link("backdoc", refType)),
-        new Button("↩️").data(link("uOC", ...data, refType)),
-      ],
-    ]);
-  }
+		ctx.answerCbQuery(OC.name);
+		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
+			[
+				new Button("↩️↩️").data(link("backdoc", refType)),
+				new Button("↩️").data(link("uOC", page, id, name, refType)),
+			],
+		]);
+	}
 );

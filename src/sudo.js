@@ -10,26 +10,26 @@ import { data, SERVISE } from "./lib/SERVISE.js";
  * @param {*} Dta
  */
 export function sudo(ctx, _args, Dta) {
-  const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
-    func = `(async () => {${ctx.message.text
-      .replace(config.command.clearCommand, "")
-      .replace(/\n/g, " ")}})();`;
-  try {
-    new Function(a, func)(
-      a,
-      ctx,
-      global,
-      database,
-      data,
-      Dta,
-      Xitext,
-      util,
-      (m) => util.sendSeparatedMessage(util.toStr(m), (r) => ctx.reply(r)),
-      d,
-      (o) => Object.keys(o),
-      ctx.reply.bind(ctx)
-    );
-  } catch (error) {
-    SERVISE.error(error);
-  }
+	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
+		func = `(async () => {${ctx.message.text
+			.replace(config.command.clearCommand, "")
+			.replace(/\n/g, " ")}})();`;
+	try {
+		new Function(a, func)(
+			a,
+			ctx,
+			global,
+			database,
+			data,
+			Dta,
+			Xitext,
+			util,
+			(m) => util.sendSeparatedMessage(util.toStr(m), (r) => ctx.reply(r)),
+			d,
+			(o) => Object.keys(o),
+			ctx.reply.bind(ctx)
+		);
+	} catch (error) {
+		SERVISE.error(error);
+	}
 }

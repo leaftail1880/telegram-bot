@@ -1,5 +1,5 @@
 export const cooldown = 5 * 3.6e6,
-chatcooldown = 3.6e6;
+	chatcooldown = 3.6e6;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,10 +21,18 @@ new cmd({
 })
 */
 
-const public_commands = ["abc", "call", "google", "name", "pin", "version", "ping"];
+const public_commands = [
+	"abc",
+	"call",
+	"google",
+	"name",
+	"pin",
+	"version",
+	"ping",
+];
 
 for (const cmd of public_commands) import(`./public/${cmd}.js`);
 
-const private_commands = ["db", "log", "stop", "sudo"];
+const private_commands = ["db", "log", "stop", "sudo", "run"];
 
 for (const cmd of private_commands) import(`./private/${cmd}.js`);

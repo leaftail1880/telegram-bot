@@ -5,30 +5,29 @@ import { lang } from "../../index.js";
 import { getOCS, noOC, sendMsgDelDoc } from "../../utils.js";
 
 new Query(
-  {
-    name: "uOC",
-    prefix: "OC",
-  },
-  async (ctx, data) => {
-    const OCS = await getOCS();
-    if (!OCS[data[0]]?.map) return noOC(ctx);
+	{
+		name: "uOC",
+		prefix: "OC",
+	},
+	async (ctx, data) => {
+		const OCS = await getOCS();
+		const [page, id, name, delType] = data;
+		if (!OCS[id]?.map) return noOC(ctx);
 
-    const btns = [],
-      userOCS = OCS[data[0]] ?? [],
-      menu = [new Button("↩️").data(link("find", data[1]))];
-    for (const [i, e] of userOCS.entries()) {
-      if (e)
-        btns.push([
-          new Button(e.name).data(link("oc", data[0], i, data[2], data[3])),
-        ]);
-    }
-    btns.push(menu);
+		const btns = [],
+			userOCS = OCS[id] ?? [],
+			menu = [new Button("↩️").data(link("find", page))];
+		for (const [i, e] of userOCS.entries()) {
+			if (e)
+				btns.push([new Button(e.name).data(link("oc", page, i, id, name))]);
+		}
+		btns.push(menu);
 
-    ctx.answerCbQuery("ОС " + data[2]);
-    if (!data[4])
-      editMsg(ctx, lang.userOCS(data[2]), {
-        reply_markup: { inline_keyboard: btns },
-      });
-    else sendMsgDelDoc(ctx, lang.userOCS(data[2]), null, btns, data[4]);
-  }
+		ctx.answerCbQuery("ОС " + name);
+		if (!data[3])
+			editMsg(ctx, lang.userOCS(name), {
+				reply_markup: { inline_keyboard: btns },
+			});
+		else sendMsgDelDoc(ctx, lang.userOCS(name), null, btns, delType);
+	}
 );
