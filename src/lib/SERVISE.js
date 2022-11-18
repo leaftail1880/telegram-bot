@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 import config from "../config.js";
 import { database } from "../index.js";
-import "./Class/Cmd.js";
+import "./Class/Command.js";
 import { triggerEvent } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
@@ -250,6 +250,7 @@ async function freeze() {
 			return;
 		}
 		if (answer === "development") {
+			log("Entering develompend pending mode...");
 			console.log(
 				`(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`
 			);
@@ -261,18 +262,19 @@ async function freeze() {
 
 		times++;
 		console.log("No response", times);
-		if (times >= 3) {
+		if (times >= 6) {
 			await launch("No response", "Нет ответа", "↩️");
 			return;
 		}
-	}, config.update.timerTime);
+	}, 1000);
 
 	/**
 	 *
 	 * @param {string} log
-	 * @param {...string} chat
+	 * @param {string} chat
+	 * @param {string} [prefix]
 	 */
-	async function launch(log, ...chat) {
+	async function launch(log, chat, prefix) {
 		clearInterval(timeout);
 		if (data.stopped === false) return;
 		data.start_time = Date.now();
@@ -291,7 +293,7 @@ async function freeze() {
 		data.stopped = false;
 		data.launched = true;
 		console.log(lang.logLaunch(log));
-		bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat));
+		bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat, prefix));
 
 		updateTimer = setInterval(checkInterval, config.update.timerTime);
 		database.delete(config.dbkey.request);

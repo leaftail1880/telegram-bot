@@ -1,4 +1,4 @@
-import { Command } from "../../../lib/Class/Cmd.js";
+import { Command } from "../../../lib/Class/Command.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 
 new Command(

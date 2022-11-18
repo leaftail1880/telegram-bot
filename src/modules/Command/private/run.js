@@ -1,9 +1,9 @@
 import { database } from "../../../index.js";
-import { d, util } from "../../../lib/Class/Utils.js";
+import { d } from "../../../lib/Class/Utils.js";
 
-import { Command } from "../../../lib/Class/Cmd.js";
-import { Button, Xitext } from "../../../lib/Class/Xitext.js";
+import { Command } from "../../../lib/Class/Command.js";
 import { Query } from "../../../lib/Class/Query.js";
+import { Button, Xitext } from "../../../lib/Class/Xitext.js";
 
 new Query(
 	{

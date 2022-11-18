@@ -1,5 +1,5 @@
-import { d } from "../../lib/Class/Utils.js";
 import { MultiMenuV1 } from "../../lib/Class/Menu.js";
+import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 /**
@@ -83,11 +83,11 @@ export const lang = {
 	OC: (name, description, ownerName, id) =>
 		new Xitext()._.group(name)
 			.bold()
-			.url(null, d.userLinkID(id))
+			.url(null, d.userLink(id))
 			._.group()
 			.text(`\n  ${description}\n\n`)
 			.bold(`Владелец: `)
-			.url(ownerName, d.userLinkID(id)),
+			.url(ownerName, d.userLink(id)),
 	myOC: (name, description, owner) =>
 		new Xitext()._.group(name)
 			.bold()

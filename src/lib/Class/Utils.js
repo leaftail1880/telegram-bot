@@ -338,16 +338,10 @@ export const d = {
 	guide: (index) => `https://t.me/xillerbotguides/${index}`,
 	/**
 	 *
-	 * @param {Nval} nickname
-	 * @returns
-	 */
-	userLink: (nickname) => `https://t.me/${nickname}`,
-	/**
-	 *
 	 * @param {number} id
 	 * @returns
 	 */
-	userLinkID: (id) => `tg://user?id=${id}`,
+	userLink: (id) => `tg://user?id=${id}`,
 	// Separator
 	separator: {
 		link: ".",
@@ -357,6 +351,7 @@ export const d = {
 	/**
 	 *
 	 * @param {Nval[]} arr
+	 * @param {string} separator
 	 */
 	safeJoin(arr, separator) {
 		return arr

@@ -1,10 +1,11 @@
-import { safeRun } from "../utils/safeRun.js";
-import { bot } from "../launch/tg.js";
-import { EventListener } from "./Events.js";
-import { d, util } from "./Utils.js";
-import { editMsg } from "./Menu.js";
 import { database } from "../../index.js";
+import { bot } from "../launch/tg.js";
 import { log } from "../SERVISE.js";
+import { safeRun } from "../utils/safeRun.js";
+import { EventListener } from "./Events.js";
+import { editMsg } from "./Menu.js";
+import { d, util } from "./Utils.js";
+import { Xitext } from "./Xitext.js";
 
 /**
  * @type {Object<string, Query>}
@@ -44,11 +45,12 @@ const activeQueries = {};
  */
 function parseQueryData(data) {
 	const unparsed = data.split(d.separator.linkToData);
+	const escaper = Date.now().toString(16);
 	const args = unparsed[1]
 		? unparsed[1]
-				.replaceAll("\\" + d.separator.link, "[escapedLink]")
+				.replaceAll("\\" + d.separator.link, escaper)
 				.split(d.separator.data)
-				.map((e) => e.replace("[escapedLink]", "."))
+				.map((e) => e.replace(escaper, d.separator.link))
 		: [];
 	return { parser: unparsed[0], args };
 }
@@ -80,13 +82,24 @@ function loadQuerys() {
 			ctx.callbackQuery.from
 		);
 
+		const xt = new Xitext()
+			.text(" ")
+			._.group(name)
+			.bold()
+			.url(null, d.userLink(ctx.from.id))
+			._.group()
+			.text(": ")
+			.bold(parser);
+
+		args.forEach((e) => xt.text(" ").mono(e));
+
 		function run() {
 			q.callback(ctx, args, (text, extra) =>
 				editMsg(ctx, ctx.callbackQuery.message, text, extra)
 			);
 		}
 
-		safeRun("Q", run, ` (${name}: ${data})`, `${name}: ${data}`);
+		safeRun("Q", run, xt, xt);
 		if (q.info.msg) ctx.answerCbQuery(q.info.msg);
 	});
 }
