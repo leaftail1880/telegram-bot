@@ -262,11 +262,11 @@ async function freeze() {
 
 		times++;
 		console.log("No response", times);
-		if (times >= 6) {
+		if (times >= 1) {
 			await launch("No response", "Нет ответа", "↩️");
 			return;
 		}
-	}, 1000);
+	}, config.update.timerTime);
 
 	/**
 	 *

@@ -97,15 +97,15 @@ export const lang = {
 			.bold(`Это Ваш персонаж`),
 };
 
-import "./menu/Find/find.js";
-import "./menu/Find/oc.js";
-import "./menu/Find/uOC.js";
+import "./menu/find.js";
+import "./menu/oc.js";
+import "./menu/uOC.js";
 
-import "./menu/MainMenu/index.js";
+import "./menu/index.js";
 
-import "./menu/MyOC/del.js";
-import "./menu/MyOC/edit.js";
-import "./menu/MyOC/my.js";
-import "./menu/MyOC/myoc.js";
+import "./menu/del.js";
+import "./menu/edit.js";
+import "./menu/my.js";
+import "./menu/myoc.js";
 
-import "./menu/Reg/index.js";
+import "./menu/reg.js";

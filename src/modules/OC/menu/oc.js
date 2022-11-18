@@ -1,8 +1,7 @@
-import { Query } from "../../../../lib/Class/Query.js";
-import { Button } from "../../../../lib/Class/Xitext.js";
-import { link } from "../../index.js";
-import { lang } from "../../index.js";
-import { getOCS, noOC, getRefType, sendRef } from "../../utils.js";
+import { Query } from "../../../lib/Class/Query.js";
+import { Button } from "../../../lib/Class/Xitext.js";
+import { lang, link } from "../index.js";
+import { getOCS, getRefType, noOC, sendRef } from "../utils.js";
 
 new Query(
 	{

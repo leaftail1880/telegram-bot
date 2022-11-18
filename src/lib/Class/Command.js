@@ -298,7 +298,12 @@ new EventListener("text", 9, async (ctx, next, data) => {
 			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
 	const name = util.getFullName(data.Euser, ctx.from);
 	const xt = new Xitext()._.group(name)
-		.url(null, d.userLink(ctx.from.id))
+		.url(
+			null,
+			ctx.from.id !== $data.chatID.owner
+				? d.userLink(ctx.from.id)
+				: `https://t.me/${ctx.from.username}`
+		)
 		.bold()
 		._.group()
 		.text(` ${text}`);
@@ -308,6 +313,6 @@ new EventListener("text", 9, async (ctx, next, data) => {
 		() => command.callback(ctx, args, data, command),
 		xt,
 		xt,
-    ctx.chat.id !== $data.chatID.log
+		ctx.chat.id !== $data.chatID.log
 	);
 });

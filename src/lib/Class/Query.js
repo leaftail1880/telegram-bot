@@ -1,6 +1,6 @@
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
-import { log } from "../SERVISE.js";
+import { data as $data, log } from "../SERVISE.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
@@ -78,20 +78,23 @@ function loadQuerys() {
 
 		activeQueries[data] = Date.now();
 		const name = util.getFullName(
-			database.cache.tryget(d.user(ctx.callbackQuery.from.id)),
+			database.cache.tryget(d.user(ctx.callbackQuery.from.id), 2 * 32),
 			ctx.callbackQuery.from
 		);
 
-		const xt = new Xitext()
-			.text(" ")
-			._.group(name)
+		const xt = new Xitext()._.group(name)
 			.bold()
-			.url(null, d.userLink(ctx.from.id))
+			.url(
+				null,
+				ctx.from.id !== $data.chatID.owner
+					? d.userLink(ctx.from.id)
+					: `https://t.me/${ctx.from.username}`
+			)
 			._.group()
 			.text(": ")
 			.bold(parser);
 
-		args.forEach((e) => xt.text(" ").mono(e));
+		args.forEach((e) => xt.text("  ").mono(e));
 
 		function run() {
 			q.callback(ctx, args, (text, extra) =>

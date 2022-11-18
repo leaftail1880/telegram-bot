@@ -26,8 +26,10 @@ export function safeRun(
 					stack: e.stack,
 				});
 			});
-		let txt = `> ${runnerName}. `,
-			extra = {};
+		let txt = `> ${runnerName}. `;
+
+		/** @type {import("telegraf").Types.ExtraReplyMessage} */
+		let extra = {};
 		if (typeof dataOnSuccesfull === "string" || !dataOnSuccesfull._.build) {
 			txt += dataOnSuccesfull;
 		} else {
@@ -35,6 +37,7 @@ export function safeRun(
 			txt += temp[0];
 			extra = temp[1];
 		}
+		extra.disable_notification = true;
 		if (sendMessage) log(txt, extra);
 		return true;
 	} catch (error) {

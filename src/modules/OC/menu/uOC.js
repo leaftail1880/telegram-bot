@@ -1,8 +1,7 @@
-import { Query } from "../../../../lib/Class/Query.js";
-import { Button } from "../../../../lib/Class/Xitext.js";
-import { editMsg, link } from "../../index.js";
-import { lang } from "../../index.js";
-import { getOCS, noOC, sendMsgDelDoc } from "../../utils.js";
+import { Query } from "../../../lib/Class/Query.js";
+import { Button } from "../../../lib/Class/Xitext.js";
+import { editMsg, lang, link } from "../index.js";
+import { getOCS, noOC, sendMessagDeleteRef } from "../utils.js";
 
 new Query(
 	{
@@ -28,6 +27,6 @@ new Query(
 			editMsg(ctx, lang.userOCS(name), {
 				reply_markup: { inline_keyboard: btns },
 			});
-		else sendMsgDelDoc(ctx, lang.userOCS(name), null, btns, delType);
+		else sendMessagDeleteRef(ctx, lang.userOCS(name), null, btns, delType);
 	}
 );

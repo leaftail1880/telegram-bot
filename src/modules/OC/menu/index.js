@@ -1,7 +1,7 @@
-import { Command } from "../../../../lib/Class/Command.js";
-import { Query } from "../../../../lib/Class/Query.js";
-import { editMsg, lang } from "../../index.js";
-import { sendMsgDelDoc } from "../../utils.js";
+import { Command } from "../../../lib/Class/Command.js";
+import { Query } from "../../../lib/Class/Query.js";
+import { editMsg, lang } from "../index.js";
+import { sendMessagDeleteRef } from "../utils.js";
 
 new Command(
 	{
@@ -11,11 +11,7 @@ new Command(
 		type: "private",
 	},
 	(ctx) => {
-		ctx.reply(
-			...lang.main
-				.inlineKeyboard(...lang.mainKeyboard)
-				._.build({ disable_web_page_preview: true })
-		);
+		ctx.reply(...lang.main.inlineKeyboard(...lang.mainKeyboard)._.build());
 	}
 );
 
@@ -43,7 +39,7 @@ new Query(
 		message: "Назад",
 	},
 	(ctx, data) => {
-		sendMsgDelDoc(
+		sendMessagDeleteRef(
 			ctx,
 			lang.main._.text,
 			lang.main._.entities,
