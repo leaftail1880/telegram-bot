@@ -19,7 +19,7 @@ export async function getUser(ctx) {
 				data.joinCodes[ctx.from.id] = "waiting";
 				ctx.reply(
 					...new Xitext()
-						.text("Sorry, but this bot isn't avaible to you :/\nConnect code: ")
+						.text("Sorry, but this bot doesn't avaible for you :/\nConnect code: ")
 						.mono(ctx.from.id.toString(16))
 						._.build()
 				);
@@ -36,10 +36,10 @@ export async function getUser(ctx) {
 						._.build()
 				);
 				return false;
-			} else {
+			} else if (data.joinCodes[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно добавлены в список разрешенных пользователей.");
 			}
-		} else if (data.joinCodes[ctx.from.id] === "accepted") {
+		} else {
 			user = CreateUser(ctx);
 			user.needSafe = true;
 		}
@@ -75,14 +75,6 @@ export async function getGroup(ctx) {
 		if (data.private) {
 			if (!(ctx.chat.id in data.joinCodes)) {
 				data.joinCodes[ctx.chat.id] = "waiting";
-				ctx.reply(
-					...new Xitext()
-						.text(
-							"К сожалению, я не настроен для работы с этой группой. Если мой создатель разрешил вам, то отправьте ему код снизу. А теперь прошу извинить, мне нужно идти.\n\nКод вашей группы: "
-						)
-						.mono(ctx.from.id.toString(16))
-						._.build()
-				);
 				log(
 					...new Xitext()
 						.text("Запрос на добавление группы:\n")
@@ -97,13 +89,24 @@ export async function getGroup(ctx) {
 						)
 						._.build()
 				);
-				await ctx.leaveChat();
+				if (ctx.botInfo.can_read_all_group_messages)
+					await ctx.reply(
+						...new Xitext()
+							.text(
+								"К сожалению, я не настроен для работы с этой группой. Если мой создатель разрешил вам, то отправьте ему код снизу. А теперь прошу извинить, мне нужно идти.\n\nКод вашей группы: "
+							)
+							.mono(ctx.from.id.toString(16))
+							._.build()
+					);
+				ctx.leaveChat();
 				return false;
 			} else if (data.joinCodes[ctx.chat.id] === "accepted") {
 				ctx.reply("Группа успешно добавлена в список разрешенных.");
+			} else {
+				ctx.leaveChat();
+				return false;
 			}
 		}
-
 		group = CreateGroup(ctx.chat.id, ctx.chat.title, [ctx.from.id]);
 		update = true;
 	}

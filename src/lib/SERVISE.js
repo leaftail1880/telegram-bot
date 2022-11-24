@@ -125,11 +125,7 @@ async function checkInterval() {
 	/**
 	 * @type {typeof data.type}
 	 */
-	const q = bigger(
-		[config.version[0], config.version[1], config.version[2]],
-		query,
-		["realese", "old", "work"]
-	);
+	const q = bigger([config.version[0], config.version[1], config.version[2]], query, ["realese", "old", "work"]);
 
 	function answer(message) {
 		return database.set(config.dbkey.request, message);
@@ -153,18 +149,14 @@ async function checkInterval() {
  */
 async function stop(reason = "Остановка", type = "none", message = true) {
 	clearTimeout(updateTimer);
-	const text = new Xitext()._.group("✕  ")
-		.url(null, "https://t.me")
-		.bold()
-		._.group();
+	const text = new Xitext()._.group("✕  ").url(null, "https://t.me").bold()._.group();
 
 	text.text(`${type}. `);
 
 	text.text(reason);
 
 	console.log(text._.text);
-	if (data.launched && message)
-		await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+	if (data.launched && message) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
 	if (type !== "none" && data.launched && !data.stopped) {
 		data.stopped = true;
@@ -189,12 +181,7 @@ async function error(error) {
 
 		const [type, message, stack, extra] = util.errParse(error, true);
 
-		const text = new Xitext()
-			.url(type, "https://t.me")
-			._.group(message)
-			.bold()
-			._.group()
-			.text(` ${stack}`);
+		const text = new Xitext().url(type, "https://t.me")._.group(message).bold()._.group().text(` ${stack}`);
 
 		if (!data.launched) return;
 
@@ -217,8 +204,7 @@ async function error(error) {
 async function freeze() {
 	clearInterval(updateTimer);
 	if (data.launched)
-		await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()),
-			console.log(lang.stop.freeze()[0]);
+		await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()), console.log(lang.stop.freeze()[0]);
 
 	if (data.launched && !data.stopped) {
 		data.stopped = true;
@@ -226,12 +212,7 @@ async function freeze() {
 	}
 
 	function updateRequest() {
-		return database.set(
-			config.dbkey.request,
-			[config.version[0], config.version[1], config.version[2]],
-			true,
-			300
-		);
+		return database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]], true, 300);
 	}
 
 	await updateRequest();
@@ -251,9 +232,7 @@ async function freeze() {
 		}
 		if (answer === "development") {
 			log("Entering develompend pending mode...");
-			console.log(
-				`(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`
-			);
+			console.log(`(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`);
 			devTimes++;
 			times = 0;
 			updateRequest();

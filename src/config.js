@@ -2,7 +2,7 @@ export default {
 	version: [
 		8, //
 		1, //
-		13, //
+		15, //
 	],
 
 	command: {
@@ -28,7 +28,7 @@ export default {
 		"ManageDB",
 		"Subscribe",
 		"Timers", // Таймеры
-		"Updates",
+		// "Updates",
 		// "Migrate",
 		// "Animation"
 	],
