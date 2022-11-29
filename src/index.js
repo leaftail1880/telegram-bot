@@ -8,8 +8,8 @@ export const database = new RedisDatabase();
 process.on("unhandledRejection", handlers.processError);
 
 // Gracefull stop
-process.once("SIGINT", () => SERVISE.stop("SIGINT"));
-process.once("SIGTERM", () => SERVISE.stop("SIGTERM"));
+process.once("SIGINT", () => SERVISE.stop("SIGINT", "ALL"));
+process.once("SIGTERM", () => SERVISE.stop("SIGTERM", "ALL"));
 
 // All done, start
 SERVISE.start();
