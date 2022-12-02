@@ -1,11 +1,11 @@
 // This file contains code for synchronization/shutdown/data exchange between several bot processes running at the same time.
 
-import config from "../config.js";
-import { database } from "../index.js";
-import { start_stop_lang as lang } from "./launch/lang.js";
-import { bot } from "./launch/tg.js";
-import { bigger, updateSession, updateVisualVersion } from "./launch/update.js";
-import { data, log, SERVISE } from "./SERVISE.js";
+import config from "../../config.js";
+import { database } from "../../index.js";
+import { data, log, SERVISE } from "../SERVISE.js";
+import { start_stop_lang as lang } from "./lang.js";
+import { bot } from "./tg.js";
+import { bigger, updateInfo } from "./update.js";
 
 /** @type {NodeJS.Timer} */
 let $UpdateCheckTimer;
@@ -43,7 +43,7 @@ async function updateCheckInterval() {
 	}
 }
 
-async function freeze() {
+export async function freeze() {
 	UpdateCheckTimer.close();
 	if (data.launched)
 		await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()), console.log(lang.stop.freeze()[0]);
@@ -100,11 +100,8 @@ async function freeze() {
 		if (data.stopped === false) return;
 		data.start_time = Date.now();
 
-		// Обновляет сессию
-		await updateSession(data);
-
-		// Обновляет data.v, data.versionMSG, data.isLatest, version и session
-		await updateVisualVersion(data);
+		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и session
+		await updateInfo(data);
 
 		/**======================
 		 * Запуск бота

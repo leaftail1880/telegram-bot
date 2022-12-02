@@ -14,4 +14,7 @@ export type IhandledError = {
 	message: string;
 	response?: Record<string, any> & { description: string; error_code?: number };
 	on?: any;
+	code?: string;
+	type?: string;
+	errno?: string;
 };

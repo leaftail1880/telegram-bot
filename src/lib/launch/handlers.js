@@ -1,6 +1,23 @@
 import { database } from "../../index.js";
-import { bot } from "../launch/tg.js";
 import { data, SERVISE } from "../SERVISE.js";
+import { bot } from "./tg.js";
+
+const connectionLog = {
+	lastErrorTime: Date.now(),
+	cooldown: 1000,
+	waitTime: 10000,
+};
+function noConnection() {
+	if (Date.now() - connectionLog.lastErrorTime <= connectionLog.cooldown * 10) return;
+	connectionLog.lastErrorTime = Date.now();
+	console.log("Нет подключения к интернету");
+	bot.stop("NOCONNECTION");
+	database._.close(true);
+	setTimeout(async () => {
+		bot.launch();
+		database._.connect(null, Date.now());
+	}, connectionLog.waitTime);
+}
 
 /**
  * @type {import("./typess.js").IOnErrorActions}
@@ -12,13 +29,7 @@ const onError = {
 		cooldown: 1000,
 	},
 	codes: {
-		ECONNRESET: () => {
-			if (Date.now() - onError.cache.lastTime <= onError.cache.cooldown * 10 && onError.cache.type === "ECONNRESET")
-				return;
-			onError.cache.type = "ECONNRESET";
-			onError.cache.lastTime = Date.now();
-			console.log("Нет подключения к интернету");
-		},
+		ECONNRESET: noConnection,
 		ERR_MODULE_NOT_FOUND: (err) => {
 			SERVISE.error(err);
 		},
@@ -43,7 +54,9 @@ const onError = {
 			console.warn(err);
 		},
 	},
-	types: {},
+	types: {
+		FetchError: noConnection,
+	},
 };
 
 /**

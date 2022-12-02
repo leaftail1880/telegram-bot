@@ -20,10 +20,19 @@ export function bigger(array, array2, [first, second, equal]) {
 }
 
 /**
+ * Обновляет всё
+ * @param {SessionData} data
+ */
+export async function updateInfo(data) {
+	await updateSession(data);
+	await updateVisualVersion(data);
+}
+
+/**
  * Обновляет session
  * @param {SessionData} data
  */
-export async function updateSession(data) {
+async function updateSession(data) {
 	if (!(await database.has(config.dbkey.session))) {
 		await database.set(config.dbkey.session, 0);
 	}
@@ -37,7 +46,7 @@ export async function updateSession(data) {
  * Обновляет data.v, data.versionMSG, data.isLatest и version
  * @param {SessionData} data
  */
-export async function updateVisualVersion(data) {
+async function updateVisualVersion(data) {
 	// Получаем данные
 	let session = data.session;
 	/**
@@ -47,23 +56,15 @@ export async function updateVisualVersion(data) {
 	if (dbversion.splice) dbversion.splice(3, 10);
 
 	// Сравниваем версии
-	data.type = bigger(
-		[config.version[0], config.version[1], config.version[2]],
-		dbversion,
-		["realese", "old", "work"]
-	);
+	data.type = bigger([config.version[0], config.version[1], config.version[2]], dbversion, ["realese", "old", "work"]);
 
 	// Если версия новая
-	if (data.type === "realese") {
+	if (data.type === "realese" && !data.development) {
 		console.log("> New version!");
 		new EventListener("modules.load", 0, () => triggerEvent("new.release"));
 
 		// Прописываем ее в базе данных
-		database.set(
-			config.dbkey.version,
-			[config.version[0], config.version[1], config.version[2]],
-			true
-		);
+		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]], true);
 	}
 
 	// Записываем значения
