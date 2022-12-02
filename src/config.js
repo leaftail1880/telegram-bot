@@ -2,7 +2,7 @@ export default {
 	version: [
 		8, //
 		1, //
-		17, //
+		18, //
 	],
 
 	command: {

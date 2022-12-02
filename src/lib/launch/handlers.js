@@ -64,8 +64,11 @@ const onError = {
  */
 export async function handleError(err) {
 	const code_action = onError.codes[err?.response?.error_code];
-	const type_action = onError;
-	if (code_action) {
+	const type_action = onError.types[err?.name];
+
+	if (type_action) {
+		type_action(err);
+	} else if (code_action) {
 		code_action(err);
 	} else SERVISE.error(err);
 
@@ -79,14 +82,14 @@ export async function handleError(err) {
  * @returns
  */
 export async function handleDB(err) {
-	if (err.message == "Client IP address is not in the allowlist.") {
+	if (err.message === "Client IP address is not in the allowlist.") {
 		await SERVISE.stop("Put your ip addres to db allowlist", "ALL");
 		return;
 	}
-	if (err.code == "ENOTFOUND") {
-		return onError.codes.ECONNRESET();
+	if (err.code === "ENOTFOUND") {
+		return noConnection();
 	}
-	if (err.message == "Socket closed unexpectedly") {
+	if (err.message === "Socket closed unexpectedly") {
 		await database.client.connect();
 		return;
 	}

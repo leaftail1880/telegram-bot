@@ -23,7 +23,7 @@ export const data = {
 	launched: false,
 	stopped: false,
 
-	development: env.dev && env.dev == "true" ? true : false,
+	development: env.dev === true,
 	benchmark: true,
 	private: true,
 
@@ -32,7 +32,7 @@ export const data = {
 		owner: Number(env.ownerID),
 		log: Number(env.logID),
 	},
-	/** @type {Object<number, 'accepted' | 'waiting'>} */
+	/** @type {Record<number, 'accepted' | 'waiting'>} */
 	joinCodes: {},
 	errorLog: {},
 	updateTimer: null,

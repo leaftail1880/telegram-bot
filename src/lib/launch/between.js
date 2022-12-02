@@ -29,11 +29,11 @@ async function updateCheckInterval() {
 	 */
 	const q = bigger([config.version[0], config.version[1], config.version[2]], query, ["realese", "old", "work"]);
 
-	function answer(message) {
+	function answer(/** @type {string} */ message) {
 		return database.set(config.dbkey.request, message);
 	}
 
-	if (data.development && q !== "work") return await answer(SERVISE.message.development);
+	if (data.development) return await answer(SERVISE.message.development);
 
 	if (q === "realese") return await answer(SERVISE.message.terminate_you);
 
