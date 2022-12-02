@@ -3,7 +3,7 @@ import config from "../../config.js";
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { data as $data, log } from "../SERVISE.js";
-import { isAdmin } from "../utils/check.js";
+import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
 import { ssn } from "./Session.js";
@@ -64,11 +64,7 @@ export class Command {
 		 */
 		let cmd;
 
-		const type = /^\/\w+/.test(a)
-			? "slash"
-			: /^\-\w*/.test(a)
-			? "special"
-			: "message";
+		const type = /^\/\w+/.test(a) ? "slash" : /^\-\w*/.test(a) ? "special" : "message";
 		if (type === "message") return false;
 
 		const // Команда из сообщения
@@ -89,21 +85,16 @@ export class Command {
 	 */
 	static async cantUse(command, ctx, user = null) {
 		// Условия разрешений
-		let _lg = // Где
-				command.info.type === "group" &&
-				(ctx.chat.type === "group" || ctx.chat.type === "supergroup"),
+		let _lg = command.info.type === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup"), // Где
 			_lp = command.info.type === "private" && ctx.chat.type === "private",
 			_lc = command.info.type === "channel" && ctx.chat.type === "channel",
 			_la = command.info.type === "all" || !command.info.type,
 			// Если команда для всех
 			_pall = command.info.perm === 0,
 			// Если команда для админов, и отправитель админ
-			_padmin =
-				command.info.perm === 1 &&
-				(await isAdmin(ctx, ctx.message.from.id, user)),
+			_padmin = command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id, user)),
 			// Если команда хильки
-			_pxiller =
-				command.info.perm === 2 && ctx.message.from.id == $data.chatID.owner;
+			_pxiller = command.info.perm === 2 && ctx.message.from.id == $data.chatID.owner;
 
 		// Если нет ни одного разрешения, значит нельзя
 		return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
@@ -121,9 +112,7 @@ new Command(
 		hide: true,
 	},
 	(ctx, _args, data) => {
-		ctx.reply(
-			`${data.Euser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
-		);
+		ctx.reply(`${data.Euser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`);
 	}
 );
 /*========================*/
@@ -135,15 +124,13 @@ new Command(
 		type: "all",
 	},
 	async (ctx, _a, data) => {
-		if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0])
-			return ctx.reply("А команд то и нет");
+		if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0]) return ctx.reply("А команд то и нет");
 		let c = false,
 			p = false,
 			a = new Xitext();
 
 		for (const e of Object.values(public_cmds)) {
-			if ((await Command.cantUse(e, ctx, data.userRights)) || e.info.hide)
-				continue;
+			if ((await Command.cantUse(e, ctx, data.userRights)) || e.info.hide) continue;
 			if (!c) a.text(`Доступные везде команды:\n`), (c = true);
 			a.text(`  /${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
@@ -231,20 +218,9 @@ new EventListener("modules.load", 0, (_, next) => {
 	public_cmds.forEach((cmd) => {
 		let m = { command: cmd.info.name, description: cmd.info.description };
 		if (!cmd.info.hide) {
-			if (
-				(cmd.info.type == "group" || cmd.info.type == "all") &&
-				cmd.info.perm == 0
-			)
-				groupCommands.push(m);
-			if (
-				(cmd.info.type == "group" || cmd.info.type == "all") &&
-				cmd.info.perm == 1
-			)
-				groupAdminCommands.push(m);
-			if (
-				(cmd.info.type == "private" || cmd.info.type == "all") &&
-				cmd.info.perm == 0
-			)
+			if ((cmd.info.type == "group" || cmd.info.type == "all") && cmd.info.perm == 0) groupCommands.push(m);
+			if ((cmd.info.type == "group" || cmd.info.type == "all") && cmd.info.perm == 1) groupAdminCommands.push(m);
+			if ((cmd.info.type == "private" || cmd.info.type == "all") && cmd.info.perm == 0)
 				privateCommands.push(m), botAdminCommands.push(m);
 			if (cmd.info.perm == 2) botAdminCommands.push(m);
 		}
@@ -298,21 +274,10 @@ new EventListener("text", 9, async (ctx, next, data) => {
 			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
 	const name = util.getFullName(data.Euser, ctx.from);
 	const xt = new Xitext()._.group(name)
-		.url(
-			null,
-			ctx.from.id !== $data.chatID.owner
-				? d.userLink(ctx.from.id)
-				: `https://t.me/${ctx.from.username}`
-		)
+		.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
 		.bold()
 		._.group()
 		.text(` ${text}`);
 
-	safeRun(
-		V[ctx.chat.type],
-		() => command.callback(ctx, args, data, command),
-		xt,
-		xt,
-		ctx.chat.id !== $data.chatID.log
-	);
+	safeRun(V[ctx.chat.type], () => command.callback(ctx, args, data, command), xt, xt, ctx.chat.id !== $data.chatID.log);
 });
