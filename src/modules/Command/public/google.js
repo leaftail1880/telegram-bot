@@ -1,6 +1,11 @@
 import { Command } from "../../../lib/Class/Command.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 
+/**
+ *
+ * @param {string} search
+ * @returns
+ */
 function getLink(search) {
 	const p = new URLSearchParams();
 	p.append("q", search);
@@ -12,14 +17,13 @@ new Command(
 		name: "google",
 		description: "Гуглит",
 		type: "all",
-		hide: true,
 	},
-	(ctx, args) => {
+	(ctx) => {
 		/**
 		 * @type {{text?: string; caption?: string; message_id?: number}}
 		 */
-		const msg = ctx.message.reply_to_message;
-		const text = msg.text ?? args.join(" ");
+		const msg = ctx?.message?.reply_to_message;
+		const text = msg?.text ?? ctx.message.text.substring("/google ".length);
 		if (!text)
 			return ctx.reply("И что я по твоему загуглить должен?", {
 				reply_to_message_id: ctx.message.message_id,
@@ -28,8 +32,7 @@ new Command(
 		const x = new Xitext().url("Поиск в google", getLink(text));
 		ctx.reply(
 			...x._.build({
-				reply_to_message_id:
-					ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
+				reply_to_message_id: ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
 				allow_sending_without_reply: true,
 				disable_web_page_preview: false,
 			})

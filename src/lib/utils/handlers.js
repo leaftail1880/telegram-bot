@@ -2,7 +2,10 @@ import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { data, SERVISE } from "../SERVISE.js";
 
-const OnErrorActions = {
+/**
+ * @type {import("./typess.js").IOnErrorActions}
+ */
+const onError = {
 	cache: {
 		lastTime: Date.now(),
 		type: "none",
@@ -10,13 +13,10 @@ const OnErrorActions = {
 	},
 	codes: {
 		ECONNRESET: () => {
-			if (
-				Date.now() - OnErrorActions.cache.lastTime <= OnErrorActions.cache.cooldown * 10 &&
-				OnErrorActions.cache.type === "ECONNRESET"
-			)
+			if (Date.now() - onError.cache.lastTime <= onError.cache.cooldown * 10 && onError.cache.type === "ECONNRESET")
 				return;
-			OnErrorActions.cache.type = "ECONNRESET";
-			OnErrorActions.cache.lastTime = Date.now();
+			onError.cache.type = "ECONNRESET";
+			onError.cache.lastTime = Date.now();
 			console.log("Нет подключения к интернету");
 		},
 		ERR_MODULE_NOT_FOUND: (err) => {
@@ -34,24 +34,26 @@ const OnErrorActions = {
 			SERVISE.error(err);
 		},
 		429: (err) => {
-			if (
-				Date.now() - OnErrorActions.cache.lastTime <= OnErrorActions.cache.cooldown &&
-				OnErrorActions.cache.type === err.stack
-			)
-				return;
-			OnErrorActions.cache.type = err.stack;
-			OnErrorActions.cache.lastTime = Date.now();
+			if (Date.now() - onError.cache.lastTime <= onError.cache.cooldown && onError.cache.type === err.stack) return;
+			onError.cache.type = err.stack;
+			onError.cache.lastTime = Date.now();
 			console.warn(err.stack);
 		},
 		413: (err) => {
 			console.warn(err);
 		},
 	},
+	types: {},
 };
 
+/**
+ * @param {import("./typess.js").IhandledError} err
+ */
 export async function handleError(err) {
-	if (OnErrorActions.codes[err?.response?.error_code]) {
-		OnErrorActions.codes[err?.response?.error_code](err);
+	const code_action = onError.codes[err?.response?.error_code];
+	const type_action = onError;
+	if (code_action) {
+		code_action(err);
 	} else SERVISE.error(err);
 
 	data.errorLog[err?.name] = data.errorLog[err?.name] ?? [];
@@ -69,7 +71,7 @@ export async function handleDB(err) {
 		return;
 	}
 	if (err.code == "ENOTFOUND") {
-		return OnErrorActions.codes.ECONNRESET();
+		return onError.codes.ECONNRESET();
 	}
 	if (err.message == "Socket closed unexpectedly") {
 		await database.client.connect();
