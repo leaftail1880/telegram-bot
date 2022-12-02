@@ -7,7 +7,7 @@ import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
 import { bot, env } from "./launch/tg.js";
-import { updateSession, updateVisualVersion } from "./launch/update.js";
+import { updateInfo } from "./launch/update.js";
 
 export const data = {
 	v: config.version.join("."),
@@ -38,11 +38,12 @@ export const data = {
 	updateTimer: null,
 };
 
+import { freeze, UpdateCheckTimer } from "./launch/between.js";
+import { handleDB, handleError } from "./launch/handlers.js";
 import { start_stop_lang as lang } from "./launch/lang.js";
-import { handleDB, handleError } from "./utils/handlers.js";
-import { UpdateCheckTimer } from "./between.js";
 
 export const SERVISE = {
+	freeze,
 	start,
 	stop,
 	error,
@@ -88,9 +89,7 @@ async function start() {
 	await database._.connect(client, time);
 
 	// Обновляет сессию
-	await updateSession(data);
-
-	await updateVisualVersion(data);
+	await updateInfo(data);
 
 	bot.catch(handlers.bot);
 
@@ -150,7 +149,7 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 
 /**
  *
- * @param {{name?: string, message: string, stack: string, on?: object}} error
+ * @param {import("./launch/typess.js").IhandledError} error
  */
 async function error(error) {
 	try {

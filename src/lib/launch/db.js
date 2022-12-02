@@ -1,6 +1,17 @@
 import config from "../../config.js";
 
 /**
+ * @template Func, [This = any]
+ * @param {Func} func
+ * @param {This} context
+ * @returns {Func}
+ */
+function BIND(func, context) {
+	if (typeof func !== "function") return func;
+	return func.bind(context);
+}
+
+/**
  * @typedef {import("redis").RedisClientType} cli
  */
 
@@ -18,14 +29,8 @@ export class RedisDatabase {
 	 */
 	#closedcli = "closed";
 	_ = {
-		/**
-		 * @type {() => Promise<void>}
-		 */
-		close: this.#close.bind(this),
-		/**
-		 * @type {(client: object, ms: number) => Promise<void>}
-		 */
-		connect: this.#connect.bind(this),
+		close: BIND(this.#close, this),
+		connect: BIND(this.#connect, this),
 		time: performance.now(),
 	};
 	cache = new CachedDB(this);
@@ -39,8 +44,8 @@ export class RedisDatabase {
 		if (this.#cli === "closed") throw new Error("DBClient closed");
 		return this.#cli;
 	}
-	async #close() {
-		await this.client.quit();
+	async #close(noquit = false) {
+		if (noquit) await this.client.quit();
 		[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
 	}
 	async #connect(c, ms = Date.now()) {
@@ -92,12 +97,7 @@ export class RedisDatabase {
 	 */
 	async set(key, value, stringify = false, lifetime) {
 		this.cache.set(key, value);
-		const v$ =
-			typeof value === "string"
-				? value
-				: stringify
-				? JSON.stringify(value)
-				: value;
+		const v$ = typeof value === "string" ? value : stringify ? JSON.stringify(value) : value;
 
 		await this.client.set(key, v$);
 		if (typeof lifetime === "number") this.client.expire(key, lifetime);
