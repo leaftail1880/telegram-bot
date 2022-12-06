@@ -40,21 +40,27 @@ export class RedisDatabase {
 		this.log.write("create");
 	}
 	get closed() {
-	  return this.#cli==="closed"
+		return this.#cli === "closed" || !this.#cli.isOpen;
 	}
 	get client() {
 		this._.time = performance.now();
-		if (this.closed) throw new Error("DBClient closed");
-		return this.#cli;
+		if (this.#cli !== "closed" && this.#cli.isOpen) return this.#cli;
+		if (this.closed) throw new Error("Custom Redis Client closed/not opened");
 	}
-	async #close(noquit = false) {
-		if (noquit) await this.client.quit();
+	async #close(quit = false) {
+		if (quit) await this.client.quit();
 		[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
 	}
+	/**
+	 *
+	 * @param {*} c
+	 * @param {*} ms
+	 */
 	async #connect(c, ms = Date.now()) {
 		if (c) {
 			await c.connect();
 			this.#cli = c;
+			this.#closedcli = "closed";
 		} else if (this.#closedcli !== "closed") {
 			[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
 		}

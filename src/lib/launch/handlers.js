@@ -12,12 +12,12 @@ function noConnection() {
 	connectionLog.lastErrorTime = Date.now();
 	console.log("Нет подключения к интернету");
 	bot.stop("NOCONNECTION");
-	data.stopped = true
+	data.stopped = true;
 	database._.close(true);
 	setTimeout(async () => {
 		bot.launch();
 		database._.connect(null, Date.now());
-		data.stopped = false
+		data.stopped = false;
 	}, connectionLog.waitTime);
 }
 
@@ -92,7 +92,8 @@ export async function handleDB(err) {
 		return noConnection();
 	}
 	if (err.message === "Socket closed unexpectedly") {
-		await database.client.connect();
+		await database._.connect();
+
 		return;
 	}
 	SERVISE.error({
