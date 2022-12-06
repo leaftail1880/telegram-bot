@@ -5,17 +5,19 @@ import { bot } from "./tg.js";
 const connectionLog = {
 	lastErrorTime: Date.now(),
 	cooldown: 1000,
-	waitTime: 10000,
+	waitTime: 5000,
 };
 function noConnection() {
 	if (Date.now() - connectionLog.lastErrorTime <= connectionLog.cooldown * 10) return;
 	connectionLog.lastErrorTime = Date.now();
 	console.log("Нет подключения к интернету");
 	bot.stop("NOCONNECTION");
+	data.stopped = true
 	database._.close(true);
 	setTimeout(async () => {
 		bot.launch();
 		database._.connect(null, Date.now());
+		data.stopped = false
 	}, connectionLog.waitTime);
 }
 

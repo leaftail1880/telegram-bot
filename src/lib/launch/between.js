@@ -20,7 +20,7 @@ export const UpdateCheckTimer = {
 };
 
 async function updateCheckInterval() {
-	if (!database.client) return;
+	if (database.closed) return;
 	const query = await database.get(config.dbkey.request, true);
 
 	if (!query?.map) return;

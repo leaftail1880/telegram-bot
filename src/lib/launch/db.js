@@ -39,9 +39,12 @@ export class RedisDatabase {
 	constructor() {
 		this.log.write("create");
 	}
+	get closed() {
+	  return this.#cli==="closed"
+	}
 	get client() {
 		this._.time = performance.now();
-		if (this.#cli === "closed") throw new Error("DBClient closed");
+		if (this.closed) throw new Error("DBClient closed");
 		return this.#cli;
 	}
 	async #close(noquit = false) {
