@@ -1,9 +1,7 @@
+import { XTimer } from "../Class/XTimer.js";
+
 export type IOnErrorActions = {
-	cache: {
-		lastTime: number;
-		type: string;
-		cooldown: number;
-	};
+	timer: XTimer
 	codes: Record<string | number, (err?: IhandledError) => void>;
 	types: Record<string, (err: IhandledError) => void>;
 };

@@ -39,15 +39,15 @@ export class RedisDatabase {
 	constructor() {
 		this.log.write("create");
 	}
-	get closed() {
+	get isClosed() {
 		return this.#cli === "closed" || !this.#cli.isOpen;
 	}
 	get client() {
 		this._.time = performance.now();
 		if (this.#cli !== "closed" && this.#cli.isOpen) return this.#cli;
-		if (this.closed) throw new Error("Custom Redis Client closed/not opened");
+		if (this.isClosed) throw new Error("Custom Redis Client closed/not opened");
 	}
-	async #close(quit = false) {
+	async #close(quit = true) {
 		if (quit) await this.client.quit();
 		[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
 	}

@@ -20,7 +20,7 @@ export const UpdateCheckTimer = {
 };
 
 async function updateCheckInterval() {
-	if (database.closed) return;
+	if (database.isClosed) return;
 	const query = await database.get(config.dbkey.request, true);
 
 	if (!query?.map) return;
@@ -44,12 +44,14 @@ async function updateCheckInterval() {
 }
 
 export async function freeze() {
+	if (data.isFreezed) return;
+	data.isFreezed = true;
 	UpdateCheckTimer.close();
-	if (data.launched)
+	if (data.isLaunched)
 		await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()), console.log(lang.stop.freeze()[0]);
 
-	if (data.launched && !data.stopped) {
-		data.stopped = true;
+	if (data.isLaunched && !data.isStopped) {
+		data.isStopped = true;
 		bot.stop("freeze");
 	}
 
@@ -97,7 +99,7 @@ export async function freeze() {
 	 */
 	async function launch(log, chat, prefix) {
 		clearInterval(timeout);
-		if (data.stopped === false) return;
+		if (data.isStopped === false) return;
 		data.start_time = Date.now();
 
 		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и session
@@ -108,8 +110,9 @@ export async function freeze() {
 		 *========================**/
 		await bot.launch();
 
-		data.stopped = false;
-		data.launched = true;
+		data.isStopped = false;
+		data.isLaunched = true;
+		data.isFreezed = false;
 		console.log(lang.logLaunch(log));
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat, prefix));
 

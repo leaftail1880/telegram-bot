@@ -20,8 +20,9 @@ export const data = {
 	session: 0,
 	start_time: Date.now(),
 
-	launched: false,
-	stopped: false,
+	isLaunched: false,
+	isStopped: false,
+	isFreezed: false,
 
 	development: env.dev === true,
 	benchmark: true,
@@ -39,8 +40,9 @@ export const data = {
 };
 
 import { freeze, UpdateCheckTimer } from "./launch/between.js";
-import { handleDB, handleError } from "./launch/handlers.js";
+import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
 import { start_stop_lang as lang } from "./launch/lang.js";
+import { XTimer } from "./Class/XTimer.js";
 
 export const SERVISE = {
 	freeze,
@@ -57,7 +59,7 @@ export const SERVISE = {
 export const handlers = {
 	processError: handleError,
 	dbError: handleDB,
-	bot: SERVISE.error,
+	bot: handleBotError,
 };
 
 export function log(msg, extra = {}, owner = false) {
@@ -113,7 +115,7 @@ async function start() {
 	 * Запуск бота
 	 *========================**/
 	await bot.launch();
-	data.launched = true;
+	data.isLaunched = true;
 
 	lang.log.end(m);
 	UpdateCheckTimer.open();
@@ -134,10 +136,10 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	text.text(reason);
 
 	console.log(text._.text);
-	if (data.launched && sendMessage) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+	if (data.isLaunched && sendMessage) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
-	if (type !== "none" && data.launched && !data.stopped) {
-		data.stopped = true;
+	if (type !== "none" && data.isLaunched && !data.isStopped) {
+		data.isStopped = true;
 		bot.stop(reason);
 	}
 
@@ -147,34 +149,40 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	}
 }
 
+const errTimer = new XTimer(5);
+
 /**
  *
  * @param {import("./launch/typess.js").IhandledError} error
+ * @param {{sendMessage: true | "ifNotStopped"}} [options]
  */
-async function error(error) {
-	try {
-		console.warn(" ");
-		console.warn(error);
-		console.warn(" ");
+async function error(error, options = { sendMessage: "ifNotStopped" }) {
+	if (errTimer.isExpired())
+		try {
+			const [type, message, stack, extra] = util.errParse(error, true);
 
-		const [type, message, stack, extra] = util.errParse(error, true);
+			if (!data.isLaunched || (options.sendMessage === "ifNotStopped" && data.isStopped === true)) return;
 
-		const text = new Xitext().url(type, "https://t.me")._.group(message).bold()._.group().text(` ${stack}`);
+			console.warn(" ");
+			console.warn(type);
+			console.warn(message);
+			console.warn(" " + stack);
+			console.warn(" ");
 
-		if (!data.launched) return;
+			const text = new Xitext().url(type, "https://t.me")._.group(message).bold()._.group().text(` ${stack}`);
 
-		await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+			await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
-		if (extra) {
-			await util.sendSeparatedMessage(
-				extra,
-				async (a) =>
-					await bot.telegram.sendMessage(data.chatID.log, a, {
-						disable_web_page_preview: true,
-					})
-			);
+			if (extra) {
+				await util.sendSeparatedMessage(
+					extra,
+					async (a) =>
+						await bot.telegram.sendMessage(data.chatID.log, a, {
+							disable_web_page_preview: true,
+						})
+				);
+			}
+		} catch (e) {
+			console.warn(e);
 		}
-	} catch (e) {
-		console.warn(e);
-	}
 }

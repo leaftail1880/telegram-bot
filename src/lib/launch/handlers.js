@@ -1,37 +1,51 @@
 import { database } from "../../index.js";
+import { XTimer } from "../Class/XTimer.js";
 import { data, SERVISE } from "../SERVISE.js";
 import { bot } from "./tg.js";
 
 const connectionLog = {
-	lastErrorTime: Date.now(),
-	cooldown: 1000,
-	waitTime: 5000,
+	ErrorCooldown: 5,
+	ReconnectTimerWaitTime: 5,
+	async timer() {
+		try {
+			await database._.connect(null, Date.now());
+			await new Promise((r) => setTimeout(r, 100));
+			await bot.launch();
+			console.log("Подключение восстановлено");
+			data.isStopped = false;
+		} catch (e) {}
+	},
+	openReconnectTimer() {
+		setTimeout(connectionLog.timer, connectionLog.ReconnectTimerWaitTime * 1000);
+	},
 };
-function noConnection() {
-	if (Date.now() - connectionLog.lastErrorTime <= connectionLog.cooldown * 10) return;
-	connectionLog.lastErrorTime = Date.now();
-	console.log("Нет подключения к интернету");
-	bot.stop("NOCONNECTION");
-	data.stopped = true;
-	database._.close(true);
-	setTimeout(async () => {
-		bot.launch();
-		database._.connect(null, Date.now());
-		data.stopped = false;
-	}, connectionLog.waitTime);
+
+const connectionTimer = new XTimer(connectionLog.ErrorCooldown);
+/**
+ *
+ * @param {string} [type]
+ * @returns
+ */
+function noConnection(type) {
+	if (data.isLaunched && !data.isStopped) {
+		bot.stop("NOCONNECTION");
+		data.isStopped = true;
+	}
+	if (!database.isClosed) database._.close(false);
+
+	if (connectionTimer.isExpired()) {
+		console.log(`Нет подключения к интернету ${type ? `[${type}]` : ""}`);
+		connectionLog.openReconnectTimer();
+	}
 }
 
 /**
  * @type {import("./typess.js").IOnErrorActions}
  */
-const onError = {
-	cache: {
-		lastTime: Date.now(),
-		type: "none",
-		cooldown: 1000,
-	},
+const OnError = {
+	timer: new XTimer(5),
 	codes: {
-		ECONNRESET: noConnection,
+		ECONNRESET: () => noConnection("Err CONNECTION RESET"),
 		ERR_MODULE_NOT_FOUND: (err) => {
 			SERVISE.error(err);
 		},
@@ -47,17 +61,14 @@ const onError = {
 			SERVISE.error(err);
 		},
 		429: (err) => {
-			if (Date.now() - onError.cache.lastTime <= onError.cache.cooldown && onError.cache.type === err.stack) return;
-			onError.cache.type = err.stack;
-			onError.cache.lastTime = Date.now();
-			console.warn(err.stack);
+			if (OnError.timer.isExpired()) console.warn(err.stack);
 		},
 		413: (err) => {
-			console.warn(err);
+			SERVISE.error(err);
 		},
 	},
 	types: {
-		FetchError: noConnection,
+		FetchError: () => noConnection("Unhandled FetchError"),
 	},
 };
 
@@ -65,8 +76,8 @@ const onError = {
  * @param {import("./typess.js").IhandledError} err
  */
 export async function handleError(err) {
-	const code_action = onError.codes[err?.response?.error_code];
-	const type_action = onError.types[err?.name];
+	const code_action = OnError.codes[err?.response?.error_code];
+	const type_action = OnError.types[err?.name];
 
 	if (type_action) {
 		type_action(err);
@@ -88,17 +99,24 @@ export async function handleDB(err) {
 		await SERVISE.stop("Put your ip addres to db allowlist", "ALL");
 		return;
 	}
-	if (err.code === "ENOTFOUND") {
-		return noConnection();
-	}
 	if (err.message === "Socket closed unexpectedly") {
 		await database._.connect();
-
 		return;
 	}
-	SERVISE.error({
-		name: "◔ " + err.name,
-		message: err.message,
-		stack: err.stack,
-	});
+	noConnection();
+	// SERVISE.error({
+	// 	name: "◔ " + err.name,
+	// 	message: err.message,
+	// 	stack: err.stack,
+	// });
+}
+
+/**
+ *
+ * @param {Error & {code: string; stack: string}} err
+ * @returns
+ */
+export async function handleBotError(err) {
+	if (err && err.name === "FetchError") noConnection("Telegraf");
+	else SERVISE.error(err);
 }
