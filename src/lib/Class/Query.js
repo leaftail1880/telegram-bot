@@ -6,6 +6,7 @@ import { EventListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
+import { XTimer } from "./XTimer.js";
 
 /**
  * @type {Object<string, Query>}
@@ -36,12 +37,10 @@ export class Query {
 	}
 }
 
-const activeQueries = {};
-
 /**
  *
  * @param {string} data
- * @returns {{parser: string; args: string[]}}
+ * @returns {{Qname: string; args: string[]}}
  */
 function parseQueryData(data) {
 	const unparsed = data.split(d.separator.linkToData);
@@ -52,55 +51,41 @@ function parseQueryData(data) {
 				.split(d.separator.data)
 				.map((e) => e.replace(escaper, d.separator.link))
 		: [];
-	return { parser: unparsed[0], args };
+	return { Qname: unparsed[0], args };
 }
+
+const Qtimer = new XTimer(0.5, true);
 
 function loadQuerys() {
 	bot.on("callback_query", async (ctx, next) => {
 		const data = ctx.callbackQuery.data;
-		if (activeQueries[data] && Date.now() - activeQueries[data] <= 500) {
-			activeQueries[data] = Date.now();
-			return;
-		}
+		if (!Qtimer.isExpired(data)) return;
 
-		const { parser, args } = parseQueryData(data);
-		const q = ques[parser];
+		const { Qname, args } = parseQueryData(data);
+		const q = ques[Qname];
 		if (!q) {
-			ctx.answerCbQuery(
-				"Ошибка 400!\nОбработчик кнопки не найден. Возможно, вы нажали на старую кнопку.",
-				{
-					show_alert: true,
-				}
-			);
+			ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
+				show_alert: true,
+			});
 			log("Cannot find parser for " + data);
 			return next();
 		}
 
-		activeQueries[data] = Date.now();
 		const name = util.getFullName(
-			database.cache.tryget(d.user(ctx.callbackQuery.from.id), 2 * 32),
+			database.cache.tryget(d.user(ctx.callbackQuery.from.id), 2 ** 32),
 			ctx.callbackQuery.from
 		);
 
 		const xt = new Xitext()._.group(name)
 			.bold()
-			.url(
-				null,
-				ctx.from.id !== $data.chatID.owner
-					? d.userLink(ctx.from.id)
-					: `https://t.me/${ctx.from.username}`
-			)
+			.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
 			._.group()
 			.text(": ")
-			.bold(parser);
+			.bold(Qname);
 
-		args.forEach((e) => xt.text("  ").mono(e));
+		args.forEach((e) => xt.text("\n  ").mono(e));
 
-		function run() {
-			q.callback(ctx, args, (text, extra) =>
-				editMsg(ctx, ctx.callbackQuery.message, text, extra)
-			);
-		}
+		const run = () => q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra));
 
 		safeRun("Q", run, xt, xt);
 		if (q.info.msg) ctx.answerCbQuery(q.info.msg);

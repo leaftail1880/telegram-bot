@@ -21,9 +21,10 @@ export const UpdateCheckTimer = {
 
 async function updateCheckInterval() {
 	if (database.isClosed) return;
-	const query = await database.get(config.dbkey.request, true);
 
-	if (!query?.map) return;
+	const query = await database.get(config.dbkey.request, true);
+	if (!Array.isArray(query)) return;
+
 	/**
 	 * @type {typeof data.type}
 	 */
@@ -33,6 +34,7 @@ async function updateCheckInterval() {
 		return database.set(config.dbkey.request, message);
 	}
 
+	console.warn(data.development);
 	if (data.development) return await answer(SERVISE.message.development);
 
 	if (q === "realese") return await answer(SERVISE.message.terminate_you);
@@ -61,8 +63,9 @@ export async function freeze() {
 
 	await updateRequest();
 
-	let times = 0,
-		devTimes = 0;
+	let times = 0;
+	let devTimes = 0;
+
 	const timeout = setInterval(async () => {
 		const answer = await database.get(config.dbkey.request);
 		if (answer === SERVISE.message.terminate_you) {
@@ -71,12 +74,12 @@ export async function freeze() {
 		}
 
 		if (answer === SERVISE.message.terminate_me) {
-			await launch("As newest", "Запущена как новая");
+			await launch("Запущена как новая", "NEW");
 			return;
 		}
 		if (answer === SERVISE.message.development) {
-			log("Entering develompend pending mode...");
-			console.log(`(${devTimes === 0 ? times : devTimes}) Waiting for end of dev...`);
+			if (devTimes === 0) log("Вход в режим ожидания...");
+			console.log(`(${devTimes === 0 ? times : devTimes}) Ожидание конца разработки...`);
 			devTimes++;
 			times = 0;
 			await updateRequest();
@@ -84,20 +87,19 @@ export async function freeze() {
 		}
 
 		times++;
-		console.log("No response", times);
+		console.log("Нет ответа", times);
 		if (times >= 1) {
-			await launch("No response", "Нет ответа", "↩️");
+			await launch("Не получила ответа", "↩️");
 			return;
 		}
 	}, config.update.timerTime);
 
 	/**
 	 *
-	 * @param {string} log
-	 * @param {string} chat
+	 * @param {string} info
 	 * @param {string} [prefix]
 	 */
-	async function launch(log, chat, prefix) {
+	async function launch(info, prefix) {
 		clearInterval(timeout);
 		if (data.isStopped === false) return;
 		data.start_time = Date.now();
@@ -113,8 +115,8 @@ export async function freeze() {
 		data.isStopped = false;
 		data.isLaunched = true;
 		data.isFreezed = false;
-		console.log(lang.logLaunch(log));
-		bot.telegram.sendMessage(data.chatID.log, ...lang.start(chat, prefix));
+		console.log(lang.logLaunch(info));
+		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
 
 		UpdateCheckTimer.open();
 		database.delete(config.dbkey.request);

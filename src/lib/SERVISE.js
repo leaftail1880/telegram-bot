@@ -24,7 +24,7 @@ export const data = {
 	isStopped: false,
 	isFreezed: false,
 
-	development: env.dev === true,
+	development: env.dev == "true",
 	benchmark: true,
 	private: true,
 

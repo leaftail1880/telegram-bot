@@ -1,18 +1,41 @@
+/**
+ * @template [MODE=false]
+ */
 export class XTimer {
 	/**
+	 * Cooldown time in ms
 	 * @type {number}
 	 */
 	cooldown;
 	/**
-	 * @type {number}
+	 * Last call time
+	 * @type {number | Record<string, number>}
 	 */
 	lastUse;
-	constructor(cooldown = 1) {
+	/**
+	 * Creates a new timer manager
+	 * @param {number} cooldown Time in seconds
+	 * @param {MODE extends boolean ? MODE : never} [linkMode]
+	 */
+	constructor(cooldown = 1, linkMode) {
 		this.cooldown = cooldown * 1000;
-		this.lastUse = Date.now();
+		this.lastUse = linkMode ? Date.now() : {};
 	}
-	isExpired(time = Date.now(), lastUse = this.lastUse) {
-		if (time - lastUse <= this.cooldown) return false;
+	/**
+	 * Checks if timer was expired
+	 * @param {MODE extends true ? string : never} [key]
+	 * @returns
+	 */
+	isExpired(key) {
+		let time;
+		if (
+			(typeof key === "string" || typeof key === "number" || typeof key === "symbol") &&
+			typeof this.lastUse === "object"
+		) {
+			time = this.lastUse[key];
+		} else if (typeof this.lastUse === "number") time = this.lastUse;
+
+		if (Date.now() - time <= this.cooldown) return false;
 		this.lastUse = Date.now();
 		return true;
 	}

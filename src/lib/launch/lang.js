@@ -17,12 +17,12 @@ export const start_stop_lang = {
 	},
 
 	log: {
-		start: () => console.log(`v${config.version.join(".")}`),
+		start: () => console.log(`${data.development ? "DEV " : ""}v${config.version.join(".")}`),
 		end: (modules) =>
 			console.log(
-				`${((Date.now() - data.start_time) / 1000).toFixed(2)} sec, Session: ${
-					data.session
-				}, Modules:${modules.map((e) => `\n [+] ${e}`).join("")}`
+				`${((Date.now() - data.start_time) / 1000).toFixed(2)} sec, Session: ${data.session}, Modules:${modules
+					.map((e) => `\n [+] ${e}`)
+					.join("")}`
 			),
 	},
 

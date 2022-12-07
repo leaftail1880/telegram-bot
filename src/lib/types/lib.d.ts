@@ -120,3 +120,5 @@ namespace QueryTypes {
 }
 
 type SessionData = typeof import("../SERVISE.js").data;
+
+type EXTENDS<EX, Value extends EX> = Value

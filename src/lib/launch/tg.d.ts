@@ -2,7 +2,7 @@ export const env: {
 	TOKEN?: string;
 	REDIS_URL?: string;
 	whereImRunning?: string;
-	dev?: boolean;
+	dev?: string | boolean;
 	ownerID?: string;
 	logID?: string;
 };
