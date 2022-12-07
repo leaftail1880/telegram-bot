@@ -1,10 +1,11 @@
-import { EventListener } from "../../../lib/Class/Events.js";
+import { InternalListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
-import { util } from "../../../lib/Class/Utils.js";
+import { bot } from "../../../lib/launch/tg.js";
+import { log } from "../../../lib/SERVISE.js";
 import { err } from "../../../lib/utils/err.js";
 import { cacheEmpty, lang, not } from "../index.js";
-import { getOCS, noCache, saveOC } from "../utils.js";
+import { getNameFromCache, getUserOCs, noCache, saveOC } from "../utils.js";
 
 new Query(
 	{
@@ -21,54 +22,52 @@ new Query(
 /*---------------------------------------------------
 //                  1 этап, фото
 ----------------------------------------------------*/
-new EventListener("document", 0, async (ctx, next, ow) => {
+InternalListener("document", 0, async (ctx, next, ow) => {
 	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.Euser), 10)) return next();
 	// @ts-ignore
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
-	console.log(
-		`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] redacted reference`
-	);
-}),
-	ssn.OC.next(10, async (ctx, user) => {
-		const OCS = await getOCS(),
-			uOC = OCS[ctx.from.id];
-		if (noCache(user, uOC)) return err(421, ctx);
+	log(`> OC. ${getNameFromCache(ctx.from)} изменил(а) реф`);
+});
 
-		const oc = uOC[user.cache.sessionCache[0]];
-		ssn.OC.enter(ctx.from.id, 11, oc.fileid);
-		ctx.reply(lang.edit.name());
-		console.log(
-			`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] skipped reference`
-		);
-	});
+ssn.OC.next(10, async (ctx, user) => {
+	const uOC = await getUserOCs(ctx.from.id);
+	if (noCache(user, uOC)) return err(421, ctx);
+
+	const oc = uOC[user.cache.sessionCache[0]];
+	ssn.OC.enter(ctx.from.id, 11, oc.fileid);
+	ctx.reply(lang.edit.name());
+	log(`> OC. ${getNameFromCache(ctx.from)} оставил(а) прежний реф`);
+});
 /*---------------------------------------------------
 
 
 ---------------------------------------------------
 //                  2 этап, имя
 ----------------------------------------------------*/
-new EventListener("text", 0, async (ctx, next, ow) => {
+InternalListener("text", 0, async (ctx, next, ow) => {
 	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
 	if (not(ctx, qq, 11)) return next();
 	if (cacheEmpty(qq)) return err(421, ctx);
 
-	if (ctx.message.text.length > 32)
-		return ctx.reply(...lang.maxLength("Имя", 32));
+	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
 	ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
 	ctx.reply(lang.edit.description());
-	console.log(`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] redacted name`);
+	log(`> OC. ${getNameFromCache(ctx.from)} изменил(а) имя`);
 });
 
 ssn.OC.next(11, async (ctx, user) => {
-	const OCS = await getOCS(),
-		uOC = OCS[ctx.from.id];
+	const uOC = await getUserOCs(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
+
 	const oc = uOC[user?.cache?.sessionCache[0]];
 	ssn.OC.enter(ctx.from.id, 12, oc.name);
 	ctx.reply(lang.edit.description());
-	console.log(`> OC. [${util.getName(ctx.from) ?? ctx.from.id}] skipped name`);
+	log(`> OC. ${getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
+});
+bot.on("text", (ctx) => {
+	err(1, ctx);
 });
 /*---------------------------------------------------
 
@@ -76,12 +75,11 @@ ssn.OC.next(11, async (ctx, user) => {
 ---------------------------------------------------
 //                  3 этап, описание
 ----------------------------------------------------*/
-new EventListener("text", 0, async (ctx, next, ow) => {
+InternalListener("text", 0, async (ctx, next, ow) => {
 	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
 	if (not(ctx, qq, 12)) return next();
 	if (cacheEmpty(qq, 1)) return err(421, ctx);
-	if (ctx.message.text.length > 4000)
-		return ctx.reply(...lang.maxLength("Описание", 4000));
+	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(
 		ctx.from.id,
@@ -100,11 +98,10 @@ new EventListener("text", 0, async (ctx, next, ow) => {
 });
 
 ssn.OC.next(12, async (ctx, user) => {
-	const OCS = await getOCS(),
-		uOC = OCS[ctx.from.id];
-	if (noCache(user, uOC)) return err(422, ctx);
+	const uOC = await getUserOCs(ctx.from.id);
+	if (noCache(user, uOC)) return err(421, ctx);
 
-	const oc = uOC[user.cache.sessionCache[0]];
+	const oc = uOC[user?.cache?.sessionCache[0]];
 
 	saveOC(
 		ctx.from.id,

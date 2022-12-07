@@ -1,4 +1,4 @@
-import { EventListener } from "../../lib/Class/Events.js";
+import { InternalListener } from "../../lib/Class/Events.js";
 import { Subscriptions } from "../../lib/Class/Subscriptions.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
 import { bot } from "../../lib/launch/tg.js";
@@ -10,17 +10,13 @@ const Updates = [
 	"Мелкие улучшения и ускорения",
 ];
 
-new EventListener("new.release", 1, async (_c, next, _d, extra) => {
+InternalListener("new.release", 1, async (_c, next, _d, extra) => {
 	const users = await Subscriptions.list("botUpdates");
 
 	console.log(users);
 
 	/** @type {Xitext | [string, any]} */
-	let text = new Xitext()._.group(data.v)
-		.bold()
-		.url(null, "https://t.me/xiller228")
-		._.group()
-		.text("\n");
+	let text = new Xitext()._.group(data.v).bold().url(null, "https://t.me/xiller228")._.group().text("\n");
 
 	for (const line of Updates) text.bold("\n - ").text(line);
 

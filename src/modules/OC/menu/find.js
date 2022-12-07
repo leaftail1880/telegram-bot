@@ -3,7 +3,7 @@ import { Query } from "../../../lib/Class/Query.js";
 import { d, util } from "../../../lib/Class/Utils.js";
 import { Button } from "../../../lib/Class/Xitext.js";
 import { editMsg, lang, link, m } from "../index.js";
-import { getOCS, noOC } from "../utils.js";
+import { noOC } from "../utils.js";
 
 new Query(
 	{
@@ -12,9 +12,8 @@ new Query(
 		message: "Поиск",
 	},
 	async (ctx, data) => {
-		editMsg(ctx, "Загрузка...");
-		const OCS = await getOCS(),
-			keys = Object.keys(OCS);
+		// editMsg(ctx, "Загрузка...");
+		const keys = (await database.keys("*")).filter((e) => e.startsWith("oc::"));
 		if (!keys[0]) {
 			editMsg(ctx, lang.main._.text, {
 				entities: lang.main._.entities,
@@ -25,31 +24,26 @@ new Query(
 			});
 			return noOC(ctx);
 		}
-		let btns = [],
-			page = Number(data[0]) > 0 ? Number(data[0]) : 1;
+		let btns = [];
+		let page = Number(data[0]) > 0 ? Number(data[0]) : 1;
+
 		for (const e of keys.sort()) {
 			try {
+				const id = e.split("::")[1];
 				/**
 				 * @type {DB.User}
 				 */
-				const user = await database.get(d.user(e), true);
+				const user = await database.cache.get(d.user(id), 1000 * 60);
 
 				const u = util.getFullName(user);
 
-				if (u)
-					btns.push([
-						new Button(util.capitalizeFirstLetter(u)).data(
-							link("uOC", page, e, util.capitalizeFirstLetter(u))
-						),
-					]);
+				if (u) {
+					const name = util.capitalizeFirstLetter(u);
+					btns.push([new Button(name).data(link("uOC", page, id, name))]);
+				}
 			} catch (e) {}
 		}
-		btns = m.generatePageSwitcher(
-			btns,
-			new Button(m.config.backButtonSymbol).data(link("back")),
-			"find",
-			page
-		);
+		btns = m.generatePageSwitcher(btns, new Button(m.config.backButtonSymbol).data(link("back")), "find", page);
 
 		editMsg(ctx, lang.find, {
 			reply_markup: { inline_keyboard: btns },

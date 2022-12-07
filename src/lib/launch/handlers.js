@@ -1,3 +1,4 @@
+import clc from "cli-color";
 import { database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import { data, SERVISE } from "../SERVISE.js";
@@ -11,7 +12,7 @@ const connectionLog = {
 			await database._.connect(null, Date.now());
 			await new Promise((r) => setTimeout(r, 100));
 			await bot.launch();
-			console.log("Подключение восстановлено");
+			console.log(clc.greenBright("Подключение восстановлено"));
 			data.isStopped = false;
 		} catch (e) {}
 	},
@@ -34,13 +35,13 @@ function noConnection(type) {
 	if (!database.isClosed) database._.close(false);
 
 	if (connectionTimer.isExpired()) {
-		console.log(`Нет подключения к интернету ${type ? `[${type}]` : ""}`);
+		console.log(clc.redBright(`Нет подключения к интернету ${type ? `[${type}]` : ""}`));
 		connectionLog.openReconnectTimer();
 	}
 }
 
 /**
- * @type {import("./typess.js").IOnErrorActions}
+ * @type {IOnErrorActions}
  */
 const OnError = {
 	timer: new XTimer(5),
@@ -68,12 +69,12 @@ const OnError = {
 		},
 	},
 	types: {
-		FetchError: () => noConnection("Unhandled FetchError"),
+		FetchError: () => noConnection(clc.red("Unhandled FetchError")),
 	},
 };
 
 /**
- * @param {import("./typess.js").IhandledError} err
+ * @param {IhandledError} err
  */
 export async function handleError(err) {
 	const code_action = OnError.codes[err?.response?.error_code];
@@ -96,7 +97,7 @@ export async function handleError(err) {
  */
 export async function handleDB(err) {
 	if (err.message === "Client IP address is not in the allowlist.") {
-		await SERVISE.stop("Put your ip addres to db allowlist", "ALL");
+		await SERVISE.stop(clc.red("Put your ip addres to db allowlist"), "ALL", false);
 		return;
 	}
 	if (err.message === "Socket closed unexpectedly") {
@@ -104,11 +105,6 @@ export async function handleDB(err) {
 		return;
 	}
 	noConnection();
-	// SERVISE.error({
-	// 	name: "◔ " + err.name,
-	// 	message: err.message,
-	// 	stack: err.stack,
-	// });
 }
 
 /**
@@ -117,6 +113,6 @@ export async function handleDB(err) {
  * @returns
  */
 export async function handleBotError(err) {
-	if (err && err.name === "FetchError") noConnection("Telegraf");
+	if (err && err.name === "FetchError") noConnection(clc.cyanBright("Telegraf"));
 	else SERVISE.error(err);
 }

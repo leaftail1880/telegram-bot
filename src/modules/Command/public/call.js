@@ -13,8 +13,7 @@ new Command(
 	async (ctx, args, data) => {
 		const g = data.Egroup;
 
-		if (!("cache" in g))
-			throw new TypeError("Pin cannot be called in non-group chats");
+		if (!("cache" in g)) throw new TypeError("Pin cannot be called in non-group chats");
 
 		/**
 		 * @type {Array<import("telegraf/types").ChatMember>}
@@ -31,26 +30,17 @@ new Command(
 					.url(null, d.guide(7))
 					._.group()
 					.text(" ")
-					.text(
-						util
-							.toSecString(sec, "осталось", "осталась", "осталось")
-							.split(" ")
-							.slice(1)
-							.join(" ")
-					);
+					.text(util.toSecString(sec, "осталось", "осталась", "осталось").split(" ").slice(1).join(" "));
 			return ctx.reply(...reply._.build());
 		}
 		if (!group.members[1]) return ctx.reply("Некого созывать!");
 		for (const e of group.members) {
 			const obj = await ctx.telegram.getChatMember(ctx.chat.id, e);
-			if (obj.status === "kicked" || obj.status === "left" || obj.user.is_bot)
-				continue;
+			if (obj.status === "kicked" || obj.status === "left" || obj.user.is_bot) continue;
 			const text = new Xitext()
 				.url(
 					(await database.get(`User::${e}`, true)).cache.nickname ??
-						`${obj.user.first_name}${
-							obj.user.last_name ? obj.user.last_name : ""
-						}` ??
+						`${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""}` ??
 						obj.user.username,
 					`https://t.me/${obj.user.username}`
 				)
@@ -63,6 +53,6 @@ new Command(
 		const mbs = all.filter((e) => e.status != "kicked" && e.status != "left");
 		if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
 		group.lastCall = Date.now();
-		await database.set(`Group::${g.static.id}`, g, true);
+		await database.set(`Group::${g.static.id}`, g);
 	}
 );

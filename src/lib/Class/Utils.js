@@ -4,8 +4,7 @@ export const util = {
 	 * @returns {string}
 	 */
 	toStr(target, space = "  ", cw = "", funcCode = false, depth = 0) {
-		if (depth > 10 || typeof target !== "object")
-			return `${rep(target)}` ?? `${target}` ?? "{}";
+		if (depth > 10 || typeof target !== "object") return `${rep(target)}` ?? `${target}` ?? "{}";
 
 		function rep(value) {
 			switch (typeof value) {
@@ -52,9 +51,7 @@ export const util = {
 								break;
 							}
 						}
-						r = `${isArrow ? "" : "function "}${name}${r.substring(0, count)})${
-							isArrow ? " => " : " "
-						}{${code}}`;
+						r = `${isArrow ? "" : "function "}${name}${r.substring(0, count)})${isArrow ? " => " : " "}{${code}}`;
 					}
 
 					value = r;
@@ -89,10 +86,7 @@ export const util = {
 		// avoid Circular structure error
 		const visited = new WeakSet();
 
-		return JSON.stringify(target, (_, value) => rep(value), space)?.replace(
-			/"/g,
-			cw
-		);
+		return JSON.stringify(target, (_, value) => rep(value), space)?.replace(/"/g, cw);
 	},
 
 	/**
@@ -205,12 +199,7 @@ export const util = {
 		].join("");
 
 		return returnArr
-			? [
-					type,
-					message,
-					stringStack,
-					err.on ? util.toStr(err.on, " ") : undefined,
-			  ]
+			? [type, message, stringStack, err.on ? util.toStr(err.on, " ") : undefined]
 			: `${type.includes(":") ? type : `${type}: `}${message}${stringStack}`;
 	},
 	/**
@@ -221,8 +210,7 @@ export const util = {
 	getName(user) {
 		let res = String(user?.first_name ?? user?.username ?? user?.id ?? "WTF");
 
-		if (user?.last_name && res.length + user.last_name.length < 10)
-			res += user.last_name;
+		if (user?.last_name && res.length + user.last_name.length < 10) res += user.last_name;
 
 		return res;
 	},
@@ -232,10 +220,7 @@ export const util = {
 	 * @param {import("telegraf/types").User | null} [user]
 	 */
 	getFullName(dbuser, user) {
-		let name =
-			dbuser?.cache?.nickname ||
-			dbuser?.static?.name ||
-			dbuser?.static?.nickname;
+		let name = dbuser?.cache?.nickname || dbuser?.static?.name || dbuser?.static?.nickname;
 
 		if (!name && user) name = util.getName(user);
 		return name;
@@ -251,7 +236,7 @@ export const util = {
 	/**
 	 *
 	 * @param {string} msg
-	 * @param {Function} method
+	 * @param {(s: string) => Promise | void} method
 	 */
 	async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
 		if (msg.length < limit) return method(msg);
@@ -274,14 +259,15 @@ const replaces = [
 	[/.*node.*/],
 ];
 
-function lowlevelStackParse(el) {
-	let e = el;
+/**
+ *
+ * @param {string} e
+ * @returns
+ */
+function lowlevelStackParse(e) {
 	for (const [r, p, count] of replaces) {
 		if (typeof e === "string")
-			e =
-				count === 0 && typeof e.replaceAll === "function"
-					? e.replaceAll(r, p ?? "")
-					: e.replace(r, p ?? "");
+			e = count === 0 && typeof e.replaceAll === "function" ? e.replaceAll(r, p ?? "") : e.replace(r, p ?? "");
 	}
 	return e;
 }
@@ -326,9 +312,7 @@ export const d = {
 	 */
 	query: (prefix, name, ...args) =>
 		`${prefix}${d.separator.link}${name}${
-			args
-				? `${d.separator.linkToData}${d.safeJoin(args, d.separator.data)}`
-				: ""
+			args ? `${d.separator.linkToData}${d.safeJoin(args, d.separator.data)}` : ""
 		}`,
 	/**
 	 *

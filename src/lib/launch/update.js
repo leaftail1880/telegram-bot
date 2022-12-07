@@ -1,6 +1,6 @@
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { EventListener, triggerEvent } from "../Class/Events.js";
+import { InternalListener, TriggerInternalListeners } from "../Class/Events.js";
 
 /**
  * @template F, S, E
@@ -21,7 +21,7 @@ export function bigger(array, array2, [first, second, equal]) {
 
 /**
  * Обновляет всё
- * @param {SessionData} data
+ * @param {ISessionData} data
  */
 export async function updateInfo(data) {
 	await updateSession(data);
@@ -30,7 +30,7 @@ export async function updateInfo(data) {
 
 /**
  * Обновляет session
- * @param {SessionData} data
+ * @param {ISessionData} data
  */
 async function updateSession(data) {
 	if (!(await database.has(config.dbkey.session))) {
@@ -44,7 +44,7 @@ async function updateSession(data) {
 
 /**
  * Обновляет data.v, data.versionMSG, data.isLatest и version
- * @param {SessionData} data
+ * @param {ISessionData} data
  */
 async function updateVisualVersion(data) {
 	// Получаем данные
@@ -61,10 +61,10 @@ async function updateVisualVersion(data) {
 	// Если версия новая
 	if (data.type === "realese" && !data.development) {
 		console.log("> New version!");
-		new EventListener("modules.load", 0, () => triggerEvent("new.release"));
+		InternalListener("modules.load", 0, () => TriggerInternalListeners("new.release", ""));
 
 		// Прописываем ее в базе данных
-		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]], true);
+		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);
 	}
 
 	// Записываем значения

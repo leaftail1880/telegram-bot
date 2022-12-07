@@ -5,7 +5,7 @@ import { bot } from "../launch/tg.js";
 import { data as $data, log } from "../SERVISE.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
-import { EventListener } from "./Events.js";
+import { InternalListener } from "./Events.js";
 import { ssn } from "./Session.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
@@ -165,7 +165,7 @@ new Command(
 			await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
 			delete user.cache.session;
 			delete user.cache.sessionCache;
-			await database.set(d.user(ctx.from.id), user, true);
+			await database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
 );
@@ -183,15 +183,15 @@ new Command(
 		 * @type {DB.User}
 		 */
 		const user = data.Euser ?? (await database.get(d.user(ctx.from.id), true));
-		if (user?.cache?.session?.split) {
-			const abst = user.cache.session.split("::"),
-				sess = ssn[abst[0]];
+		if (typeof user?.cache?.session === "string") {
+			const [_, sessionKey, stage] = user.cache.session.match(/^(\.+)::(\d+)/);
+			const sess = ssn[sessionKey];
 			if (sess) {
-				if (sess.executers[abst[1]]) {
-					sess.executers[abst[1]](ctx, user);
+				if (typeof sess.executers[stage] === "function") {
+					sess.executers[stage](ctx, user);
 				} else ctx.reply("Этот шаг не предусматривает пропуска!");
 			} else delete user.cache.session;
-			await database.set(d.user(ctx.from.id), user, true);
+			await database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
 );
@@ -203,7 +203,7 @@ const V = {
 	supergroup: "Группа",
 };
 
-new EventListener("modules.load", 0, (_, next) => {
+InternalListener("modules.load", 0, (_, next) => {
 	//  Общие команды группы
 	let groupCommands = [],
 		// Админские в группах
@@ -248,7 +248,7 @@ new EventListener("modules.load", 0, (_, next) => {
 	next();
 });
 
-new EventListener("text", 9, async (ctx, next, data) => {
+InternalListener("text", 9, async (ctx, next, data) => {
 	const text = ctx.message.text;
 
 	const command = Command.getCmd(text);

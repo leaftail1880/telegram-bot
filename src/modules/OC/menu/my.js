@@ -1,7 +1,7 @@
 import { Query } from "../../../lib/Class/Query.js";
 import { Button } from "../../../lib/Class/Xitext.js";
 import { editMsg, lang, link } from "../index.js";
-import { getOCS, noOC } from "../utils.js";
+import { getUserOCs, noOC } from "../utils.js";
 
 // Главное меню > Мои персонажи
 new Query(
@@ -10,18 +10,17 @@ new Query(
 		prefix: "OC",
 	},
 	async (ctx) => {
-		const OCS = await getOCS(),
-			q = ctx.callbackQuery;
-		if (!OCS[q.from.id]?.map) return noOC(ctx);
+		const {
+			from: { id, username },
+		} = ctx.callbackQuery;
 
-		const btns = [],
-			userOCS = OCS[q.from.id],
-			menu = [new Button("↩️").data(link("back"))];
-		for (const [i, e] of userOCS.entries()) {
-			if (e)
-				btns.push([
-					new Button(e.name).data(link("myoc", q.from.id, i, q.from.username)),
-				]);
+		const OCs = await getUserOCs(id);
+		if (OCs.length < 1) return noOC(ctx);
+
+		const btns = [];
+		const menu = [new Button("↩️").data(link("back"))];
+		for (const [i, e] of OCs.entries()) {
+			if (e) btns.push([new Button(e.name).data(link("myoc", id, i, username))]);
 		}
 		btns.push(menu);
 

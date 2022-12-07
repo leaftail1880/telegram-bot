@@ -1,4 +1,3 @@
-import { Context } from "telegraf";
 import { database } from "../../index.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
@@ -11,6 +10,9 @@ import { CreateGroup, CreateUser } from "./create.js";
  * @returns {Promise<DB.User | false>}
  */
 export async function getUser(ctx) {
+	/**
+	 * @type {DB.User}
+	 */
 	let user = await database.get(d.user(ctx.from.id), true);
 
 	if (!user) {
@@ -52,6 +54,7 @@ export async function getUser(ctx) {
 		}
 	}
 
+	if (ctx.chat.type === "private") detectUpdate(user.cache.dm, 1);
 	detectUpdate(user.static.name, util.getName(ctx.from));
 	detectUpdate(user.static.nickname, ctx.from.username);
 
@@ -126,7 +129,7 @@ export async function getGroup(ctx) {
 		update = true;
 	}
 
-	if (update) database.set(d.group(ctx.chat.id), group, true);
+	if (update) database.set(d.group(ctx.chat.id), group);
 
 	return group;
 }

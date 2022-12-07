@@ -22,7 +22,7 @@ setInterval(async () => {
 				const result = bot.telegram.unpinChatMessage(group.static.id, id);
 				result.catch((e) => SERVISE.error(e));
 				delete group.cache.pin;
-				await database.set(d.group(e), group, true);
+				await database.set(d.group(e), group);
 			}
 		}
 	});

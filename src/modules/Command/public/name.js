@@ -26,6 +26,6 @@ new Command(
 			allow_sending_without_reply: true,
 		});
 		user.cache.nickname = args.join(" ");
-		database.set("User::" + ctx.message.from.id, user, true);
+		database.set("User::" + ctx.message.from.id, user);
 	}
 );

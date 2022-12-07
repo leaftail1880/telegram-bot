@@ -1,6 +1,10 @@
 import { Context } from "telegraf";
 import { database } from "../../index.js";
-import { d } from "../../lib/Class/Utils.js";
+import { d, util } from "../../lib/Class/Utils.js";
+import { log } from "../../lib/SERVISE.js";
+
+/** @typedef {{name:string;fileid:string;description:string}} Character */
+/** @typedef {Character[]} OwnerCharacters */
 
 /**
  * @returns {Promise<Object>}
@@ -17,19 +21,34 @@ export async function getOCS() {
 
 /**
  *
+ * @param {number | string} id
+ * @returns {Promise<OwnerCharacters>}
+ */
+export async function getUserOCs(id) {
+	const dbvalue = await database.get(d.pn("oc", id), true);
+	return Array.isArray(dbvalue) ? dbvalue : [];
+}
+
+/**
+ *
+ * @param {number | string} id
+ * @param {OwnerCharacters} ocs
+ */
+export async function saveUserOCs(id, ocs) {
+	await database.set(d.pn("oc", id), ocs);
+}
+
+/**
+ *
  * @param {number} id
- * @param {userOC} oc
+ * @param {Character} oc
  * @param {number} [index]
  */
 export async function saveOC(id, oc, index) {
-	console.log(
-		`> OC. ${index ? "Redacted" : "Created new"} oc. Name: ${oc.name}`
-	);
-	const OCS = await getOCS(),
-		userOC = OCS[id] ?? [];
-	index ? (userOC[index] = oc) : userOC.push(oc);
-	OCS[id] = userOC;
-	database.set(d.pn("Module", "OC"), OCS, true);
+	log(`> OC. ${index ? "Изменен" : "Создан новый"} ОС. Имя: ${oc.name}`);
+	const OCs = await getUserOCs(id);
+	index ? (OCs[index] = oc) : OCs.push(oc);
+	saveUserOCs(id, OCs);
 }
 
 /**
@@ -38,11 +57,10 @@ export async function saveOC(id, oc, index) {
  * @param {number} index
  */
 export async function delOC(id, index) {
-	const OCS = await getOCS(),
-		userOC = OCS[id] ?? [];
-	console.log(`> OC. Deleted oc. Name: ${userOC[index]?.name}`);
-	delete userOC[index];
-	database.set(d.pn("Module", "OC"), OCS, true);
+	const OCs = await getUserOCs(id);
+	log(`> OC. Удален ОС. Имя: ${OCs[index]?.name}`);
+	delete OCs[index];
+	saveUserOCs(id, OCs);
 }
 
 /**
@@ -51,13 +69,7 @@ export async function delOC(id, index) {
  * @param {string} text
  * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
  */
-export async function sendMessagDeleteRef(
-	ctx,
-	text,
-	entities,
-	InlineKeyboard,
-	delType
-) {
+export async function sendMessagDeleteRef(ctx, text, entities, InlineKeyboard, delType) {
 	/**
 	 * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
 	 */
@@ -67,15 +79,9 @@ export async function sendMessagDeleteRef(
 	if (entities) extra.entities = entities;
 	if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
 
-	await ctx.telegram.deleteMessage(
-		ctx.callbackQuery.message.chat.id,
-		ctx.callbackQuery.message.message_id
-	);
+	await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id);
 	if (delType === "2")
-		await ctx.telegram.deleteMessage(
-			ctx.callbackQuery.message.chat.id,
-			ctx.callbackQuery.message.message_id - 1
-		);
+		await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id - 1);
 
 	await ctx.reply(text, extra);
 }
@@ -88,10 +94,7 @@ export async function sendMessagDeleteRef(
  * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
  */
 export async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
-	await ctx.telegram.deleteMessage(
-		ctx.callbackQuery.message.chat.id,
-		ctx.callbackQuery.message.message_id
-	);
+	await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id);
 	if (getRefType(fileid, text) === "1") {
 		/**
 		 * @type {import("telegraf/types").Convenience.ExtraDocument}
@@ -100,8 +103,7 @@ export async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
 			caption: text,
 			caption_entities: entities,
 		};
-		if (InlineKeyboard)
-			extra.reply_markup = { inline_keyboard: InlineKeyboard };
+		if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
 
 		await ctx.replyWithDocument(fileid, extra);
 	} else {
@@ -112,8 +114,7 @@ export async function sendRef(ctx, fileid, text, entities, InlineKeyboard) {
 			entities: entities,
 			disable_web_page_preview: true,
 		};
-		if (InlineKeyboard)
-			extra.reply_markup = { inline_keyboard: InlineKeyboard };
+		if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
 		if (fileid.length > 10) await ctx.replyWithDocument(fileid);
 		await ctx.reply(text, extra);
 	}
@@ -136,9 +137,7 @@ export function getRefType(fileid, text) {
  * @returns
  */
 export function noCache(user, uOC) {
-	return (
-		!user?.cache?.sessionCache[0] || !uOC || !uOC[user?.cache?.sessionCache[0]]
-	);
+	return !user?.cache?.sessionCache[0] || !uOC || !uOC[user?.cache?.sessionCache[0]];
 }
 
 /**
@@ -147,4 +146,13 @@ export function noCache(user, uOC) {
  */
 export function noOC(ctx) {
 	ctx.answerCbQuery("Нету ОС!", { show_alert: true });
+}
+
+/**
+ *
+ * @param {import("telegraf/types").User} user
+ * @returns
+ */
+export function getNameFromCache(user) {
+	return util.getFullName(database.cache.tryget(d.user(user.id), 2 ** 32), user);
 }

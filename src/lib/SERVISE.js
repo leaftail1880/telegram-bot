@@ -1,8 +1,9 @@
+import clc from "cli-color";
 import { createClient } from "redis";
 import config from "../config.js";
 import { database } from "../index.js";
 import "./Class/Command.js";
-import { triggerEvent } from "./Class/Events.js";
+import { TriggerInternalListeners } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
@@ -39,10 +40,10 @@ export const data = {
 	updateTimer: null,
 };
 
+import { XTimer } from "./Class/XTimer.js";
 import { freeze, UpdateCheckTimer } from "./launch/between.js";
 import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
 import { start_stop_lang as lang } from "./launch/lang.js";
-import { XTimer } from "./Class/XTimer.js";
 
 export const SERVISE = {
 	freeze,
@@ -106,10 +107,10 @@ async function start() {
 
 		await import(`../modules/${module}/index.js`).catch(SERVISE.error);
 
-		m.push(`${module} (${(performance.now() - start).toFixed(2)} ms)`);
+		m.push(`${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
 	}
 	// Инициализация команд и списков
-	triggerEvent("modules.load");
+	TriggerInternalListeners("modules.load", "");
 
 	/**======================
 	 * Запуск бота
@@ -135,7 +136,10 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 
 	text.text(reason);
 
-	console.log(text._.text);
+	text.text("\n" + data.logVersion + " ");
+	text.bold(env.whereImRunning);
+
+	console.log(clc.bgRedBright(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
 	if (data.isLaunched && sendMessage) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
 	if (type !== "none" && data.isLaunched && !data.isStopped) {
@@ -153,19 +157,18 @@ const errTimer = new XTimer(5);
 
 /**
  *
- * @param {import("./launch/typess.js").IhandledError} error
+ * @param {IhandledError} error
  * @param {{sendMessage: true | "ifNotStopped"}} [options]
  */
 async function error(error, options = { sendMessage: "ifNotStopped" }) {
+	if (!data.isLaunched || (options.sendMessage === "ifNotStopped" && data.isStopped === true)) return;
 	if (errTimer.isExpired())
 		try {
+			if (!error.stack) error.stack = Error().stack;
 			const [type, message, stack, extra] = util.errParse(error, true);
 
-			if (!data.isLaunched || (options.sendMessage === "ifNotStopped" && data.isStopped === true)) return;
-
 			console.warn(" ");
-			console.warn(type);
-			console.warn(message);
+			console.warn(clc.bgRedBright(type).trim() + " " + clc.red(message));
 			console.warn(" " + stack);
 			console.warn(" ");
 

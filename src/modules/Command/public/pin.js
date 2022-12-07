@@ -14,8 +14,7 @@ new Command(
 	async (ctx, _args, data) => {
 		const g = data.Egroup;
 
-		if (!("cache" in g))
-			throw new TypeError("Pin cannot be called in non-group chats");
+		if (!("cache" in g)) throw new TypeError("Pin cannot be called in non-group chats");
 
 		const u = data.Euser;
 		let lp = 0;
@@ -32,19 +31,11 @@ new Command(
 					.url(null, d.guide(7))
 					._.group()
 					.text(" ")
-					.text(
-						util
-							.toMinString(min, "осталось", "осталась", "осталось")
-							.split(" ")
-							.slice(1)
-							.join(" ")
-					);
+					.text(util.toMinString(min, "осталось", "осталась", "осталось").split(" ").slice(1).join(" "));
 			return ctx.reply(...reply._.build());
 		}
 		if (!ctx.message?.reply_to_message?.message_id) {
-			const text = new Xitext()
-				.bold("Отметь")
-				.text(" сообщение которое хочешь закрепить!");
+			const text = new Xitext().bold("Отметь").text(" сообщение которое хочешь закрепить!");
 			return ctx.reply(text._.text, {
 				reply_to_message_id: ctx.message.from.id,
 				allow_sending_without_reply: true,
@@ -63,6 +54,6 @@ new Command(
 		});
 		g.cache.lastPin[u.static.id] = Date.now();
 		g.cache.pin = `${ctx.message.reply_to_message.message_id}::${Date.now()}`;
-		await database.set(`Group::${g.static.id}`, g, true);
+		await database.set(`Group::${g.static.id}`, g);
 	}
 );

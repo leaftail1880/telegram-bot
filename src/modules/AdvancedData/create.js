@@ -1,4 +1,4 @@
-import { triggerEvent } from "../../lib/Class/Events.js";
+import { TriggerInternalListeners } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { log } from "../../lib/SERVISE.js";
 
@@ -12,31 +12,27 @@ const newGroups = {};
  * @returns {DB.User}
  */
 export function CreateUser(ctx) {
-  const id = ctx.from.id;
-  const name = util.getName(ctx.from);
-  const nickname = ctx.from.username;
+	const id = ctx.from.id;
+	const name = util.getName(ctx.from);
+	const nickname = ctx.from.username;
 
-  if (newUsers[id]) return newUsers[id];
+	if (newUsers[id]) return newUsers[id];
 
-  log(
-    `Новый пользователь!\n Имя: ${name}\n ID: ${id}${
-      nickname ? `\n @${nickname}` : ""
-    }`
-  );
+	log(`Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`);
 
-  triggerEvent("new.member", ctx);
+	TriggerInternalListeners("new.member", ctx);
 
-  const user = {
-    static: {
-      id: id,
-      nickname: nickname,
-      name: name,
-    },
-    cache: {},
-  };
+	const user = {
+		static: {
+			id: id,
+			nickname: nickname,
+			name: name,
+		},
+		cache: {},
+	};
 
-  newUsers[id] = user;
-  return user;
+	newUsers[id] = user;
+	return user;
 }
 
 /**
@@ -47,19 +43,19 @@ export function CreateUser(ctx) {
  * @returns {DB.Group}
  */
 export function CreateGroup(id, title, members = []) {
-  if (newGroups[id]) return newGroups[id];
-  log(`Новая группа!\n Название: ${title}\n ID: ${id}`);
-  const group = {
-    static: {
-      id: id,
-      title: title,
-    },
-    cache: {
-      members: members,
-      lastCall: Date.now(),
-      lastPin: {},
-    },
-  };
-  newGroups[id] = group;
-  return group;
+	if (newGroups[id]) return newGroups[id];
+	log(`Новая группа!\n Название: ${title}\n ID: ${id}`);
+	const group = {
+		static: {
+			id: id,
+			title: title,
+		},
+		cache: {
+			members: members,
+			lastCall: Date.now(),
+			lastPin: {},
+		},
+	};
+	newGroups[id] = group;
+	return group;
 }

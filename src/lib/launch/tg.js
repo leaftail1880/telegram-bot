@@ -1,24 +1,14 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 
-if (!process) throw new TypeError("Нет глобальной переменной process");
+if (!process) throw new TypeError("Cannot access to global process variable");
 
-if (!process.env) throw new TypeError("Нет .env");
+if (!process.env) throw new TypeError("Cannot acces to .env");
 
-if (!process.env.TOKEN || !process.env.REDIS_URL)
-  throw new TypeError("Нет токенов");
+if (!process.env.TOKEN || !process.env.REDIS_URL) throw new TypeError("No tokens found");
 
-/**
- * @typedef {Object} MEMBERS
- * @property {number} xiller
- * @property {number} dot
- * @property {number} hloya
- */
-
-/**======================
- * Инициализация процессов
- *========================**/
-export const bot = new Telegraf(process.env.TOKEN);
-// @ts-ignore
+/** @type {IEnv} */
+//@ts-expect-error We already checked this, trust me TS
 export const env = process.env;
-/*========================*/
+
+export const bot = new Telegraf(env.TOKEN);

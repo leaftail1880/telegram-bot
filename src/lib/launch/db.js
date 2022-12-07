@@ -100,13 +100,12 @@ export class RedisDatabase {
 	 * Устанавливает данные в базу данных
 	 * @param {string} key
 	 * @param {string | boolean | Object} value
-	 * @param {boolean} [stringify]
 	 * @param {number} [lifetime]
 	 * @returns
 	 */
-	async set(key, value, stringify = false, lifetime) {
+	async set(key, value, lifetime) {
 		this.cache.set(key, value);
-		const v$ = typeof value === "string" ? value : stringify ? JSON.stringify(value) : value;
+		const v$ = typeof value === "string" ? value : JSON.stringify(value);
 
 		await this.client.set(key, v$);
 		if (typeof lifetime === "number") this.client.expire(key, lifetime);
@@ -221,7 +220,7 @@ class Logger {
 		return val.map((e) => this.parse(e));
 	}
 	async save(name = performance.now()) {
-		await this.#parent.set(`Cache::log:${name}`, this.format(), true);
+		await this.#parent.set(`Cache::log:${name}`, this.format());
 	}
 }
 
@@ -263,7 +262,7 @@ class CachedDB {
 	 * @param {boolean} [alwaysReturn]
 	 * @returns
 	 */
-	#getter(key, alwaysReturn, cacheTime = config.cache.updateTime) {
+	#getter(key, alwaysReturn, cacheTime = config.update.cacheTime) {
 		if (this.#cache[key]) {
 			const c = this.#cache[key];
 			if (Date.now() - c.getDate <= cacheTime) {

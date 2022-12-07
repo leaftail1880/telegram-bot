@@ -1,19 +1,17 @@
 import config from "./config.js";
 import { database } from "./index.js";
-import { util, d } from "./lib/Class/Utils.js";
+import { d, util } from "./lib/Class/Utils.js";
 import { Xitext } from "./lib/Class/Xitext.js";
 import { data, SERVISE } from "./lib/SERVISE.js";
 
 /**
  *
- * @param {FullContext} ctx
+ * @param {TextMessageContext} ctx
  * @param {*} Dta
  */
 export function sudo(ctx, _args, Dta) {
 	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
-		func = `(async () => {${ctx.message.text
-			.replace(config.command.clearCommand, "")
-			.replace(/\n/g, " ")}})();`;
+		func = `(async () => {${ctx.message.text.replace(config.command.clearCommand, "").replace(/\n/g, " ")}})();`;
 	try {
 		new Function(a, func)(
 			a,

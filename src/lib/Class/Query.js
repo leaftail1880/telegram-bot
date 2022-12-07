@@ -2,7 +2,7 @@ import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { data as $data, log } from "../SERVISE.js";
 import { safeRun } from "../utils/safeRun.js";
-import { EventListener } from "./Events.js";
+import { InternalListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
@@ -20,7 +20,7 @@ export class Query {
 	 * @param {string} info.prefix Без ::
 	 * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
 	 * @param {number} [info.permisson]
-	 * @param {QueryTypes.Callback} callback
+	 * @param {IQueryTypes.Callback} callback
 	 */
 	constructor(info, callback) {
 		if (!info?.name) return;
@@ -58,6 +58,7 @@ const Qtimer = new XTimer(0.5, true);
 
 function loadQuerys() {
 	bot.on("callback_query", async (ctx, next) => {
+		if (!("data" in ctx.callbackQuery)) return;
 		const data = ctx.callbackQuery.data;
 		if (!Qtimer.isExpired(data)) return;
 
@@ -100,7 +101,8 @@ new Query(
 	},
 	(ctx) => {
 		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
+		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
 	}
 );
 
-new EventListener("modules.load", 0, loadQuerys);
+InternalListener("modules.load", 0, loadQuerys);
