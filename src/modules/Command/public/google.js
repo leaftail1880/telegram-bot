@@ -23,12 +23,14 @@ new Command(
 		 * @type {{text?: string; caption?: string; message_id?: number}}
 		 */
 		const msg = ctx?.message?.reply_to_message;
-		const text = msg?.text ?? ctx.message.text.substring("/google ".length);
+		const text = msg?.text ?? ctx.message.text.match(/^\/google(?:@[^\s]+)?\s(.+)/m)?.[1];
+
 		if (!text)
 			return ctx.reply("И что я по твоему загуглить должен?", {
 				reply_to_message_id: ctx.message.message_id,
 				allow_sending_without_reply: true,
 			});
+
 		const x = new Xitext().url("Поиск в google", getLink(text));
 		ctx.reply(
 			...x._.build({

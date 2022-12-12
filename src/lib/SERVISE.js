@@ -109,13 +109,16 @@ async function start() {
 
 		m.push(`${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
 	}
+
 	// Инициализация команд и списков
 	TriggerInternalListeners("modules.load", "");
 
 	/**======================
 	 * Запуск бота
 	 *========================**/
-	await bot.launch();
+	const me = await bot.telegram.getMe();
+	bot.botInfo = me;
+	bot.launch();
 	data.isLaunched = true;
 
 	lang.log.end(m);
@@ -161,7 +164,7 @@ const errTimer = new XTimer(5);
  * @param {{sendMessage: true | "ifNotStopped"}} [options]
  */
 async function error(error, options = { sendMessage: "ifNotStopped" }) {
-	if (!data.isLaunched || (options.sendMessage === "ifNotStopped" && data.isStopped === true)) return;
+	if (options.sendMessage === "ifNotStopped" && data.isStopped === true) return;
 	if (errTimer.isExpired())
 		try {
 			if (!error.stack) error.stack = Error().stack;

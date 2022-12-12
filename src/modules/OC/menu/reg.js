@@ -20,7 +20,7 @@ new Query(
 
 // 1 этап, фото
 new InternalListener("document", 0, async (ctx, next, ow) => {
-	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.Euser), 0)) return next();
+	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.user), 0)) return next();
 	ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
 	ctx.reply(lang.create.name);
 	log(`> OC. ${getNameFromCache(ctx.from)} отравил(а) реф`);
@@ -28,7 +28,7 @@ new InternalListener("document", 0, async (ctx, next, ow) => {
 
 // 2 этап, имя
 new InternalListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
+	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 1)) return next();
 	if (cacheEmpty(qq)) return err(420, ctx);
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
@@ -40,7 +40,7 @@ new InternalListener("text", 0, async (ctx, next, ow) => {
 
 // 3 этап - описание
 new InternalListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
+	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 2)) return next();
 	if (cacheEmpty(qq, 1)) return err(420, ctx);
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));

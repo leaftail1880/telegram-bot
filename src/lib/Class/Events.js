@@ -8,7 +8,7 @@ import { data as $data } from "../SERVISE.js";
  */
 const EVENTS = {};
 
-/** @type {import("./EventTypes.js").InternalCreator} */
+/** @type {InternalEvent.Creator} */
 export function InternalListener(type, position, callback) {
 	const TypedEvents = EVENTS[type] || (EVENTS[type] = []);
 	const InternalEvent = {
@@ -19,7 +19,7 @@ export function InternalListener(type, position, callback) {
 	EVENTS[type] = TypedEvents.sort((a, b) => b.position - a.position);
 }
 
-/** @type {import("./EventTypes.js").InternalTrigger} */
+/** @type {InternalEvent.Trigger} */
 export function TriggerInternalListeners(type, context) {
 	if (EVENTS[type])
 		for (const { callback } of EVENTS[type]) {
@@ -29,26 +29,19 @@ export function TriggerInternalListeners(type, context) {
 
 bot.on("message", async (ctx) => {
 	if (ctx.from.is_bot) {
-		if (
-			ctx.from.id != ctx.botInfo.id ||
-			// @ts-ignore
-			!ctx.message.text ||
-			// @ts-ignore
-			!ctx.message.text.includes("--emit")
-		)
-			return;
+		if (ctx.from.id !== ctx.botInfo.id) return;
+		if (!("text" in ctx.message)) return;
+		if (!ctx.message.text.includes("--emit")) return;
 	}
 
 	const start = performance.now();
 	const Executors = EVENTS.message?.length > 0 ? EVENTS.message : [];
-	// @ts-ignore
-	if (ctx.message.text && EVENTS.text) Executors.push(...EVENTS.text);
-	// @ts-ignore
-	if (ctx.message.document && EVENTS.document) Executors.push(...EVENTS.document);
+	if ("text" in ctx.message && EVENTS.text) Executors.push(...EVENTS.text);
+	if ("document" in ctx.message && EVENTS.document) Executors.push(...EVENTS.document);
 
 	/** @type {InternalEvent.Data} */
 	const data = {
-		Euser: {
+		user: {
 			static: {
 				id: ctx.from.id,
 				name: ctx.from.first_name,
@@ -56,8 +49,6 @@ bot.on("message", async (ctx) => {
 			},
 			cache: {},
 		},
-		user: ctx.from,
-		userRights: ctx.chatMember,
 	};
 
 	execute(

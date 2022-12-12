@@ -23,7 +23,7 @@ new Query(
 //                  1 этап, фото
 ----------------------------------------------------*/
 InternalListener("document", 0, async (ctx, next, ow) => {
-	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.Euser), 10)) return next();
+	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.user), 10)) return next();
 	// @ts-ignore
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
@@ -46,7 +46,7 @@ ssn.OC.next(10, async (ctx, user) => {
 //                  2 этап, имя
 ----------------------------------------------------*/
 InternalListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
+	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 11)) return next();
 	if (cacheEmpty(qq)) return err(421, ctx);
 
@@ -76,7 +76,7 @@ bot.on("text", (ctx) => {
 //                  3 этап, описание
 ----------------------------------------------------*/
 InternalListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.Euser);
+	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 12)) return next();
 	if (cacheEmpty(qq, 1)) return err(421, ctx);
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));

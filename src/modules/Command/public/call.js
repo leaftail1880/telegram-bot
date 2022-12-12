@@ -11,7 +11,7 @@ new Command(
 		type: "group",
 	},
 	async (ctx, args, data) => {
-		const g = data.Egroup;
+		const g = data.group;
 
 		if (!("cache" in g)) throw new TypeError("Pin cannot be called in non-group chats");
 

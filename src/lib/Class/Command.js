@@ -112,7 +112,7 @@ new Command(
 		hide: true,
 	},
 	(ctx, _args, data) => {
-		ctx.reply(`${data.Euser.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`);
+		ctx.reply(`${data.user.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`);
 	}
 );
 /*========================*/
@@ -160,7 +160,7 @@ new Command(
 		/**
 		 * @type {DB.User}
 		 */
-		const user = data.Euser ?? (await database.get(d.user(ctx.from.id), true));
+		const user = data.user ?? (await database.get(d.user(ctx.from.id), true));
 		if (user?.cache?.session) {
 			await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
 			delete user.cache.session;
@@ -182,7 +182,7 @@ new Command(
 		/**
 		 * @type {DB.User}
 		 */
-		const user = data.Euser ?? (await database.get(d.user(ctx.from.id), true));
+		const user = data.user ?? (await database.get(d.user(ctx.from.id), true));
 		if (typeof user?.cache?.session === "string") {
 			const [_, sessionKey, stage] = user.cache.session.match(/^(\.+)::(\d+)/);
 			const sess = ssn[sessionKey];
@@ -272,7 +272,7 @@ InternalListener("text", 9, async (ctx, next, data) => {
 			.replace(config.command.clearCommand, "")
 			?.match(config.command.parseArgs)
 			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
-	const name = util.getFullName(data.Euser, ctx.from);
+	const name = util.getFullName(data.user, ctx.from);
 	const xt = new Xitext()._.group(name)
 		.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
 		.bold()

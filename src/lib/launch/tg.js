@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { Telegraf } from "telegraf";
 
 if (!process) throw new TypeError("Cannot access to global process variable");

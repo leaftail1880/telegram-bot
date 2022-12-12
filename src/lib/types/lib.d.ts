@@ -43,10 +43,8 @@ namespace InternalEvent {
 		callback: Function;
 	};
 	type Data = {
-		Euser: DB.User;
-		Egroup?: DB.Group;
-		userRights: import("telegraf/types").ChatMember;
-		user: import("telegraf/types").User;
+		user: DB.User;
+		group?: DB.Group;
 	};
 	type CacheUser = {
 		time: number;
@@ -146,3 +144,6 @@ type IEnv = {
 	ownerID?: string;
 	logID?: string;
 };
+
+type seconds = number;
+type milliseconds = number;

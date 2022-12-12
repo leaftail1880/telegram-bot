@@ -2,43 +2,8 @@ import clc from "cli-color";
 import { database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import { data, SERVISE } from "../SERVISE.js";
+import { noConnection } from "./noConnection.js";
 import { bot } from "./tg.js";
-
-const connectionLog = {
-	ErrorCooldown: 5,
-	ReconnectTimerWaitTime: 5,
-	async timer() {
-		try {
-			await database._.connect(null, Date.now());
-			await new Promise((r) => setTimeout(r, 100));
-			await bot.launch();
-			console.log(clc.greenBright("Подключение восстановлено"));
-			data.isStopped = false;
-		} catch (e) {}
-	},
-	openReconnectTimer() {
-		setTimeout(connectionLog.timer, connectionLog.ReconnectTimerWaitTime * 1000);
-	},
-};
-
-const connectionTimer = new XTimer(connectionLog.ErrorCooldown);
-/**
- *
- * @param {string} [type]
- * @returns
- */
-function noConnection(type) {
-	if (data.isLaunched && !data.isStopped) {
-		bot.stop("NOCONNECTION");
-		data.isStopped = true;
-	}
-	if (!database.isClosed) database._.close(false);
-
-	if (connectionTimer.isExpired()) {
-		console.log(clc.redBright(`Нет подключения к интернету ${type ? `[${type}]` : ""}`));
-		connectionLog.openReconnectTimer();
-	}
-}
 
 /**
  * @type {IOnErrorActions}

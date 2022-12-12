@@ -10,7 +10,7 @@ new Command(
 		type: "all",
 	},
 	async (ctx, args, data) => {
-		const user = data.Euser,
+		const user = data.user,
 			name = user.cache.nickname;
 		if (!args[0])
 			return ctx.reply(name ?? "Пустой", {

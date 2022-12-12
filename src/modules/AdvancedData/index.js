@@ -7,37 +7,24 @@ import { getGroup, getUser } from "./get.js";
 import "./queries.js";
 
 /**
- * @type {Object<string, InternalEvent.CacheUser>}
+ * @type {Object<string, InternalEvent.Data>}
  */
-const PreviousGet = {};
-const Getter = new XTimer(config.update.cacheTime, true);
+const LastData = {};
+const FastMessage = (/** @type {string} */ key) => !new XTimer(config.update.cacheTime, true).isExpired(key);
 
 InternalListener("message", 10, async (ctx, next, _DATA) => {
 	/** @type {InternalEvent.Data} */
-	let data;
+	let data = {};
 
-	// Бот обрабатывает много сообщений, берем данные из кэша.
-	const find = PreviousGet[ctx.message.from.id];
-	if (
-		find &&
-		Date.now() - find.time <= config.update.cacheTime &&
-		find.data.Euser &&
-		find.data.userRights &&
-		find.data.user
-	) {
-		data = find.data;
-	} else {
-		const DBUser = await getUser(ctx);
+	if (ctx.from.id in LastData && FastMessage(ctx.from.id + "")) {
+		data = LastData[ctx.from.id];
+	}
+	if (!data.user) {
+		const user = await getUser(ctx);
 
-		if (DBUser === false) return;
+		if (user === false) return;
 
-		const R = await ctx.telegram.getChatMember(ctx.message.chat.id, ctx.from.id);
-
-		data = {
-			Euser: DBUser,
-			user: R.user,
-			userRights: R,
-		};
+		data.user = user;
 	}
 
 	if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {
@@ -45,21 +32,18 @@ InternalListener("message", 10, async (ctx, next, _DATA) => {
 
 		if (group === false) return;
 
-		data.Egroup = group;
+		data.group = group;
 	}
 
-	if (data.Euser.needSafe) {
-		delete data.Euser.needSafe;
-		await database.set(d.user(ctx.from.id), data.Euser);
+	if (data.user.needSafe) {
+		delete data.user.needSafe;
+		await database.set(d.user(ctx.from.id), data.user);
 	}
 
 	for (const key in data) _DATA[key] = data[key];
 
 	// Adds current GET
-	PreviousGet[ctx.from.id] = {
-		data: data,
-		time: Date.now(),
-	};
+	LastData[ctx.from.id] = data;
 
 	next();
 });

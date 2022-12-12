@@ -124,7 +124,7 @@ export async function getGroup(ctx) {
 		update = true;
 	}
 
-	if (group.static.title != ctx.chat.title) {
+	if (group.static.title !== ctx.chat.title) {
 		group.static.title = ctx.chat.title;
 		update = true;
 	}
