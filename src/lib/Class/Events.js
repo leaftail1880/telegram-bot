@@ -58,7 +58,19 @@ bot.on("message", async (ctx) => {
 	);
 
 	if (Date.now() - $data.start_time < config.update.logTime) {
-		console.log("U:", clc.yellowBright((performance.now() - start).toFixed(2)));
+		const time = new Date(Date.now());
+		const timestring =
+			time.getDate() +
+			"." +
+			time.getMonth() +
+			" " +
+			time.getHours() +
+			":" +
+			time.getMinutes() +
+			":" +
+			time.getSeconds();
+
+		console.log(clc.blackBright(timestring), clc.yellowBright((performance.now() - start).toFixed(2)));
 	}
 });
 

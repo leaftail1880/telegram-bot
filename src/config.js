@@ -1,5 +1,5 @@
 export default {
-	version: [8, 1, 23],
+	version: [8, 1, 24],
 
 	command: {
 		clearCommand: /^.\w*\s?/g,

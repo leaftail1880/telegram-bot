@@ -5,7 +5,9 @@ new Command(
 		name: "ping",
 		description: "Отправляет скорость ответа",
 	},
-	(ctx, args, data) => {
-		ctx.reply("e");
+	async (ctx, args, data) => {
+		const time = performance.now();
+		const message = await ctx.reply("Wait...");
+		ctx.telegram.editMessageText(message.chat.id, message.message_id, null, `${performance.now() - time}`);
 	}
 );
