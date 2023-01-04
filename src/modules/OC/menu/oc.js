@@ -9,9 +9,10 @@ new Query(
 		prefix: "OC",
 	},
 	async (ctx, data) => {
-		const [page, oc_index, id, name] = data;
+		const [page, oc_index_unparsed, id, name] = data;
+		const oc_index = parseInt(oc_index_unparsed);
 		const OCs = await getUserOCs(id);
-		if (!oc_index || !OCs || !OCs[oc_index]) return noOC(ctx);
+		if (!oc_index_unparsed || !OCs || !OCs[oc_index]) return noOC(ctx);
 
 		const OC = OCs[oc_index];
 		const capt = lang.OC(OC.name, OC.description, name, Number(id));
@@ -19,7 +20,8 @@ new Query(
 
 		ctx.answerCbQuery(OC.name);
 		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[new Button("↩️↩️").data(link("backdoc", refType)), new Button("↩️").data(link("uOC", page, id, name, refType))],
+			[new Button("В главное меню").data(link("backdoc", refType))],
+			[new Button("К персонажам").data(link("uOC", page, id, name, refType))],
 		]);
 	}
 );

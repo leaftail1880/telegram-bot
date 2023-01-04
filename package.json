@@ -1,0 +1,23 @@
+{
+  "name": "oboldie",
+  "displayName": "Koboldie (TG-bot)",
+  "version": "8.1.25",
+  "main": "app.js",
+  "scripts": {
+    "run": "node app.js",
+    "update_leafs": "cd node_modules/leafy-utils && node install.js",
+    "commit": "node leafs/commit.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cli-color": "^2.0.3",
+    "dotenv": "^16.0.1",
+    "leafy-utils": "^2.0.19",
+    "redis": "^4.3.0",
+    "telegraf": "^4.11.2"
+  },
+  "type": "module",
+  "description": ""
+}

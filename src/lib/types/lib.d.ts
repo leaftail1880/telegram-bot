@@ -61,7 +61,7 @@ namespace InternalEvent {
 	interface Events {
 		message: Context & import("telegraf/types").Message;
 		text: Context & { message: import("telegraf/types").Message.TextMessage };
-		document: Context & { document: import("telegraf/types").Message.DocumentMessage };
+		document: Context & { message: import("telegraf/types").Message.DocumentMessage };
 		"modules.load": any;
 		"new.release": any;
 		"new.member": any;

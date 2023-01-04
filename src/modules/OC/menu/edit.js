@@ -1,7 +1,6 @@
 import { InternalListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
-import { bot } from "../../../lib/launch/tg.js";
 import { log } from "../../../lib/SERVISE.js";
 import { err } from "../../../lib/utils/err.js";
 import { cacheEmpty, lang, not } from "../index.js";
@@ -24,7 +23,7 @@ new Query(
 ----------------------------------------------------*/
 InternalListener("document", 0, async (ctx, next, ow) => {
 	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.user), 10)) return next();
-	// @ts-ignore
+
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
 	log(`> OC. ${getNameFromCache(ctx.from)} изменил(а) реф`);
@@ -66,9 +65,6 @@ ssn.OC.next(11, async (ctx, user) => {
 	ctx.reply(lang.edit.description());
 	log(`> OC. ${getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
 });
-bot.on("text", (ctx) => {
-	err(1, ctx);
-});
 /*---------------------------------------------------
 
 
@@ -77,21 +73,18 @@ bot.on("text", (ctx) => {
 ----------------------------------------------------*/
 InternalListener("text", 0, async (ctx, next, ow) => {
 	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 12)) return next();
+	if (not(ctx, qq, 12) || typeof qq !== "object") return next();
 	if (cacheEmpty(qq, 1)) return err(421, ctx);
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(
 		ctx.from.id,
 		{
-			// @ts-ignore
 			name: qq.user.cache.sessionCache[2],
-			// @ts-ignore
 			fileid: qq.user.cache.sessionCache[1],
 			description: ctx.message.text,
 		},
-		// @ts-ignore
-		qq.user.cache.sessionCache[0]
+		parseInt(qq.user.cache.sessionCache[0])
 	);
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);

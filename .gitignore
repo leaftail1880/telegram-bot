@@ -1,7 +1,5 @@
 /node_modules
-/git_test
 .env
-.gitignore
-/src/vendor/Animation/
-/src/vendor/Migrate/
+yarn-error.log
+yarn.lock
 migration.json
