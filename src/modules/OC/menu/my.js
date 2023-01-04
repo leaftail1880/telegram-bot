@@ -18,7 +18,7 @@ new Query(
 		if (OCs.length < 1) return noOC(ctx);
 
 		const btns = [];
-		const menu = [new Button("↩️").data(link("back"))];
+		const menu = [new Button("↩️ Назад").data(link("back"))];
 		for (const [i, e] of OCs.entries()) {
 			if (e) btns.push([new Button(e.name).data(link("myoc", id, i, username))]);
 		}

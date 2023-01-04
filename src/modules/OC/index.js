@@ -37,16 +37,9 @@ export const lang = {
 		[new Button("Найти").data(link("find"))],
 		[new Button("Мои персонажи").data(link("my"))],
 	],
-	main: new Xitext()
-		.text("Меню ")
-		._.group("OC")
-		.bold()
-		.url(null, d.guide(6))
-		.text(" (Или гифтменю):"),
+	main: new Xitext().text("Меню ")._.group("OC").bold().url(null, d.guide(6)).text(" (Или гифтменю):"),
 	reg0: new Xitext()
-		.text(
-			"Что бы прикрепить своего ОС к этому боту, отправь референс ОС ввиде "
-		)
+		.text("Что бы прикрепить своего ОС к этому боту, отправь референс ОС ввиде ")
 		._.group("файла")
 		.bold()
 		.url(null, d.guide(5))
@@ -97,9 +90,9 @@ export const lang = {
 			.bold(`Это Ваш персонаж`),
 };
 
-import "./menu/find.js";
-import "./menu/oc.js";
-import "./menu/uOC.js";
+import "./menu/find/find.js";
+import "./menu/find/oc.js";
+import "./menu/find/uOC.js";
 
 import "./menu/index.js";
 

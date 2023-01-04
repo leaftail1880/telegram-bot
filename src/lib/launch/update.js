@@ -1,6 +1,6 @@
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { InternalListener, TriggerInternalListeners } from "../Class/Events.js";
+import { EventListener, TriggerEventListeners } from "../Class/Events.js";
 
 /**
  * @template F, S, E
@@ -39,7 +39,7 @@ async function updateSession(data) {
 
 	await database.increase(config.dbkey.session, 1);
 
-	data.session = await database.get(config.dbkey.session, true);
+	data.session = await database.getActualData(config.dbkey.session, true);
 }
 
 /**
@@ -52,7 +52,7 @@ async function updateVisualVersion(data) {
 	/**
 	 * @type {number[]}
 	 */
-	const dbversion = await database.get(config.dbkey.version, true);
+	const dbversion = await database.getActualData(config.dbkey.version, true);
 	if (dbversion.splice) dbversion.splice(3, 10);
 
 	// Сравниваем версии
@@ -61,7 +61,7 @@ async function updateVisualVersion(data) {
 	// Если версия новая
 	if (data.type === "realese" && !data.development) {
 		console.log("> New version!");
-		InternalListener("modules.load", 0, () => TriggerInternalListeners("new.release", ""));
+		EventListener("modules.load", 0, () => TriggerEventListeners("new.release", ""));
 
 		// Прописываем ее в базе данных
 		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);

@@ -1,4 +1,4 @@
-import { TriggerInternalListeners } from "../../lib/Class/Events.js";
+import { TriggerEventListeners } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { log } from "../../lib/SERVISE.js";
 
@@ -20,7 +20,7 @@ export function CreateUser(ctx) {
 
 	log(`Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`);
 
-	TriggerInternalListeners("new.member", ctx);
+	TriggerEventListeners("new.member", ctx);
 
 	const user = {
 		static: {

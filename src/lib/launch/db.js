@@ -1,5 +1,3 @@
-import config from "../../config.js";
-
 /**
  * @template Func, [This = any]
  * @param {Func} func
@@ -15,75 +13,96 @@ function BIND(func, context) {
  * @typedef {import("redis").RedisClientType} cli
  */
 
-/**
- * @typedef {{type: string, time: number}} logObj
- */
-
 export class RedisDatabase {
 	/**
 	 * @type {cli | 'closed'}
 	 */
-	#cli = "closed";
+	#CLIENT = "closed";
 	/**
 	 * @type {cli | 'closed'}
 	 */
-	#closedcli = "closed";
+	#CLOSED_CLIENT = "closed";
+
+	/**
+	 * @type {Record<string, any>}
+	 */
+	#CACHE = {};
+
 	_ = {
 		close: BIND(this.#close, this),
 		connect: BIND(this.#connect, this),
-		time: performance.now(),
 	};
-	cache = new CachedDB(this);
-	log = new Logger(this);
 
-	constructor() {
-		this.log.write("create");
-	}
-	get isClosed() {
-		return this.#cli === "closed" || !this.#cli.isOpen;
-	}
-	get client() {
-		this._.time = performance.now();
-		if (this.#cli !== "closed" && this.#cli.isOpen) return this.#cli;
-		if (this.isClosed) throw new Error("Custom Redis Client closed/not opened");
-	}
 	async #close(quit = true) {
 		if (quit) await this.client.quit();
-		[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
+		[this.#CLOSED_CLIENT, this.#CLIENT] = [this.#CLIENT, this.#CLOSED_CLIENT];
 	}
 	/**
 	 *
 	 * @param {*} c
-	 * @param {*} ms
 	 */
-	async #connect(c, ms = Date.now()) {
+	async #connect(c) {
 		if (c) {
 			await c.connect();
-			this.#cli = c;
-			this.#closedcli = "closed";
-		} else if (this.#closedcli !== "closed") {
-			[this.#closedcli, this.#cli] = [this.#cli, this.#closedcli];
+			this.#CLIENT = c;
+			this.#CLOSED_CLIENT = "closed";
+			await this.collectionAsync();
+		} else if (this.#CLOSED_CLIENT !== "closed") {
+			[this.#CLOSED_CLIENT, this.#CLIENT] = [this.#CLIENT, this.#CLOSED_CLIENT];
 		}
+	}
 
-		this.log.write("connect", ms);
+	get isClosed() {
+		return this.#CLIENT === "closed" || !this.#CLIENT.isOpen;
+	}
+
+	/**
+	 * If the client is closed, throw an error. If the client is not open, throw an error. If the client
+	 * is open, return the client
+	 * @returns The client object.
+	 * @throws
+	 */
+	get client() {
+		if (this.#CLIENT === "closed") throw new Error("Custom Redis Client closed");
+		if (!this.#CLIENT.isOpen) throw new Error("Custom Redis Client not opened");
+		return this.#CLIENT;
 	}
 
 	/**
 	 * Запрашивает данные с датабазы
 	 * @param {string} key
-	 * @returns {Promise<string | boolean | Object>}
+	 * @returns {Promise<string | boolean | number | any>}
+	 */
+	async getActualData(key, jsonparse = false) {
+		const value = await this.client.get(key);
+		let result = value;
+
+		if (jsonparse)
+			try {
+				result = JSON.parse(value);
+			} catch {}
+
+		this.#CACHE[key] = result;
+
+		return result;
+	}
+	/**
+	 * Забирает данные с кэша
+	 * @param {string} key
+	 * @returns {Promise<string | boolean | number | any>}
 	 */
 	async get(key, jsonparse = false) {
-		const value = await this.client.get(key);
-		let ret;
-		try {
-			ret = jsonparse ? JSON.parse(value) : value;
-		} catch (error) {
-			ret = value;
-		}
-		this.cache.set(key, ret);
-		this.log.write("get");
-		return ret;
+		const value = this.#CACHE[key] ?? (await this.client.get(key));
+		let result = value;
+
+		if (jsonparse)
+			try {
+				result = JSON.parse(value);
+			} catch {}
+
+		this.#CACHE[key] = result;
+
+		return result;
 	}
 	/**
 	 * Запрашивает данные с датабазы
@@ -92,206 +111,90 @@ export class RedisDatabase {
 	 */
 	async delete(key) {
 		const value = await this.client.del(key);
-		this.cache.del(key);
-		this.log.write("delete");
+		Reflect.deleteProperty(this.#CACHE, key);
+
 		return !!value;
 	}
 	/**
 	 * Устанавливает данные в базу данных
 	 * @param {string} key
 	 * @param {string | boolean | Object} value
-	 * @param {number} [lifetime]
 	 * @returns
 	 */
-	async set(key, value, lifetime) {
-		this.cache.set(key, value);
-		const v$ = typeof value === "string" ? value : JSON.stringify(value);
+	async set(key, value) {
+		this.#CACHE[key] = value;
+		if (typeof value !== "string") value = JSON.stringify(value);
 
-		await this.client.set(key, v$);
-		if (typeof lifetime === "number") this.client.expire(key, lifetime);
-		this.log.write("set");
+		await this.client.set(key, value);
 	}
 	/**
 	 * @param {string} key
 	 * @returns {Promise<boolean>}
 	 */
 	async has(key) {
-		const boolean = await this.client.exists(key);
-		this.log.write("has");
-		return !!boolean;
+		return !!(await this.client.exists(key));
 	}
+	/**
+	 * It increases the value of a key by a number
+	 * @param {string} key - The key to increase.
+	 * @param {number} number - The number to increase the key by.
+	 * @returns The result of the increment operation.
+	 */
 	async increase(key, number = 1) {
 		const result = await this.client.incrBy(key, number);
-		this.cache.set(key, result);
-		this.log.write("increase");
+		this.#CACHE[key] = result;
+
 		return result;
 	}
+	/**
+	 * It decreases the value of a key by a number
+	 * @param {string} key - The key to decrease.
+	 * @param {number} number - The number to decrease the key by.
+	 * @returns The result of the decrement operation.
+	 */
 	async decrease(key, number = 1) {
 		const result = await this.client.decrBy(key, number);
-		this.cache.set(key, result);
-		this.log.write("decrease");
+		this.#CACHE[key] = result;
+
 		return result;
 	}
-	async keys(filter = "*") {
+	/**
+	 * This function returns an array of all the keys in the database that match the filter
+	 * @param {string} filter - The filter to use when searching for keys.
+	 * @returns An array of keys
+	 */
+	async keysAsync(filter = "*") {
 		const keys = await this.client.keys(filter);
-		this.log.write("keys");
+
 		return keys;
 	}
-	async values(filter = "*") {
-		const collection = [];
-		const keys = await this.keys(filter);
-		for (const a of keys) {
-			collection.push(await this.client.get(a));
-		}
-		this.log.write("values");
-		return collection;
+	/**
+	 * It returns an array of all the keys in the cache
+	 * @returns The keys of the cache object.
+	 */
+	keys() {
+		return Object.keys(this.#CACHE);
 	}
 	/**
-	 *
-	 * @returns {Promise<Object<string, object>>}
+	 * It returns a collection of all the keys and values in the database
+	 * @returns {Promise<Record<string, any>>} An object with the key being the key and the value being the value.
 	 */
-	async pairs() {
+	async collectionAsync() {
 		const collection = {};
-		const arg = (await this.keys()).sort();
+		const keys = (await this.keysAsync()).sort();
 
-		for (const a of arg) {
-			collection[a] = await this.client.get(a);
+		for (const key of keys) {
+			collection[key] = await this.client.get(key);
 		}
-		this.log.write("pairs");
+
+		this.#CACHE = collection;
 		return collection;
 	}
-}
-
-class Logger {
 	/**
-	 * @type {logObj[]}
-	 */
-	log = [];
-	#parent;
-	/**
-	 *
-	 * @param {RedisDatabase} parent
-	 */
-	constructor(parent) {
-		this.#parent = parent;
-	}
-	write(type = "</>", time) {
-		const push = {
-			type: type,
-			time: performance.now() - (time ?? this.#parent._.time),
-		};
-		this.log.push(push);
-	}
-	async averageTime(oldLogs = true) {
-		let logs = this.log,
-			output = {};
-		if (oldLogs) {
-			try {
-				const a = await this.cachedLog();
-				a.forEach((e) => logs.push(e));
-			} catch (error) {
-				console.warn(error);
-			}
-		}
-		for (const log of logs) {
-			output[log.type] = output[log.type] || [];
-			output[log.type].push(log.time);
-		}
-		for (const key of Object.keys(output)) {
-			let value = 0;
-			const length = output[key].length;
-			output[key].forEach((e) => (value = value + e));
-			output[key] = Math.round(value / length).toFixed(3);
-		}
-		return output;
-	}
-	format() {
-		this.write("format");
-		return this.log.map((e) => `${e.type} ${e.time > 0 ? e.time + " ms" : ""}`);
-	}
-	parse(log) {
-		return {
-			type: log.split(" ")[1],
-			time: Number(log.split(" ")[2]),
-		};
-	}
-	async cachedLog() {
-		const val = await this.#parent.values("Cache::log:*");
-		return val.map((e) => this.parse(e));
-	}
-	async save(name = performance.now()) {
-		await this.#parent.set(`Cache::log:${name}`, this.format());
-	}
-}
-
-class CachedDB {
-	/**
-	 * @type {Record<string, {getDate: number; value: any}>}
-	 */
-	#cache = {};
-	#parent;
-
-	/**
-	 *
-	 * @param {RedisDatabase} parent
-	 */
-	constructor(parent) {
-		this.#parent = parent;
-	}
-	/**
-	 *
-	 * @param {string} key
-	 * @param {number} [cacheTime]
+	 * It returns a collection of all the keys and values in the cache
 	 * @returns
 	 */
-	tryget(key, cacheTime) {
-		return this.#getter(key, false, cacheTime);
-	}
-	/**
-	 *
-	 * @param {string} key
-	 * @param {number} [cacheTime]
-	 * @returns {Promise<Object | string | number | undefined | boolean>}
-	 */
-	async get(key, cacheTime) {
-		return this.#getter(key, true, cacheTime);
-	}
-	/**
-	 *
-	 * @param {string} key
-	 * @param {boolean} [alwaysReturn]
-	 * @returns
-	 */
-	#getter(key, alwaysReturn, cacheTime = config.update.cacheTime) {
-		if (this.#cache[key]) {
-			const c = this.#cache[key];
-			if (Date.now() - c.getDate <= cacheTime) {
-				return c.value;
-			} else {
-				delete this.#cache[key];
-			}
-		}
-
-		if (alwaysReturn) return this.#parent.get(key, true);
-	}
-	/**
-	 *
-	 * @param {string} key
-	 * @param {any} value
-	 * @returns
-	 */
-	set(key, value) {
-		this.#cache[key] = {
-			getDate: Date.now(),
-			value: value,
-		};
-	}
-	/**
-	 *
-	 * @param {string} key
-	 * @returns
-	 */
-	del(key) {
-		delete this.#cache[key];
+	collection() {
+		return this.#CACHE;
 	}
 }

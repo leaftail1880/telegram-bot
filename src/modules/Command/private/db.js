@@ -12,13 +12,13 @@ new Command(
 	async (ctx, args) => {
 		switch (args[0]) {
 			case "pairs":
-				const a = await database.pairs();
+				const a = await database.collectionAsync();
 				console.log(a);
 				util.sendSeparatedMessage(util.toStr(a, " "), ctx.reply);
 				break;
 			case "get":
 				if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
-				const get = await database.get(args[1], true);
+				const get = await database.getActualData(args[1], true);
 				console.log(get);
 				util.sendSeparatedMessage(util.toStr(get, " "), (msg) => ctx.reply(...new Xitext().code(msg)._.build()));
 				break;
@@ -29,7 +29,7 @@ new Command(
 				ctx.reply(del);
 				break;
 			case "keys":
-				const keys = await database.keys(),
+				const keys = await database.keysAsync(),
 					text = new Xitext().text("Ключи:");
 				keys.sort().forEach((e) => {
 					text.text("\n");

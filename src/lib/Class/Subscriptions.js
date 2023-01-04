@@ -23,7 +23,7 @@ export const Subscriptions = {
 	 */
 	async get(id) {
 		const link = this.keyLink(id);
-		return setDefaults(await database.cache.get(link), DefaultSubs);
+		return setDefaults(await database.get(link), DefaultSubs);
 	},
 	/**
 	 *
@@ -56,7 +56,7 @@ export const Subscriptions = {
 	async list(key, IDs, searchValue = true) {
 		const users = Array.isArray(IDs)
 			? IDs
-			: (await database.keys(this.keyLink("*"))).map((e) => Number(e.split("::")[1]));
+			: (await database.keysAsync(this.keyLink("*"))).map((e) => Number(e.split("::")[1]));
 
 		const passed = [];
 

@@ -39,7 +39,7 @@ new Command(
 			if (obj.status === "kicked" || obj.status === "left" || obj.user.is_bot) continue;
 			const text = new Xitext()
 				.url(
-					(await database.get(`User::${e}`, true)).cache.nickname ??
+					(await database.get(d.user(e), true)).cache.nickname ??
 						`${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""}` ??
 						obj.user.username,
 					`https://t.me/${obj.user.username}`

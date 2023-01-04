@@ -2,7 +2,7 @@ import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { data as $data, log } from "../SERVISE.js";
 import { safeRun } from "../utils/safeRun.js";
-import { InternalListener } from "./Events.js";
+import { EventListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
@@ -72,10 +72,7 @@ function loadQuerys() {
 			return next();
 		}
 
-		const name = util.getFullName(
-			database.cache.tryget(d.user(ctx.callbackQuery.from.id), 2 ** 32),
-			ctx.callbackQuery.from
-		);
+		const name = util.getFullName(database.collection()[d.user(ctx.callbackQuery.from.id)], ctx.callbackQuery.from);
 
 		const xt = new Xitext()._.group(name)
 			.bold()
@@ -105,4 +102,4 @@ new Query(
 	}
 );
 
-InternalListener("modules.load", 0, loadQuerys);
+EventListener("modules.load", 0, loadQuerys);

@@ -2,7 +2,8 @@ import { database } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
 import { d, util } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
-import { chatcooldown } from "../index.js";
+
+const pin_cooldown = 3.6e6;
 
 new Command(
 	{
@@ -24,8 +25,8 @@ new Command(
 
 		const time = Date.now() - lp;
 
-		if (time <= chatcooldown) {
-			const min = Math.round((chatcooldown - time) / 60000),
+		if (time <= pin_cooldown) {
+			const min = Math.round((pin_cooldown - time) / 60000),
 				reply = new Xitext()._.group(min + "")
 					.bold()
 					.url(null, d.guide(7))

@@ -3,7 +3,7 @@ import { createClient } from "redis";
 import config from "../config.js";
 import { database } from "../index.js";
 import "./Class/Command.js";
-import { TriggerInternalListeners } from "./Class/Events.js";
+import { TriggerEventListeners } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
@@ -44,6 +44,7 @@ import { XTimer } from "./Class/XTimer.js";
 import { freeze, UpdateCheckTimer } from "./launch/between.js";
 import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
 import { start_stop_lang as lang } from "./launch/lang.js";
+import styles from "./styles.js";
 
 export const SERVISE = {
 	freeze,
@@ -80,8 +81,6 @@ async function start() {
 	/**======================
 	 * Подключение к базе данных
 	 *========================**/
-	const time = performance.now();
-
 	const client = createClient({
 		url: process.env.REDIS_URL,
 	});
@@ -89,7 +88,8 @@ async function start() {
 	client.on("error", handlers.dbError);
 
 	// Сохранение клиента
-	await database._.connect(client, time);
+	console.warn("Fetching db data...");
+	await database._.connect(client);
 
 	// Обновляет сессию
 	await updateInfo(data);
@@ -111,7 +111,7 @@ async function start() {
 	}
 
 	// Инициализация команд и списков
-	TriggerInternalListeners("modules.load", "");
+	TriggerEventListeners("modules.load", "");
 
 	/**======================
 	 * Запуск бота
@@ -142,7 +142,7 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	text.text("\n" + data.logVersion + " ");
 	text.bold(env.whereImRunning);
 
-	console.log(clc.bgRedBright(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
+	console.log(styles.error(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
 	if (data.isLaunched && sendMessage) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
 	if (type !== "none" && data.isLaunched && !data.isStopped) {
@@ -171,7 +171,7 @@ async function error(error, options = { sendMessage: "ifNotStopped" }) {
 			const [type, message, stack, extra] = util.errParse(error, true);
 
 			console.warn(" ");
-			console.warn(clc.bgRedBright(type).trim() + " " + clc.red(message));
+			console.warn(clc.red(type).trim() + " " + clc.white(message));
 			console.warn(" " + stack);
 			console.warn(" ");
 

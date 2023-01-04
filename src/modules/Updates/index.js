@@ -1,4 +1,4 @@
-import { InternalListener } from "../../lib/Class/Events.js";
+import { EventListener } from "../../lib/Class/Events.js";
 import { Subscriptions } from "../../lib/Class/Subscriptions.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
 import { bot } from "../../lib/launch/tg.js";
@@ -10,7 +10,7 @@ const Updates = [
 	"Мелкие улучшения и ускорения",
 ];
 
-InternalListener("new.release", 1, async (_c, next, _d, extra) => {
+EventListener("new.release", 1, async (_c, next, _d, extra) => {
 	const users = await Subscriptions.list("botUpdates");
 
 	console.log(users);

@@ -4,12 +4,12 @@ import { bot } from "../launch/tg.js";
 import { data as $data } from "../SERVISE.js";
 
 /**
- * @type {Record<string, Array<InternalEvent.Stored>>}
+ * @type {Record<string, Array<IEvent.Stored>>}
  */
 const EVENTS = {};
 
-/** @type {InternalEvent.Creator} */
-export function InternalListener(type, position, callback) {
+/** @type {IEvent.Creator} */
+export function EventListener(type, position, callback) {
 	const TypedEvents = EVENTS[type] || (EVENTS[type] = []);
 	const InternalEvent = {
 		position,
@@ -19,8 +19,8 @@ export function InternalListener(type, position, callback) {
 	EVENTS[type] = TypedEvents.sort((a, b) => b.position - a.position);
 }
 
-/** @type {InternalEvent.Trigger} */
-export function TriggerInternalListeners(type, context) {
+/** @type {IEvent.Trigger} */
+export function TriggerEventListeners(type, context) {
 	if (EVENTS[type])
 		for (const { callback } of EVENTS[type]) {
 			callback({}, () => void 0, context);
@@ -39,7 +39,7 @@ bot.on("message", async (ctx) => {
 	if ("text" in ctx.message && EVENTS.text) Executors.push(...EVENTS.text);
 	if ("document" in ctx.message && EVENTS.document) Executors.push(...EVENTS.document);
 
-	/** @type {InternalEvent.Data} */
+	/** @type {IEvent.Data} */
 	const data = {
 		user: {
 			static: {
@@ -78,7 +78,7 @@ bot.on("message", async (ctx) => {
  * @template T
  * @param {T} ctx
  * @param {Array<function>} f
- * @param {InternalEvent.Data} data
+ * @param {IEvent.Data} data
  * @returns
  */
 function execute(ctx, f, data) {

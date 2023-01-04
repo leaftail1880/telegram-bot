@@ -23,7 +23,7 @@ export const UpdateCheckTimer = {
 async function updateCheckInterval() {
 	if (database.isClosed) return;
 
-	const query = await database.get(config.dbkey.request, true);
+	const query = await database.getActualData(config.dbkey.request, true);
 	if (!Array.isArray(query)) return;
 
 	/**
@@ -58,8 +58,9 @@ export async function freeze() {
 		bot.stop("freeze");
 	}
 
-	function updateRequest() {
-		return database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]], 300);
+	async function updateRequest() {
+		await database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]]);
+		await database.client.expire(config.dbkey.request, 300);
 	}
 
 	await updateRequest();
@@ -68,7 +69,7 @@ export async function freeze() {
 	let devTimes = 0;
 
 	const timeout = setInterval(async () => {
-		const answer = await database.get(config.dbkey.request);
+		const answer = await database.getActualData(config.dbkey.request);
 		if (answer === SERVISE.message.terminate_you) {
 			await database.delete(config.dbkey.request);
 			return SERVISE.stop(lang.stop.terminate(), "ALL");

@@ -5,7 +5,7 @@ import { bot } from "../launch/tg.js";
 import { data as $data, log } from "../SERVISE.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
-import { InternalListener } from "./Events.js";
+import { EventListener } from "./Events.js";
 import { ssn } from "./Session.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
@@ -123,27 +123,26 @@ new Command(
 		description: "Список команд",
 		type: "all",
 	},
-	async (ctx, _a, data) => {
-		if (!Object.keys(public_cmds)[0] && !Object.keys(private_cmds)[0]) return ctx.reply("А команд то и нет");
-		let c = false,
-			p = false,
-			a = new Xitext();
+	async (ctx) => {
+		let c = false;
+		const a = new Xitext();
+		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		for (const e of Object.values(public_cmds)) {
-			if ((await Command.cantUse(e, ctx, data.userRights)) || e.info.hide) continue;
-			if (!c) a.text(`Доступные везде команды:\n`), (c = true);
+		for (const e of public_cmds) {
+			if ((await Command.cantUse(e, ctx, rigths)) || e.info.hide) continue;
+			if (!c) a.text(`Команды:\n`), (c = true);
 			a.text(`  /${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
 
-		for (const e of Object.values(private_cmds)) {
-			if (await Command.cantUse(e, ctx, data.userRights)) continue;
-			if (!p) a.text(`\nДоступные вам в этом чате команды:\n`), (p = true);
+		for (const e of private_cmds) {
+			if (await Command.cantUse(e, ctx, rigths)) continue;
 			a.text(`  `);
 			a.mono(`-${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
-		if (!a._.text) return ctx.reply("А доступных команд то и нет");
+
+		if (!a._.text) return ctx.reply("Команды недоступны");
 		ctx.reply(...a._.build());
 	}
 );
@@ -157,10 +156,7 @@ new Command(
 		type: "private",
 	},
 	async (ctx, _args, data) => {
-		/**
-		 * @type {DB.User}
-		 */
-		const user = data.user ?? (await database.get(d.user(ctx.from.id), true));
+		const user = data.user;
 		if (user?.cache?.session) {
 			await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
 			delete user.cache.session;
@@ -179,18 +175,18 @@ new Command(
 		type: "private",
 	},
 	async (ctx, _a, data) => {
-		/**
-		 * @type {DB.User}
-		 */
-		const user = data.user ?? (await database.get(d.user(ctx.from.id), true));
+		const user = data.user;
 		if (typeof user?.cache?.session === "string") {
-			const [_, sessionKey, stage] = user.cache.session.match(/^(\.+)::(\d+)/);
+			const [_, sessionKey, rawStage] = user.cache.session.match(/^(.+)::(\d+)/);
+			const stage = parseInt(rawStage);
 			const sess = ssn[sessionKey];
+
 			if (sess) {
 				if (typeof sess.executers[stage] === "function") {
 					sess.executers[stage](ctx, user);
 				} else ctx.reply("Этот шаг не предусматривает пропуска!");
 			} else delete user.cache.session;
+
 			await database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
@@ -203,7 +199,7 @@ const V = {
 	supergroup: "Группа",
 };
 
-InternalListener("modules.load", 0, (_, next) => {
+EventListener("modules.load", 0, (_, next) => {
 	//  Общие команды группы
 	let groupCommands = [],
 		// Админские в группах
@@ -248,7 +244,7 @@ InternalListener("modules.load", 0, (_, next) => {
 	next();
 });
 
-InternalListener("text", 9, async (ctx, next, data) => {
+EventListener("text", 9, async (ctx, next, data) => {
 	const text = ctx.message.text;
 
 	const command = Command.getCmd(text);
@@ -260,7 +256,9 @@ InternalListener("text", 9, async (ctx, next, data) => {
 
 	if (typeof command !== "object") return next();
 
-	if (await Command.cantUse(command, ctx, data))
+	data.user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+	if (await Command.cantUse(command, ctx, data.user_rigths))
 		return ctx.reply("В этом чате эта команда недоступна. /help", {
 			reply_to_message_id: ctx.message.message_id,
 			allow_sending_without_reply: true,

@@ -45,26 +45,25 @@ export class Session {
 	}
 	/**
 	 * Tests if user is entered special session
+	 * @template {boolean} S
 	 * @param {number} id
-	 * @param {boolean} [returnUser]
+	 * @param {S} [returnUser]
 	 * @param {DB.User} [CacheUser]
-	 * @returns {Promise<number | "not" | {user: DB.User; session: number;}>}
+	 * @returns {Promise<"not" | (S extends true ? {user: DB.User; session: number;} : number)>}
 	 */
 	async Q(id, returnUser, CacheUser = null) {
 		/**
 		 * @type {DB.User}
 		 */
 		const user = CacheUser ?? (await database.get(d.user(id), true));
-		if (
-			typeof user !== "object" ||
-			typeof user.cache !== "object" ||
-			typeof user.cache.session !== "string" ||
-			!new RegExp(`^${this.name}::\\d+`).test(user.cache.session)
-		)
-			return "not";
 
-		const session = Number(user.cache.session.match(/^.+::(\d+)/)[0]);
+		const result = user?.cache?.session?.split("::");
 
+		if (!result || result[0] !== this.name) return "not";
+
+		const session = parseInt(result[1]);
+
+		// @ts-expect-error
 		return returnUser ? { user, session } : session;
 	}
 	/**

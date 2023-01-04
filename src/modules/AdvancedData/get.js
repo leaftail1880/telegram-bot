@@ -19,12 +19,12 @@ export async function getUser(ctx) {
 		if (ctx.chat.type === "private" && data.private) {
 			if (!(ctx.from.id in data.joinCodes)) {
 				data.joinCodes[ctx.from.id] = "waiting";
-				ctx.reply(
-					...new Xitext()
-						.text("Sorry, but this bot doesn't avaible for you :/\nConnect code: ")
-						.mono(ctx.from.id.toString(16))
-						._.build()
-				);
+				// ctx.reply(
+				// 	...new Xitext()
+				// 		.text("Sorry, but this bot doesn't avaible for you :/\nConnect code: ")
+				// 		.mono(ctx.from.id.toString(16))
+				// 		._.build()
+				// );
 				log(
 					...new Xitext()
 						.text("Запрос на использование бота в лс от ")
@@ -40,23 +40,31 @@ export async function getUser(ctx) {
 				return false;
 			} else if (data.joinCodes[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно добавлены в список разрешенных пользователей.");
-			}
+			} else if (data.joinCodes[ctx.from.id] === "waiting") return false;
 		} else {
 			user = CreateUser(ctx);
 			user.needSafe = true;
 		}
 	}
 
-	function detectUpdate(previous, current) {
-		if (previous != current) {
-			previous = current;
+	/**
+	 *
+	 * @template {keyof DB.User} P1
+	 * @template {keyof DB.User[P1]} P2
+	 * @param {P1} path1
+	 * @param {P2} path2
+	 * @param {DB.User[P1][P2]} current
+	 */
+	function detectUpdate(path1, path2, current) {
+		if (user[path1][path2] != current) {
+			user[path1][path2] = current;
 			user.needSafe = true;
 		}
 	}
 
-	if (ctx.chat.type === "private") detectUpdate(user.cache.dm, 1);
-	detectUpdate(user.static.name, util.getName(ctx.from));
-	detectUpdate(user.static.nickname, ctx.from.username);
+	if (ctx.chat.type === "private") detectUpdate("cache", "dm", 1);
+	detectUpdate("static", "name", util.getName(ctx.from));
+	detectUpdate("static", "nickname", ctx.from.username);
 
 	return user;
 }
@@ -114,22 +122,29 @@ export async function getGroup(ctx) {
 		update = true;
 	}
 
-	if (group.static.id !== ctx.chat.id) {
-		group.static.id = ctx.chat.id;
-		update = true;
+	/**
+	 *
+	 * @template {keyof DB.Group} P1
+	 * @template {keyof DB.Group[P1]} P2
+	 * @param {P1} path1
+	 * @param {P2} path2
+	 * @param {DB.Group[P1][P2]} current
+	 */
+	function detectUpdate(path1, path2, current) {
+		if (group[path1][path2] != current) {
+			group[path1][path2] = current;
+			update = true;
+		}
 	}
 
+	detectUpdate("static", "id", ctx.chat.id);
+	detectUpdate("static", "title", ctx.chat.title);
 	if (!group.cache.members.includes(ctx.from.id)) {
 		group.cache.members = util.add(group.cache.members, ctx.from.id);
 		update = true;
 	}
 
-	if (group.static.title !== ctx.chat.title) {
-		group.static.title = ctx.chat.title;
-		update = true;
-	}
-
-	if (update) database.set(d.group(ctx.chat.id), group);
+	if (update) await database.set(d.group(ctx.chat.id), group);
 
 	return group;
 }

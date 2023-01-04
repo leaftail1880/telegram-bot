@@ -1,4 +1,4 @@
-import { InternalListener } from "../../../lib/Class/Events.js";
+import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
 import { log } from "../../../lib/SERVISE.js";
@@ -21,7 +21,7 @@ new Query(
 /*---------------------------------------------------
 //                  1 этап, фото
 ----------------------------------------------------*/
-InternalListener("document", 0, async (ctx, next, ow) => {
+EventListener("document", 0, async (ctx, next, ow) => {
 	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.user), 10)) return next();
 
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
@@ -44,7 +44,7 @@ ssn.OC.next(10, async (ctx, user) => {
 ---------------------------------------------------
 //                  2 этап, имя
 ----------------------------------------------------*/
-InternalListener("text", 0, async (ctx, next, ow) => {
+EventListener("text", 0, async (ctx, next, ow) => {
 	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 11)) return next();
 	if (cacheEmpty(qq)) return err(421, ctx);
@@ -71,7 +71,7 @@ ssn.OC.next(11, async (ctx, user) => {
 ---------------------------------------------------
 //                  3 этап, описание
 ----------------------------------------------------*/
-InternalListener("text", 0, async (ctx, next, ow) => {
+EventListener("text", 0, async (ctx, next, ow) => {
 	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
 	if (not(ctx, qq, 12) || typeof qq !== "object") return next();
 	if (cacheEmpty(qq, 1)) return err(421, ctx);

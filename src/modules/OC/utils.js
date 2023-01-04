@@ -154,5 +154,5 @@ export function noOC(ctx) {
  * @returns
  */
 export function getNameFromCache(user) {
-	return util.getFullName(database.cache.tryget(d.user(user.id), 2 ** 32), user);
+	return util.getFullName(database.collection()[d.user(user.id)], user);
 }

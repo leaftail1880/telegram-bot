@@ -16,12 +16,7 @@ namespace CommandTypes {
 		callback: CommandTypes.Callback;
 	};
 
-	type Callback = (
-		ctx: TextMessageContext,
-		args: Array<string>,
-		data: InternalEvent.Data,
-		self: CommandTypes.Stored
-	) => void;
+	type Callback = (ctx: TextMessageContext, args: Array<string>, data: IEvent.Data, self: CommandTypes.Stored) => void;
 
 	type Target = "group" | "private" | "all" | "channel";
 
@@ -37,7 +32,7 @@ namespace CommandTypes {
 	};
 }
 
-namespace InternalEvent {
+namespace IEvent {
 	type Stored = {
 		position: number;
 		callback: Function;
@@ -45,18 +40,19 @@ namespace InternalEvent {
 	type Data = {
 		user: DB.User;
 		group?: DB.Group;
+		user_rigths?: import("telegraf/types").ChatMember;
 	};
 	type CacheUser = {
 		time: number;
-		data: InternalEvent.Data;
+		data: IEvent.Data;
 	};
-	type Creator = <T extends keyof InternalEvent.Events>(
+	type Creator = <T extends keyof IEvent.Events>(
 		type: T,
 		position: number,
-		callback: (ctx: InternalEvent.Events[T], next: () => void, data: InternalEvent.Data, extraData?: Object) => any
+		callback: (ctx: IEvent.Events[T], next: () => void, data: IEvent.Data, extraData?: Object) => any
 	) => void;
 
-	type Trigger = <T extends keyof InternalEvent.Events>(type: T, context?: InternalEvent.Events[T]) => void;
+	type Trigger = <T extends keyof IEvent.Events>(type: T, context?: IEvent.Events[T]) => void;
 
 	interface Events {
 		message: Context & import("telegraf/types").Message;
@@ -66,6 +62,7 @@ namespace InternalEvent {
 		"new.release": any;
 		"new.member": any;
 	}
+
 	type Store = Record<
 		string,
 		{
@@ -74,6 +71,11 @@ namespace InternalEvent {
 		}
 	>;
 }
+
+type CustomEmitter<events extends Record<string | symbol, any>> = {
+	on<N extends keyof events>(eventName: N, listener: (arg: events[N]) => void): import("events").EventEmitter;
+	emit<N extends keyof events>(eventName: N, arg: events[N]): boolean;
+};
 
 namespace DB {
 	type User = {

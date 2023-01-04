@@ -12,12 +12,9 @@ import { bot } from "../../lib/launch/tg.js";
 	const me = await bot.telegram.getMe();
 
 	const lang = {
-		main: (page) =>
-			new Xitext()
-				.text(`[${page}] База данных `)
-				.url(util.getName(me), d.userLink(me.id)),
+		main: (page) => new Xitext().text(`[${page}] База данных `).url(util.getName(me), d.userLink(me.id)),
 		generateMenu: async (page = 1) => {
-			let keys = await database.keys(),
+			let keys = await database.keysAsync(),
 				btns = [];
 			for (const e of keys.sort()) {
 				btns.push([new Button(e).data(m.link("manage", e, page))]);
@@ -30,8 +27,7 @@ import { bot } from "../../lib/launch/tg.js";
 			);
 			return btns;
 		},
-		page: (page) =>
-			new Button(m.config.backButtonSymbol).data(m.link("list", page)),
+		page: (page) => new Button(m.config.backButtonSymbol).data(m.link("list", page)),
 		manage: (key, prevPage) =>
 			new Xitext()
 				.mono(key)

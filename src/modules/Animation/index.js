@@ -8,7 +8,7 @@ import { data } from "../../lib/SERVISE.js";
 async function getRegisteredGroups() {
 	const groups = [];
 
-	const keys = await database.keys(`Group::*`);
+	const keys = await database.keysAsync(`Group::*`);
 
 	for (const key of keys) groups.push(await database.get(key, true));
 

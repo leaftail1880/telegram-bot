@@ -5,7 +5,7 @@ import { Button } from "./Xitext.js";
 export class MultiMenuV1 {
 	static get config() {
 		return {
-			maxRows: 12,
+			maxRows: 6,
 			maxButtonsPerRow: 6,
 			backButtonSymbol: "↩️",
 		};

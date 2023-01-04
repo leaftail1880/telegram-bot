@@ -10,7 +10,7 @@ const from = 0;
 (async () => {
 	// @ts-ignore
 	if (from === 1) {
-		const OCS = (await database.get(d.pn("Module", "OC"), true)) ?? {};
+		const OCS = (await database.getActualData(d.pn("Module", "OC"), true)) ?? {};
 		Object.keys(OCS).forEach((e) => {
 			const ar = OCS[e] ?? [];
 			OCS[e] = ar.filter((e) => e);
