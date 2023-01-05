@@ -1,3 +1,6 @@
+import clc from "cli-color";
+import { SingleBar } from "cli-progress";
+
 /**
  * @template Func, [This = any]
  * @param {Func} func
@@ -46,7 +49,7 @@ export class RedisDatabase {
 			await c.connect();
 			this.#CLIENT = c;
 			this.#CLOSED_CLIENT = "closed";
-			await this.collectionAsync();
+			await this.collectionAsync(true);
 		} else if (this.#CLOSED_CLIENT !== "closed") {
 			[this.#CLOSED_CLIENT, this.#CLIENT] = [this.#CLIENT, this.#CLOSED_CLIENT];
 		}
@@ -179,13 +182,28 @@ export class RedisDatabase {
 	 * It returns a collection of all the keys and values in the database
 	 * @returns {Promise<Record<string, any>>} An object with the key being the key and the value being the value.
 	 */
-	async collectionAsync() {
+	async collectionAsync(renderProcess = false) {
 		const collection = {};
-		const keys = (await this.keysAsync()).sort();
+		const keys = await this.keysAsync();
+		const b1 = new SingleBar({
+			format: `[${clc.cyanBright("{bar}")}] {percentage}% || {value}/{total} keys`,
+			barCompleteChar: "#",
+			barIncompleteChar: "..",
+			hideCursor: true,
+		});
+
+		if (renderProcess) {
+			b1.start(keys.length, 0);
+		}
 
 		for (const key of keys) {
 			collection[key] = await this.client.get(key);
+
+			if (renderProcess) b1.increment();
 		}
+		b1.stop();
+		process.stdout.moveCursor(0, -1); // up one line
+		process.stdout.clearLine(1); // from cursor to end
 
 		this.#CACHE = collection;
 		return collection;

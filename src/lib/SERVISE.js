@@ -1,4 +1,5 @@
 import clc from "cli-color";
+import fs from "fs/promises";
 import { createClient } from "redis";
 import config from "../config.js";
 import { database } from "../index.js";
@@ -40,6 +41,7 @@ export const data = {
 	updateTimer: null,
 };
 
+import path from "path";
 import { XTimer } from "./Class/XTimer.js";
 import { freeze, UpdateCheckTimer } from "./launch/between.js";
 import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
@@ -64,11 +66,27 @@ export const handlers = {
 	bot: handleBotError,
 };
 
-export function log(msg, extra = {}, owner = false) {
-	console.log(msg);
-	owner
-		? bot.telegram.sendMessage(data.chatID.owner, msg, extra)
-		: bot.telegram.sendMessage(data.chatID.log, msg, extra);
+/**
+ *
+ * @param {string} msg
+ */
+export function log(msg) {
+	newlog({
+		xitext: new Xitext().text(msg),
+		fileMessage: msg,
+		consoleMessage: msg,
+	});
+}
+
+/**
+ *
+ * @param {{xitext?: Xitext; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
+ */
+export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
+	if (xitext) bot.telegram.sendMessage(data.chatID.log, ...xitext._.build());
+	if (consoleMessage) console.log(consoleMessage);
+	if (fileMessage)
+		fs.appendFile(path.join("logs", fileName ?? "logs.txt"), `[${new Date().toLocaleString()}] ${fileMessage}\r\n`);
 }
 
 /**
@@ -77,6 +95,10 @@ export function log(msg, extra = {}, owner = false) {
  */
 async function start() {
 	lang.log.start();
+	try {
+		await fs.rmdir("logs");
+		await fs.mkdir("logs");
+	} catch {}
 
 	/**======================
 	 * Подключение к базе данных
@@ -88,11 +110,12 @@ async function start() {
 	client.on("error", handlers.dbError);
 
 	// Сохранение клиента
-	console.warn("Fetching db data...");
+	lang.log.db();
 	await database._.connect(client);
 
 	// Обновляет сессию
 	await updateInfo(data);
+	lang.log.session();
 
 	bot.catch(handlers.bot);
 
@@ -101,6 +124,7 @@ async function start() {
 	/**======================
 	 * Загрузка плагинов
 	 *========================**/
+	lang.log.modules();
 	const m = [];
 	for (const module of config.modules) {
 		const start = performance.now();

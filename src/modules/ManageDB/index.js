@@ -14,18 +14,19 @@ import { bot } from "../../lib/launch/tg.js";
 	const lang = {
 		main: (page) => new Xitext().text(`[${page}] База данных `).url(util.getName(me), d.userLink(me.id)),
 		generateMenu: async (page = 1) => {
-			let keys = await database.keysAsync(),
-				btns = [];
+			let keys = await database.keysAsync();
+			let buttons = [];
+
 			for (const e of keys.sort()) {
-				btns.push([new Button(e).data(m.link("manage", e, page))]);
+				buttons.push([new Button(e).data(m.link("manage", e, page))]);
 			}
-			btns = m.generatePageSwitcher(
-				btns,
-				null, //new Button(m.config.backButtonSymbol).data(d.query("all", "delmsg")),
-				"list",
-				page
-			);
-			return btns;
+			buttons = m.generatePageSwitcher({
+				buttons: buttons,
+				//backButton: new Button(m.config.backButtonSymbol).data(d.query("all", "delmsg")),
+				queryName: "list",
+				pageTo: page,
+			});
+			return buttons;
 		},
 		page: (page) => new Button(m.config.backButtonSymbol).data(m.link("list", page)),
 		manage: (key, prevPage) =>

@@ -1,10 +1,10 @@
 import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
-import { log } from "../../../lib/SERVISE.js";
+import { util } from "../../../lib/Class/Utils.js";
 import { err } from "../../../lib/utils/err.js";
 import { cacheEmpty, lang, not } from "../index.js";
-import { getNameFromCache, getUserOCs, noCache, saveOC } from "../utils.js";
+import { getUserOCs, noCache, oclog, saveOC } from "../utils.js";
 
 new Query(
 	{
@@ -26,7 +26,7 @@ EventListener("document", 0, async (ctx, next, ow) => {
 
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
-	log(`> OC. ${getNameFromCache(ctx.from)} изменил(а) реф`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) реф`);
 });
 
 ssn.OC.next(10, async (ctx, user) => {
@@ -36,7 +36,7 @@ ssn.OC.next(10, async (ctx, user) => {
 	const oc = uOC[user.cache.sessionCache[0]];
 	ssn.OC.enter(ctx.from.id, 11, oc.fileid);
 	ctx.reply(lang.edit.name());
-	log(`> OC. ${getNameFromCache(ctx.from)} оставил(а) прежний реф`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежний реф`);
 });
 /*---------------------------------------------------
 
@@ -53,7 +53,7 @@ EventListener("text", 0, async (ctx, next, ow) => {
 
 	ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
 	ctx.reply(lang.edit.description());
-	log(`> OC. ${getNameFromCache(ctx.from)} изменил(а) имя`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) имя`);
 });
 
 ssn.OC.next(11, async (ctx, user) => {
@@ -63,7 +63,7 @@ ssn.OC.next(11, async (ctx, user) => {
 	const oc = uOC[user?.cache?.sessionCache[0]];
 	ssn.OC.enter(ctx.from.id, 12, oc.name);
 	ctx.reply(lang.edit.description());
-	log(`> OC. ${getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
 });
 /*---------------------------------------------------
 

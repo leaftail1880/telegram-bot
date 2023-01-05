@@ -1,7 +1,7 @@
 {
   "name": "oboldie",
   "displayName": "Koboldie (TG-bot)",
-  "version": "8.1.27",
+  "version": "9.0.0",
   "main": "app.js",
   "scripts": {
     "run": "node app.js",
@@ -13,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "cli-color": "^2.0.3",
+    "cli-progress": "^3.11.2",
     "dotenv": "^16.0.1",
     "leafy-utils": "^2.0.19",
     "redis": "^4.3.0",

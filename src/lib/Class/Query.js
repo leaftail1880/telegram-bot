@@ -1,11 +1,10 @@
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
-import { data as $data, log } from "../SERVISE.js";
+import { newlog } from "../SERVISE.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";
-import { Xitext } from "./Xitext.js";
 import { XTimer } from "./XTimer.js";
 
 /**
@@ -34,6 +33,20 @@ export class Query {
 		this.callback = callback;
 
 		ques[`${info.prefix}${d.separator.link}${info.name}`] = this;
+	}
+	/**
+	 *
+	 * @param {Context} ctx
+	 * @param {string} message
+	 */
+	static Log(ctx, message = null) {
+		const name = util.getNameFromCache(ctx.from);
+		const text = `${name}: ${message}`;
+		newlog({
+			consoleMessage: text,
+			fileName: "queries.txt",
+			fileMessage: text,
+		});
 	}
 }
 
@@ -68,24 +81,14 @@ function loadQuerys() {
 			ctx.answerCbQuery("Ошибка 400!\nОбработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
 				show_alert: true,
 			});
-			log("Cannot find parser for " + data);
+			Query.Log(ctx, "No button parser for: " + data);
 			return next();
 		}
 
-		const name = util.getFullName(database.collection()[d.user(ctx.callbackQuery.from.id)], ctx.callbackQuery.from);
-
-		const xt = new Xitext()._.group(name)
-			.bold()
-			.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
-			._.group()
-			.text(": ")
-			.bold(Qname);
-
-		args.forEach((e) => xt.text("\n  ").mono(e));
-
-		const run = () => q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra));
-
-		safeRun("Q", run, xt, xt);
+		await safeRun("Q", () =>
+			q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra))
+		);
+		Query.Log(ctx, `${Qname} ${args.join("  ")}`);
 		if (q.info.msg) ctx.answerCbQuery(q.info.msg);
 	});
 }

@@ -1,10 +1,10 @@
 import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
-import { log } from "../../../lib/SERVISE.js";
+import { util } from "../../../lib/Class/Utils.js";
 import { err } from "../../../lib/utils/err.js";
 import { cacheEmpty, lang, not } from "../index.js";
-import { getNameFromCache, saveOC } from "../utils.js";
+import { oclog, saveOC } from "../utils.js";
 
 new Query(
 	{
@@ -24,7 +24,7 @@ new EventListener("document", 0, async (ctx, next, ow) => {
 	if (not(ctx, qq, 0)) return next();
 	ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
 	ctx.reply(lang.create.name);
-	log(`> OC. ${getNameFromCache(ctx.from)} отравил(а) реф`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} отравил(а) реф`);
 });
 
 // 2 этап, имя
@@ -36,7 +36,7 @@ new EventListener("text", 0, async (ctx, next, ow) => {
 
 	ssn.OC.enter(ctx.from.id, 2, ctx.message.text);
 	ctx.reply(lang.create.description);
-	log(`> OC. ${getNameFromCache(ctx.from)} отправил(а) имя`);
+	oclog(`> OC. ${util.getNameFromCache(ctx.from)} отправил(а) имя`);
 });
 
 // 3 этап - описание

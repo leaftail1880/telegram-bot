@@ -1,3 +1,5 @@
+import { database } from "../../index.js";
+
 export const util = {
 	/**
 	 * @param {any} target
@@ -6,22 +8,22 @@ export const util = {
 	toStr(target, space = "  ", cw = "", funcCode = false, depth = 0) {
 		if (depth > 10 || typeof target !== "object") return `${rep(target)}` ?? `${target}` ?? "{}";
 
+		/**
+		 * @param {any} value
+		 */
 		function rep(value) {
 			switch (typeof value) {
 				case "function":
-					// const reg = /(.*\(.+\)\s*=?>?\s*\{).+\}/g;
 					/**
-					 * @type {String}
+					 * @type {string}
 					 */
-					let r = //reg.test(value) ?
-						value.toString().replace(/[\n\r]/g, "");
-					// : "function() { }";
+					let r = value.toString().replace(/[\n\r]/g, "");
 
 					if (!funcCode) {
-						const native = r.endsWith("[native code] }");
+						const native = r.includes("[native code]");
 						const code = native ? " [native code] " : "...";
-						let isArrow = true,
-							name = "<>";
+						let isArrow = true;
+						let name = "";
 
 						if (r.startsWith("function")) {
 							r = r.replace(/^function\s*/, "");
@@ -33,7 +35,7 @@ export const util = {
 							r = r.replace(name, "");
 						}
 
-						let count = 0,
+						let args = "(",
 							bracket = false,
 							escape = false;
 
@@ -47,11 +49,16 @@ export const util = {
 							} else escape = false;
 
 							if (!bracket && char === ")") {
-								count = i;
+								args = r.substring(0, i);
 								break;
 							}
 						}
-						r = `${isArrow ? "" : "function "}${name}${r.substring(0, count)})${isArrow ? " => " : " "}{${code}}`;
+						// function
+						r = `${isArrow ? "" : `function `}`;
+						r += `${name}`;
+						r += `${args})`;
+						r += `${isArrow ? " => " : " "}`;
+						r += `{${code}}`;
 					}
 
 					value = r;
@@ -59,6 +66,8 @@ export const util = {
 					break;
 
 				case "object":
+					if (Array.isArray(value)) break;
+
 					if (visited.has(value)) {
 						// Circular structure detected
 						value = "{...}";
@@ -79,6 +88,13 @@ export const util = {
 
 					value = allInherits;
 					break;
+				case "symbol":
+					value = `[Symbol.${value.description}]§r`;
+					break;
+
+				case "string":
+					value = `'${value}'`;
+					break;
 			}
 			return value;
 		}
@@ -87,21 +103,6 @@ export const util = {
 		const visited = new WeakSet();
 
 		return JSON.stringify(target, (_, value) => rep(value), space)?.replace(/"/g, cw);
-	},
-
-	/**
-	 * Convert Durations to milliseconds
-	 */
-	toMS(value) {
-		const number = Number(value.replace(/[^-.0-9]+/g, ""));
-		value = value.replace(/\s+/g, "");
-		if (/\d+(?=y)/i.test(value)) return number * 3.154e10;
-		else if (/\d+(?=w)/i.test(value)) return number * 6.048e8;
-		else if (/\d+(?=d)/i.test(value)) return number * 8.64e7;
-		else if (/\d+(?=h)/i.test(value)) return number * 3.6e6;
-		else if (/\d+(?=m)/i.test(value)) return number * 60000;
-		else if (/\d+(?=s)/i.test(value)) return number * 1000;
-		else if (/\d+(?=ms|milliseconds?)/i.test(value)) return number;
 	},
 	/**
 	 *
@@ -159,19 +160,7 @@ export const util = {
 		}
 		return `${min} ${m}`;
 	},
-	add(array, value) {
-		const a = Array.isArray(array) ? array : [],
-			es = [];
-		if (!a.includes(value)) a.push(value);
-		a.forEach((e) => {
-			if (!es.includes(e)) es.push(e);
-		});
-		return es;
-	},
 
-	isError(error) {
-		return typeof error === "object" && error !== null && "message" in error;
-	},
 	/**
 	 *
 	 * @param {{name?: string; stack?: string; message: string; on?: object;}} err
@@ -224,6 +213,15 @@ export const util = {
 
 		if (!name && user) name = util.getName(user);
 		return name;
+	},
+
+	/**
+	 *
+	 * @param {import("telegraf/types").User} user
+	 * @returns
+	 */
+	getNameFromCache(user) {
+		return util.getFullName(database.collection()[d.user(user.id)], user);
 	},
 	/**
 	 *

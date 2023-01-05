@@ -8,8 +8,14 @@ export class MultiMenuV1 {
 			maxRows: 6,
 			maxButtonsPerRow: 6,
 			backButtonSymbol: "↩️",
+			pageBack: "«",
+			pageNext: "»",
 		};
 	}
+	/**
+	 *
+	 * @param {string} prefix
+	 */
 	constructor(prefix) {
 		this.prefix = prefix;
 		this.config = MultiMenuV1.config;
@@ -54,14 +60,15 @@ export class MultiMenuV1 {
 	}
 	/**
 	 *
-	 * @param {import("telegraf/types").InlineKeyboardButton[][]} buttons
-	 * @param {import("telegraf/types").InlineKeyboardButton} backButton
-	 * @param {string} methodName
-	 * @param {string | number} pageTo
-	 * @param {number} buttonLimit
+	 * @param {Object} options
+	 * @param {import("telegraf/types").InlineKeyboardButton[][]} options.buttons
+	 * @param {string} options.queryName
+	 * @param {import("telegraf/types").InlineKeyboardButton} [options.backButton]
+	 * @param {string | number} [options.pageTo]
+	 * @param {number} [options.buttonLimit]
 	 * @returns
 	 */
-	generatePageSwitcher(buttons, backButton = null, methodName, pageTo = 1, buttonLimit = this.config.maxRows) {
+	generatePageSwitcher({ buttons, queryName, backButton = null, pageTo = 1, buttonLimit = this.config.maxRows }) {
 		const page = Number(pageTo);
 		const qNext = Math.ceil(buttons.length / buttonLimit) - 1 >= page;
 		const qBack = page > 1;
@@ -74,8 +81,8 @@ export class MultiMenuV1 {
 
 		if (backButton) menu.push(backButton);
 
-		if (qBack) menu.unshift(new Button("«").data(this.link(methodName, page - 1)));
-		if (qNext) menu.push(new Button("»").data(this.link(methodName, page + 1)));
+		if (qBack) menu.unshift(new Button(this.config.pageBack).data(this.link(queryName, page - 1)));
+		if (qNext) menu.push(new Button(this.config.pageNext).data(this.link(queryName, page + 1)));
 
 		btns.push(menu);
 

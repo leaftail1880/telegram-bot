@@ -18,14 +18,36 @@ export const start_stop_lang = {
 	},
 
 	log: {
-		start: () => console.log(`${data.development ? `${clc.bgYellow("DEV")} ` : ""}v${config.version.join(".")}`),
+		start: () =>
+			console.log(
+				start_stop_lang.state(0, 4, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
+			),
+		db: () => console.log(start_stop_lang.state(1, 4, "Fetching db data...")),
+		session: () =>
+			console.log(
+				start_stop_lang.state(2, 4, `Type: ${clc.cyanBright(data.type)} Session: ${clc.cyanBright(data.session)}`)
+			),
+		modules: () => console.log(start_stop_lang.state(3, 4, "Loading modules...")),
 		end: (/** @type {string[]} */ modules) =>
 			console.log(
-				`${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))} sec, Session: ${clc.cyanBright(
-					data.session
-				)}, Modules:${modules.map((e) => `\n ${clc.greenBright("[+]")} ${e}`).join("")}`
+				start_stop_lang.state(
+					4,
+					4,
+					`Modules:${modules
+						.map((e) => `\n ${clc.cyanBright("[+]")} ${e}`)
+						.join("")}\n\nReady to work in ${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
+				)
 			),
 	},
+
+	/**
+	 *
+	 * @param {number} s1
+	 * @param {number} s2
+	 * @param {string} m
+	 * @returns
+	 */
+	state: (s1, s2, m) => clc.blackBright(`[${s1}/${s2}] `) + clc.white(m),
 
 	/**
 	 *

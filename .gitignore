@@ -1,5 +1,6 @@
-/node_modules
 .env
+node_modules
+logs
 yarn-error.log
 yarn.lock
 migration.json

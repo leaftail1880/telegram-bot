@@ -1,6 +1,7 @@
 import { TriggerEventListeners } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
-import { log } from "../../lib/SERVISE.js";
+import { Xitext } from "../../lib/Class/Xitext.js";
+import { newlog } from "../../lib/SERVISE.js";
 
 const newUsers = {};
 
@@ -18,7 +19,13 @@ export function CreateUser(ctx) {
 
 	if (newUsers[id]) return newUsers[id];
 
-	log(`Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`);
+	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`;
+	newlog({
+		consoleMessage: text,
+		xitext: new Xitext().text(text),
+		fileMessage: text,
+		fileName: "groups.txt",
+	});
 
 	TriggerEventListeners("new.member", ctx);
 
@@ -44,7 +51,13 @@ export function CreateUser(ctx) {
  */
 export function CreateGroup(id, title, members = []) {
 	if (newGroups[id]) return newGroups[id];
-	log(`Новая группа!\n Название: ${title}\n ID: ${id}`);
+	const text = `Новая группа!\n Название: ${title}\n ID: ${id}`;
+	newlog({
+		consoleMessage: text,
+		xitext: new Xitext().text(text),
+		fileMessage: text,
+		fileName: "groups.txt",
+	});
 	const group = {
 		static: {
 			id: id,

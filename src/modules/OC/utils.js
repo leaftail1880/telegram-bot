@@ -1,28 +1,28 @@
 import { Context } from "telegraf";
 import { database } from "../../index.js";
-import { d, util } from "../../lib/Class/Utils.js";
-import { log } from "../../lib/SERVISE.js";
-
-/** @typedef {{name:string;fileid:string;description:string}} Character */
-/** @typedef {Character[]} OwnerCharacters */
+import { d } from "../../lib/Class/Utils.js";
+import { Xitext } from "../../lib/Class/Xitext.js";
+import { newlog } from "../../lib/SERVISE.js";
 
 /**
- * @returns {Promise<Object>}
+ *
+ * @param {string} message
  */
-export async function getOCS() {
-	const OCS = (await database.get(d.pn("Module", "OC"), true)) ?? {};
-	Object.keys(OCS).forEach((e) => {
-		const ar = OCS[e] ?? [];
-		OCS[e] = ar.filter((e) => e);
-		if (!OCS[e][0]) delete OCS[e];
+export function oclog(message) {
+	newlog({
+		fileMessage: message,
+		fileName: "oc.txt",
+		consoleMessage: message,
+		xitext: new Xitext().text(message),
 	});
-	return OCS;
 }
+
+/** @typedef {{ name: string; fileid: string; description: string }} Character */
 
 /**
  *
  * @param {number | string} id
- * @returns {Promise<OwnerCharacters>}
+ * @returns {Promise<Character[]>}
  */
 export async function getUserOCs(id) {
 	const dbvalue = await database.get(d.pn("oc", id), true);
@@ -32,7 +32,7 @@ export async function getUserOCs(id) {
 /**
  *
  * @param {number | string} id
- * @param {OwnerCharacters} ocs
+ * @param {Character[]} ocs
  */
 export async function saveUserOCs(id, ocs) {
 	await database.set(d.pn("oc", id), ocs);
@@ -45,7 +45,7 @@ export async function saveUserOCs(id, ocs) {
  * @param {number} [index]
  */
 export async function saveOC(id, oc, index) {
-	log(`> OC. ${index ? "Изменен" : "Создан новый"} ОС. Имя: ${oc.name}`);
+	oclog(`> OC. ${index ? "Изменен" : "Создан новый"} ОС. Имя: ${oc.name}`);
 	const OCs = await getUserOCs(id);
 	index ? (OCs[index] = oc) : OCs.push(oc);
 	saveUserOCs(id, OCs);
@@ -58,7 +58,7 @@ export async function saveOC(id, oc, index) {
  */
 export async function delOC(id, index) {
 	const OCs = await getUserOCs(id);
-	log(`> OC. Удален ОС. Имя: ${OCs[index]?.name}`);
+	oclog(`> OC. Удален ОС. Имя: ${OCs[index]?.name}`);
 	delete OCs[index];
 	saveUserOCs(id, OCs);
 }
@@ -146,13 +146,4 @@ export function noCache(user, uOC) {
  */
 export function noOC(ctx) {
 	ctx.answerCbQuery("Нету ОС!", { show_alert: true });
-}
-
-/**
- *
- * @param {import("telegraf/types").User} user
- * @returns
- */
-export function getNameFromCache(user) {
-	return util.getFullName(database.collection()[d.user(user.id)], user);
 }

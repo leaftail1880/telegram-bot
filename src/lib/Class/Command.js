@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import config from "../../config.js";
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
-import { data as $data, log } from "../SERVISE.js";
+import { data as $data, newlog } from "../SERVISE.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
@@ -99,7 +99,115 @@ export class Command {
 		// Если нет ни одного разрешения, значит нельзя
 		return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
 	}
+	/**
+	 *
+	 * @param {Context & { message: import("telegraf/types").Message.TextMessage;}} ctx
+	 * @param {DB.User} dbuser
+	 * @param {string} message
+	 */
+	static Log(ctx, dbuser, message = null) {
+		const name = util.getFullName(dbuser, ctx.from);
+
+		const xt = new Xitext()
+			.text(`${V[ctx.chat.type]} `)
+			._.group(name)
+			.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
+			.bold()
+			._.group()
+			.text(`${message ? ` ${message}` : ""}: ${ctx.message.text}`);
+		const text = xt._.text;
+
+		if (ctx.chat.id !== $data.chatID.log)
+			newlog({
+				xitext: xt,
+				consoleMessage: text,
+				fileName: "commands.txt",
+				fileMessage: text,
+			});
+	}
 }
+
+const V = {
+	private: "Лc",
+	group: "Группа",
+	supergroup: "Группа",
+};
+
+EventListener("modules.load", 0, (_, next) => {
+	let groupCommands = [],
+		groupAdminCommands = [],
+		privateCommands = [],
+		botAdminCommands = [],
+		all = [];
+
+	for (const cmd of public_cmds) {
+		let m = { command: cmd.info.name, description: cmd.info.description };
+		if (cmd.info.hide) continue;
+
+		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm == 0) groupCommands.push(m);
+		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm == 1) groupAdminCommands.push(m);
+		if ((cmd.info.type === "private" || cmd.info.type === "all") && cmd.info.perm == 0)
+			privateCommands.push(m), botAdminCommands.push(m);
+		if (cmd.info.perm == 2) botAdminCommands.push(m);
+
+		all.push(cmd.info.name);
+	}
+	private_cmds.forEach((e) => all.push(e.info.name));
+
+	if (groupCommands[0])
+		bot.telegram.setMyCommands(groupCommands, {
+			scope: { type: "all_group_chats" },
+		});
+
+	if (groupAdminCommands[0])
+		bot.telegram.setMyCommands(groupAdminCommands.concat(groupCommands), {
+			scope: { type: "all_chat_administrators" },
+		});
+
+	if (privateCommands[0])
+		bot.telegram.setMyCommands(privateCommands, {
+			scope: { type: "all_private_chats" },
+		});
+
+	if (botAdminCommands[0])
+		bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
+			scope: { type: "chat", chat_id: $data.chatID.owner },
+		});
+
+	next();
+});
+
+EventListener("text", 9, async (ctx, next, data) => {
+	const text = ctx.message.text;
+
+	const command = Command.getCmd(text);
+
+	if (command === "not_found" && ctx.chat.type === "private") {
+		ctx.reply("Неизвестная команда. /help");
+		Command.Log(ctx, data.user, "Неизвестная команда");
+		return;
+	}
+
+	if (typeof command !== "object") return next();
+
+	data.user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+	if (await Command.cantUse(command, ctx, data.user_rigths))
+		return ctx.reply("В этом чате эта команда недоступна. /help", {
+			reply_to_message_id: ctx.message.message_id,
+			allow_sending_without_reply: true,
+		});
+
+	// All good, run
+	const args =
+		text
+			.replace(config.command.clearCommand, "")
+			?.match(config.command.parseArgs)
+			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
+
+	Command.Log(ctx, data.user);
+	await safeRun(`Command`, () => command.callback(ctx, args, data, command));
+});
 
 /**======================ss
  *    Приветствие
@@ -191,91 +299,3 @@ new Command(
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
 );
-
-const V = {
-	private: "Лc",
-	channel: "Канал",
-	group: "Группа",
-	supergroup: "Группа",
-};
-
-EventListener("modules.load", 0, (_, next) => {
-	//  Общие команды группы
-	let groupCommands = [],
-		// Админские в группах
-		groupAdminCommands = [],
-		// Общие команды в лс
-		privateCommands = [],
-		// Команды для управления ботом
-		botAdminCommands = [],
-		// Команды которые будут выведены в лог
-		all = [];
-
-	public_cmds.forEach((cmd) => {
-		let m = { command: cmd.info.name, description: cmd.info.description };
-		if (!cmd.info.hide) {
-			if ((cmd.info.type == "group" || cmd.info.type == "all") && cmd.info.perm == 0) groupCommands.push(m);
-			if ((cmd.info.type == "group" || cmd.info.type == "all") && cmd.info.perm == 1) groupAdminCommands.push(m);
-			if ((cmd.info.type == "private" || cmd.info.type == "all") && cmd.info.perm == 0)
-				privateCommands.push(m), botAdminCommands.push(m);
-			if (cmd.info.perm == 2) botAdminCommands.push(m);
-		}
-
-		all.push(cmd.info.name);
-	});
-	private_cmds.forEach((e) => all.push(e.info.name));
-
-	if (groupCommands[0])
-		bot.telegram.setMyCommands(groupCommands, {
-			scope: { type: "all_group_chats" },
-		});
-	if (groupAdminCommands[0])
-		bot.telegram.setMyCommands(groupAdminCommands.concat(groupCommands), {
-			scope: { type: "all_chat_administrators" },
-		});
-	if (privateCommands[0])
-		bot.telegram.setMyCommands(privateCommands, {
-			scope: { type: "all_private_chats" },
-		});
-	if (botAdminCommands[0])
-		bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
-			scope: { type: "chat", chat_id: $data.chatID.owner },
-		});
-	next();
-});
-
-EventListener("text", 9, async (ctx, next, data) => {
-	const text = ctx.message.text;
-
-	const command = Command.getCmd(text);
-
-	if (command === "not_found" && ctx.chat.type === "private") {
-		ctx.reply("Неизвестная команда. /help");
-		log("Unknown command: " + ctx.message.text);
-	}
-
-	if (typeof command !== "object") return next();
-
-	data.user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
-
-	if (await Command.cantUse(command, ctx, data.user_rigths))
-		return ctx.reply("В этом чате эта команда недоступна. /help", {
-			reply_to_message_id: ctx.message.message_id,
-			allow_sending_without_reply: true,
-		});
-
-	// All good, run
-	const args =
-		text
-			.replace(config.command.clearCommand, "")
-			?.match(config.command.parseArgs)
-			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
-	const name = util.getFullName(data.user, ctx.from);
-	const xt = new Xitext()._.group(name)
-		.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
-		.bold()
-		._.group()
-		.text(` ${text}`);
-
-	safeRun(V[ctx.chat.type], () => command.callback(ctx, args, data, command), xt, xt, ctx.chat.id !== $data.chatID.log);
-});

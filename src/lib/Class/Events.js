@@ -1,7 +1,7 @@
 import clc from "cli-color";
 import config from "../../config.js";
 import { bot } from "../launch/tg.js";
-import { data as $data } from "../SERVISE.js";
+import { data as $data, newlog } from "../SERVISE.js";
 
 /**
  * @type {Record<string, Array<IEvent.Stored>>}
@@ -58,19 +58,10 @@ bot.on("message", async (ctx) => {
 	);
 
 	if (Date.now() - $data.start_time < config.update.logTime) {
-		const time = new Date(Date.now());
-		const timestring =
-			time.getDate() +
-			"." +
-			time.getMonth() +
-			" " +
-			time.getHours() +
-			":" +
-			time.getMinutes() +
-			":" +
-			time.getSeconds();
-
-		console.log(clc.blackBright(timestring), clc.yellowBright((performance.now() - start).toFixed(2)));
+		newlog({
+			fileName: "updates.txt",
+			fileMessage: (performance.now() - start).toFixed(2),
+		});
 	}
 });
 

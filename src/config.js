@@ -1,8 +1,9 @@
 export default {
+	// Keep it one line for autoreplace from leafs/commit.js
 	version: [8, 1, 24],
 
 	command: {
-		clearCommand: /^.\w*\s?/g,
+		clearCommand: /^(?:.\S*)(?:@?\S)\s?/g,
 		parseArgs: /"[^"]+"|[^\s]+/g,
 	},
 
@@ -18,13 +19,6 @@ export default {
 		 * @type {milliseconds}
 		 */
 		timerTime: 5000,
-
-		/**
-		 * Время которое должно пройти что бы данные пользователя обновились.
-		 * Чем меньше, тем дольше будет обработка сообщений при запуске.
-		 * @type {milliseconds}
-		 */
-		cacheTime: 10000,
 	},
 
 	/**

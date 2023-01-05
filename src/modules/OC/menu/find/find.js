@@ -44,7 +44,12 @@ new Query(
 				}
 			} catch {}
 		}
-		buttons = m.generatePageSwitcher(buttons, new Button(m.config.backButtonSymbol).data(link("back")), "find", page);
+		buttons = m.generatePageSwitcher({
+			buttons: buttons,
+			backButton: new Button(m.config.backButtonSymbol).data(link("back")),
+			queryName: "find",
+			pageTo: page,
+		});
 
 		editMsg(ctx, lang.find, {
 			reply_markup: { inline_keyboard: buttons },
