@@ -1,4 +1,4 @@
-import { MultiMenuV1 } from "../../lib/Class/Menu.js";
+import { MultiMenu } from "../../lib/Class/Menu.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
@@ -9,10 +9,10 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
  * @property {string} fileid
  */
 
-export const m = new MultiMenuV1("OC"),
-	link = m.link.bind(m),
-	editMsg = m.editMsgFromQuery.bind(m),
-	not = m.notPrivateChat.bind(m),
+export const m = new MultiMenu("OC"),
+	link = BIND(m.link, m),
+	editMsg = BIND(m.editMsgFromQuery, m),
+	not = BIND(m.notPrivateChat, m),
 	cacheEmpty = (qq, lvl) => m.isCacheEmpty(qq?.user, lvl);
 
 export const lang = {
@@ -101,4 +101,5 @@ import "./menu/edit.js";
 import "./menu/my.js";
 import "./menu/myoc.js";
 
+import { BIND } from "../../index.js";
 import "./menu/reg.js";

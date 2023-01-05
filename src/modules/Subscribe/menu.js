@@ -1,11 +1,11 @@
-import { d } from "../../lib/Class/Utils.js";
-import { MultiMenuV1 } from "../../lib/Class/Menu.js";
-import { Button, Xitext } from "../../lib/Class/Xitext.js";
+import { MultiMenu } from "../../lib/Class/Menu.js";
 import { PersonalSubs } from "../../lib/Class/Subscriptions.js";
+import { d } from "../../lib/Class/Utils.js";
+import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 export const $PREFIX = "SB";
 
-export const menu = new MultiMenuV1($PREFIX);
+export const menu = new MultiMenu($PREFIX);
 
 export const Subs = {
 	newMembers: [true, "Новый участник чата"],

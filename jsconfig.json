@@ -4,7 +4,10 @@
 		"checkJs": true,
 		"target": "es2022",
 		"lib": ["ES2022"],
-		"module": "Node16"
+		"module": "Node16",
+		"paths": {
+			"vk-io": ["./node_modules/vk-io/lib/index.d.ts"]
+		}
 	},
 	"exclude": ["./src/modules/timeChecker"],
 	"include": ["./src/", "e.js"]

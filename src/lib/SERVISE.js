@@ -82,11 +82,14 @@ export function log(msg) {
  *
  * @param {{xitext?: Xitext; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
  */
-export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
-	if (xitext) bot.telegram.sendMessage(data.chatID.log, ...xitext._.build());
+export async function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
+	if (xitext) await bot.telegram.sendMessage(data.chatID.log, ...xitext._.build());
 	if (consoleMessage) console.log(consoleMessage);
 	if (fileMessage)
-		fs.appendFile(path.join("logs", fileName ?? "logs.txt"), `[${new Date().toLocaleString()}] ${fileMessage}\r\n`);
+		await fs.appendFile(
+			path.join("logs", fileName ?? "logs.txt"),
+			`[${new Date().toLocaleString()}] ${fileMessage}\r\n`
+		);
 }
 
 /**

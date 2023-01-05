@@ -1,8 +1,9 @@
 import { Context } from "telegraf";
+import { Query } from "./Query.js";
 import { d } from "./Utils.js";
 import { Button } from "./Xitext.js";
 
-export class MultiMenuV1 {
+export class MultiMenu {
 	static get config() {
 		return {
 			maxRows: 6,
@@ -18,7 +19,7 @@ export class MultiMenuV1 {
 	 */
 	constructor(prefix) {
 		this.prefix = prefix;
-		this.config = MultiMenuV1.config;
+		this.config = MultiMenu.config;
 	}
 	/**
 	 *
@@ -87,6 +88,17 @@ export class MultiMenuV1 {
 		btns.push(menu);
 
 		return btns;
+	}
+	/**
+	 * Создает команду
+	 * @param {Object} info
+	 * @param {string} info.name Имя
+	 * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
+	 * @param {number} [info.permisson]
+	 * @param {IQueryTypes.Callback} callback
+	 */
+	query(info, callback) {
+		return new Query({ prefix: this.prefix, ...info }, callback);
 	}
 }
 

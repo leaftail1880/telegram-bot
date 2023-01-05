@@ -3,7 +3,7 @@
 import clc from "cli-color";
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { data, log, SERVISE } from "../SERVISE.js";
+import { data, log, newlog, SERVISE } from "../SERVISE.js";
 import { start_stop_lang as lang } from "./lang.js";
 import { bot } from "./tg.js";
 import { bigger, updateInfo } from "./update.js";
@@ -49,9 +49,21 @@ export async function freeze() {
 	if (data.isFreezed) return;
 	data.isFreezed = true;
 	UpdateCheckTimer.close();
-	if (data.isLaunched)
-		await bot.telegram.sendMessage(data.chatID.log, ...lang.stop.freeze()),
-			console.log(clc.bgCyanBright(lang.stop.freeze()[0]));
+	if (data.isLaunched) {
+		const l = lang.stop.freeze();
+		newlog({
+			xitext: {
+				// @ts-expect-error
+				_: {
+					build() {
+						return l;
+					},
+				},
+			},
+			consoleMessage: clc.bgCyanBright.black(l[0]),
+			fileMessage: l[0],
+		});
+	}
 
 	if (data.isLaunched && !data.isStopped) {
 		data.isStopped = true;
@@ -88,7 +100,7 @@ export async function freeze() {
 		}
 
 		times++;
-		console.log(times > 1 ? `Нет ответа ${times}` : `Ждет ответ...`);
+		console.log(times >= 1 ? `Нет ответа ${times}` : `Ждет ответ...`);
 		if (times >= 1) {
 			await launch(
 				devTimes
@@ -116,12 +128,16 @@ export async function freeze() {
 		/**======================
 		 * Запуск бота
 		 *========================**/
-		await bot.launch();
+		bot.launch();
 
 		data.isStopped = false;
 		data.isLaunched = true;
 		data.isFreezed = false;
-		console.log(clc.bgGreenBright(lang.logLaunch(info)));
+		const message = lang.logLaunch(info);
+		newlog({
+			fileMessage: message,
+			consoleMessage: message,
+		});
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
 
 		UpdateCheckTimer.open();

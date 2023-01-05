@@ -1,16 +1,6 @@
 import clc from "cli-color";
 import { SingleBar } from "cli-progress";
-
-/**
- * @template Func, [This = any]
- * @param {Func} func
- * @param {This} context
- * @returns {Func}
- */
-function BIND(func, context) {
-	if (typeof func !== "function") return func;
-	return func.bind(context);
-}
+import { BIND } from "../../index.js";
 
 /**
  * @typedef {import("redis").RedisClientType} cli
