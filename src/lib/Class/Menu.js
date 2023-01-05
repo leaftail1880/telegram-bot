@@ -25,11 +25,11 @@ export class MultiMenu {
 	 *
 	 * @param {Context} ctx
 	 * @param {string} text
-	 * @param {import("telegraf/types").Convenience.ExtraEditMessageText} extra
-	 * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} InlineKeyboard
+	 * @param {import("telegraf/types").Convenience.ExtraEditMessageText} [extra]
+	 * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} [InlineKeyboard]
 	 */
-	async editMsgFromQuery(ctx, text, extra, InlineKeyboard) {
-		await editMsg(ctx, ctx.callbackQuery.message, text, extra, InlineKeyboard);
+	editMsgFromQuery(ctx, text, extra, InlineKeyboard) {
+		return editMsg(ctx, ctx.callbackQuery.message, text, extra, InlineKeyboard);
 	}
 	/**
 	 *

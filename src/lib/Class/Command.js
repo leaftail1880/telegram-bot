@@ -1,3 +1,4 @@
+import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
 import { database } from "../../index.js";
@@ -120,7 +121,7 @@ export class Command {
 		if (ctx.chat.id !== $data.chatID.log)
 			newlog({
 				xitext: xt,
-				consoleMessage: text,
+				consoleMessage: clc.blackBright("C> ") + text,
 				fileName: "commands.txt",
 				fileMessage: text,
 			});

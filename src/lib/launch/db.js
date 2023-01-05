@@ -1,6 +1,7 @@
 import clc from "cli-color";
 import { SingleBar } from "cli-progress";
 import { BIND } from "../../index.js";
+import { clearLines } from "../SERVISE.js";
 
 /**
  * @typedef {import("redis").RedisClientType} cli
@@ -36,7 +37,20 @@ export class RedisDatabase {
 	 */
 	async #connect(c) {
 		if (c) {
+			const b1 = new SingleBar({
+				format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} connecting`,
+				barCompleteChar: "#",
+				barIncompleteChar: "..",
+				hideCursor: true,
+			});
+			b1.start(100, 0);
+			setInterval(() => {
+				if (b1.getProgress() < b1.getTotal()) b1.increment();
+			}, 10);
+
 			await c.connect();
+			b1.stop();
+			clearLines(-1);
 			this.#CLIENT = c;
 			this.#CLOSED_CLIENT = "closed";
 			await this.collectionAsync(true);
@@ -170,13 +184,14 @@ export class RedisDatabase {
 	}
 	/**
 	 * It returns a collection of all the keys and values in the database
+	 * @param {boolean} renderProcess
 	 * @returns {Promise<Record<string, any>>} An object with the key being the key and the value being the value.
 	 */
 	async collectionAsync(renderProcess = false) {
 		const collection = {};
 		const keys = await this.keysAsync();
 		const b1 = new SingleBar({
-			format: `[${clc.cyanBright("{bar}")}] {percentage}% || {value}/{total} keys`,
+			format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} keys`,
 			barCompleteChar: "#",
 			barIncompleteChar: "..",
 			hideCursor: true,
@@ -192,8 +207,7 @@ export class RedisDatabase {
 			if (renderProcess) b1.increment();
 		}
 		b1.stop();
-		process.stdout.moveCursor(0, -1); // up one line
-		process.stdout.clearLine(1); // from cursor to end
+		clearLines(-1);
 
 		this.#CACHE = collection;
 		return collection;

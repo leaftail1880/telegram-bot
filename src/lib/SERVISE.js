@@ -66,6 +66,11 @@ export const handlers = {
 	bot: handleBotError,
 };
 
+export function clearLines(count = -1) {
+	process.stdout.moveCursor(0, count); // up one line
+	process.stdout.clearLine(1); // from cursor to end
+}
+
 /**
  *
  * @param {string} msg
@@ -82,14 +87,26 @@ export function log(msg) {
  *
  * @param {{xitext?: Xitext; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
  */
-export async function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
-	if (xitext) await bot.telegram.sendMessage(data.chatID.log, ...xitext._.build());
+export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
 	if (consoleMessage) console.log(consoleMessage);
+
+	// Array with async jobs
+	const jobs = [];
+
+	// Start job and push it to array
+	if (xitext) jobs.push(bot.telegram.sendMessage(data.chatID.log, ...xitext._.build()));
+
+	// fs.appendFile doesnt waiting for telegram to send message
 	if (fileMessage)
-		await fs.appendFile(
-			path.join("logs", fileName ?? "logs.txt"),
-			`[${new Date().toLocaleString()}] ${fileMessage}\r\n`
+		jobs.push(
+			fs.appendFile(
+				path.join("logs", fileName ?? "logs.txt"),
+				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r\n`
+			)
 		);
+
+	// Resolves when all jobs are done
+	return Promise.all(jobs);
 }
 
 /**
@@ -127,7 +144,7 @@ async function start() {
 	/**======================
 	 * Загрузка плагинов
 	 *========================**/
-	lang.log.modules();
+	const progress_bar1 = lang.log.modules();
 	const m = [];
 	for (const module of config.modules) {
 		const start = performance.now();
@@ -135,7 +152,10 @@ async function start() {
 		await import(`../modules/${module}/index.js`).catch(SERVISE.error);
 
 		m.push(`${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
+		progress_bar1.increment();
 	}
+	progress_bar1.stop();
+	clearLines(-1);
 
 	// Инициализация команд и списков
 	TriggerEventListeners("modules.load", "");

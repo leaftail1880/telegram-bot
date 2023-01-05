@@ -48,7 +48,7 @@ async function timer() {
 		if (!data.isStopped) return;
 		await bot.telegram.getMe();
 
-		await database._.connect(null);
+		await database._.connect();
 		bot.launch();
 		data.isStopped = false;
 

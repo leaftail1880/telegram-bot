@@ -60,7 +60,6 @@ async function updateVisualVersion(data) {
 
 	// Если версия новая
 	if (data.type === "realese" && !data.development) {
-		console.log("> New version!");
 		EventListener("modules.load", 0, () => TriggerEventListeners("new.release", ""));
 
 		// Прописываем ее в базе данных
@@ -70,21 +69,15 @@ async function updateVisualVersion(data) {
 	// Записываем значения
 	data.v = `${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
 
-	let d;
-	switch (data.type) {
-		case "work":
-			d = "Рабочая";
-			break;
-
-		case "realese":
-			d = "Релиз";
-			break;
-
-		case "old":
-			d = "Старая";
-			break;
-	}
+	const d = translate_version[data.type];
 
 	data.publicVersion = `v${data.v} ${d}`;
 	data.logVersion = `v${data.v}`;
 }
+
+/** @type {Record<ISessionData["type"], string>} */
+const translate_version = {
+	old: "Старая",
+	realese: "Релиз",
+	work: "Рабочая",
+};

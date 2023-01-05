@@ -79,7 +79,10 @@ export async function sendMessagDeleteRef(ctx, text, entities, InlineKeyboard, d
 	if (entities) extra.entities = entities;
 	if (InlineKeyboard) extra.reply_markup = { inline_keyboard: InlineKeyboard };
 
-	await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id);
+	try {
+		await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id);
+	} catch {}
+
 	if (delType === "2")
 		await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id - 1);
 

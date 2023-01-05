@@ -1,4 +1,5 @@
 import clc from "cli-color";
+import { SingleBar } from "cli-progress";
 import config from "../../config.js";
 import { Xitext } from "../Class/Xitext.js";
 import { data } from "../SERVISE.js";
@@ -27,7 +28,17 @@ export const start_stop_lang = {
 			console.log(
 				start_stop_lang.state(2, 4, `Type: ${clc.cyanBright(data.type)} Session: ${clc.cyanBright(data.session)}`)
 			),
-		modules: () => console.log(start_stop_lang.state(3, 4, "Loading modules...")),
+		modules: () => {
+			console.log(start_stop_lang.state(3, 4, "Loading modules..."));
+			const b1 = new SingleBar({
+				format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} modules`,
+				barCompleteChar: "#",
+				barIncompleteChar: "..",
+				hideCursor: true,
+			});
+			b1.start(config.modules.length, 0);
+			return b1;
+		},
 		end: (/** @type {string[]} */ modules) =>
 			console.log(
 				start_stop_lang.state(

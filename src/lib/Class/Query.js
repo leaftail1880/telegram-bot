@@ -1,3 +1,4 @@
+import clc from "cli-color";
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { newlog } from "../SERVISE.js";
@@ -43,7 +44,7 @@ export class Query {
 		const name = util.getNameFromCache(ctx.from);
 		const text = `${name}: ${message}`;
 		newlog({
-			consoleMessage: text,
+			consoleMessage: clc.blackBright("Q> ") + text,
 			fileName: "queries.txt",
 			fileMessage: text,
 		});
