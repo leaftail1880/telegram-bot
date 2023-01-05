@@ -1,7 +1,7 @@
 {
   "name": "oboldie",
   "displayName": "Koboldie (TG-bot)",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "main": "app.js",
   "scripts": {
     "run": "node app.js",

@@ -1,7 +1,7 @@
 import { commiter } from "leafy-utils";
 import fs from "fs/promises";
 
-commiter.on("after_commit", async ({ version, suffix, type, prev_version }) => {
+commiter.on("before_commit", async ({ version, suffix, type, prev_version }) => {
 	console.log(prev_version.join("."), "->", version.join("."));
 
 	const config_path = "./src/config.js";
