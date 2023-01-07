@@ -1,7 +1,7 @@
 {
   "name": "koboldie",
   "displayName": "Koboldie (TG-bot)",
-  "version": "9.0.5",
+  "version": "9.0.6",
   "main": "src/index.js",
   "scripts": {
     "run": "node src/index.js",
