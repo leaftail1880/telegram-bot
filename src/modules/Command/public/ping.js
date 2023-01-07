@@ -4,10 +4,17 @@ new Command(
 	{
 		name: "ping",
 		description: "Отправляет скорость ответа",
+		type: "all",
+		specprefix: true,
 	},
-	async (ctx, args, data) => {
+	async (ctx) => {
 		const time = performance.now();
-		const message = await ctx.reply("Wait...");
-		ctx.telegram.editMessageText(message.chat.id, message.message_id, null, `${performance.now() - time}`);
+		const message = await ctx.reply("Загрузка...");
+		ctx.telegram.editMessageText(
+			message.chat.id,
+			message.message_id,
+			null,
+			`Пинг: ${(performance.now() - time).toFixed(2)}мс`
+		);
 	}
 );

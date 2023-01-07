@@ -1,59 +1,66 @@
+import deepExtend from "deep-extend";
+
+/**
+ * @typedef {Record<string | number | symbol, any>} JSON_OBJECT
+ */
+
 /**
  *
- * @param {Object} sourceObject
- * @param {Object} defaultObject
- * @param {boolean} [onlyDefaultKeys]
- * @returns {Object}
+ * @template {JSON_OBJECT} S
+ * @template {JSON_OBJECT} D
+ * @param {S} sourceObject
+ * @param {D} defaultObject
+ * @returns {S & D}
  */
-export function setDefaults(sourceObject, defaultObject, onlyDefaultKeys = true, visited = new WeakSet()) {
-	const composed = {};
-
-	for (const key in sourceObject) {
-		if (!(key in defaultObject) && onlyDefaultKeys) continue;
-
-		const value = sourceObject[key];
-		const defaultValue = defaultObject[key];
-		const subSetDefaults = typeof defaultValue === "object" && !Array.isArray(defaultValue) && !visited.has(value);
-
-		composed[key] = subSetDefaults ? setDefaults(value, defaultValue) : value;
-	}
-
-	for (const key in defaultObject) {
-		if (key in composed) continue;
-		composed[key] = defaultObject[key];
-	}
-
-	return composed;
+export function setDefaults(sourceObject, defaultObject) {
+	//                No another simplier way do delete links
+	return deepExtend(JSON.parse(JSON.stringify(defaultObject)), sourceObject);
 }
 
 /**
  *
- * @param {Object} sourceObject
- * @param {Object} defaultObject
- * @param {boolean} [onlyDefaultKeys] If true, removing non-default keys
- * @returns {Object}
+ * @param {object} sourceObject
+ * @param {object} defaultObject
+ * @returns {object}
  */
-export function removeDefaults(sourceObject, defaultObject, onlyDefaultKeys = true, visited = new WeakSet()) {
+export function removeDefaults(sourceObject, defaultObject, visited = new WeakSet()) {
 	const composed = {};
 
 	for (const key in sourceObject) {
-		//     Non-default key
-		if (!(key in defaultObject) && onlyDefaultKeys) continue;
-
 		const value = sourceObject[key];
 		const defaultValue = defaultObject[key];
-		const subSetDefaults = typeof defaultValue === "object" && !Array.isArray(defaultValue) && !visited.has(value);
+		const subSetDefaults = typeof defaultValue === "object" && defaultValue !== null && !visited.has(value);
 
-		if (value === defaultValue && !subSetDefaults) continue;
+		if (value === defaultValue) continue;
 
-		if (!subSetDefaults) {
-			composed[key] = value;
-		} else {
-			const subDefaults = removeDefaults(value, defaultValue);
+		if (subSetDefaults) {
+			if (Array.isArray(defaultValue)) {
+				const composedArray = removeDefaultsFromArray(value, defaultValue);
+				if (composedArray.length < 1) continue;
+				composed[key] = composedArray;
+			} else {
+				const composedSubObject = removeDefaults(value, defaultValue, visited);
+				if (Object.keys(composedSubObject).length < 1) continue;
+				composed[key] = composedSubObject;
+			}
+		} else composed[key] = value;
+	}
 
-			if (Object.keys(subDefaults).length < 1) continue;
-			composed[key] = subDefaults;
-		}
+	return composed;
+}
+/**
+ *
+ * @template T
+ * @param {T[]} source
+ * @param {T[]} defaults
+ * @returns {T[]}
+ */
+function removeDefaultsFromArray(source, defaults) {
+	const composed = [];
+
+	for (const value of source) {
+		if (defaults.includes(value)) continue;
+		composed.push(value);
 	}
 
 	return composed;

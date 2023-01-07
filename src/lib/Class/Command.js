@@ -266,8 +266,8 @@ new Command(
 	},
 	async (ctx, _args, data) => {
 		const user = data.user;
-		if (user?.cache?.session) {
-			await ctx.reply(`Вы вышли из меню ${user.cache.session}`);
+		if (user?.cache?.session || user?.cache?.sessionCache) {
+			await ctx.reply(`Вы вышли из меню ${user.cache.session.replace("::", " ")}`);
 			delete user.cache.session;
 			delete user.cache.sessionCache;
 			await database.set(d.user(ctx.from.id), user);
@@ -285,18 +285,22 @@ new Command(
 	},
 	async (ctx, _a, data) => {
 		const user = data.user;
-		if (typeof user?.cache?.session === "string") {
-			const [_, sessionKey, rawStage] = user.cache.session.match(/^(.+)::(\d+)/);
-			const stage = parseInt(rawStage);
-			const sess = ssn[sessionKey];
+		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
+		const no_menu = () => ctx.reply("Вы не находитесь в меню!");
 
-			if (sess) {
-				if (typeof sess.executers[stage] === "function") {
-					sess.executers[stage](ctx, user);
-				} else ctx.reply("Этот шаг не предусматривает пропуска!");
-			} else delete user.cache.session;
+		if (typeof user?.cache?.session === "string") {
+			const match = user.cache.session.match(/^(.+)::(.+)$/);
+			if (!match) return no_skip();
+			const [_, sessionKey, stage] = match;
+			const session = ssn[sessionKey];
+
+			if (session) {
+				if (typeof session.executers[stage] === "function") {
+					session.executers[stage](ctx, user);
+				} else no_skip();
+			} else no_menu();
 
 			await database.set(d.user(ctx.from.id), user);
-		} else ctx.reply("Вы не находитесь в меню!");
+		} else no_menu();
 	}
 );

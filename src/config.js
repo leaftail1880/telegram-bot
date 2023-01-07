@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 0, 4],
+	version: [9, 0, 5],
 
 	command: {
 		clearCommand: /^(?:.\S*)(?:@?\S)\s?/g,
@@ -34,12 +34,13 @@ export default {
 
 	modules: [
 		"AdvancedData",
+		"AdvancedSession",
 		"Command",
 		"OC",
 		"ManageDB",
-		"Subscribe",
 		"Timers",
 		"MultiPublish",
+		// "Subscribe",
 		// "Updates",
 		// "Migrate",
 		// "Animation"

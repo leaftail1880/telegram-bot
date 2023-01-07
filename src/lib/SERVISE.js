@@ -76,7 +76,7 @@ export function clearLines(count = -1) {
  * @param {string} msg
  */
 export function log(msg) {
-	newlog({
+	return newlog({
 		xitext: new Xitext().text(msg),
 		fileMessage: msg,
 		consoleMessage: msg,
@@ -116,7 +116,6 @@ export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
 async function start() {
 	lang.log.start();
 	try {
-		await fs.rmdir("logs");
 		await fs.mkdir("logs");
 	} catch {}
 
@@ -189,8 +188,12 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	text.text("\n" + data.logVersion + " ");
 	text.bold(env.whereImRunning);
 
-	console.log(styles.error(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
-	if (data.isLaunched && sendMessage) await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+	let skipMessage = false;
+	if (data.development && ["SIGINT", "SIGTERM"].includes(reason)) skipMessage = true;
+	if (!skipMessage)
+		console.log(styles.error(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
+	if (data.isLaunched && sendMessage && !skipMessage)
+		await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 
 	if (type !== "none" && data.isLaunched && !data.isStopped) {
 		data.isStopped = true;

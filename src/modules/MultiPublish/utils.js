@@ -4,17 +4,18 @@ import { d } from "../../lib/Class/Utils.js";
 import { Button } from "../../lib/Class/Xitext.js";
 import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
 
-const gen_key = (id) => d.pn("Art", id);
-
 /** @type {import("./types/Integrations.js").ArtIntegrations} */
 const defaultUserArtInfo = {
-	preferences: {},
+	preferences: {
+		groups: [],
+	},
 	services: {
 		telegram: {
 			enabled: 0,
 			id: null,
-			tags: ["арт"],
-			default_tags: [],
+			tags: ["Скетч", "WIP"],
+			default_tags: ["Арт"],
+			lang: "ru",
 		},
 		vk: {
 			enabled: 0,
@@ -22,15 +23,19 @@ const defaultUserArtInfo = {
 			id: null,
 			tags: ["furry", "art", "фурри"],
 			default_tags: [],
+			lang: "ru",
 		},
 		twitter: {
 			enabled: 0,
 			token: null,
-			tags: ["furry", "furryfandom"],
+			tags: ["furryfandom", "furryartist"],
 			default_tags: ["furry"],
+			lang: "en",
 		},
 	},
 };
+
+const gen_key = (/** @type {string | number} */ id) => d.pn("Art", id);
 
 /**
  *
@@ -38,18 +43,18 @@ const defaultUserArtInfo = {
  * @returns {Promise<import("./types/Integrations.js").ArtIntegrations>}
  */
 export async function getUserArtInfo(id) {
-	const data = await database.get(gen_key(id));
+	const data = await database.get(gen_key(id), true);
 
-	return setDefaults(data, defaultUserArtInfo, false);
+	return setDefaults(data, defaultUserArtInfo);
 }
 
 /**
  *
  * @param {string | number} id
- * @param {Promise<import("./types/Integrations.js").ArtIntegrations>} info
+ * @param {import("./types/Integrations.js").ArtIntegrations} info
  */
 export function setUserArtInfo(id, info) {
-	return database.set(gen_key(id), removeDefaults(info, defaultUserArtInfo, false));
+	return database.set(gen_key(id), removeDefaults(info, defaultUserArtInfo));
 }
 
 export const artMenu = new MultiMenu("art");
@@ -58,7 +63,7 @@ export const artMenu = new MultiMenu("art");
  *
  * @param {string} text
  * @param {string} method
- * @param  {...string} [args]
+ * @param  {...string | number} [args]
  * @returns
  */
 export const artButton = (text, method, ...args) => new Button(text).data(artMenu.link(method, ...args));

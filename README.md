@@ -1,15 +1,12 @@
 # @Koboldie
 
-NodeJS and telegraf based telegram bot. You can test it [here](https://t.me/Koboldiebot)
-
+NodeJS and telegraf based telegram bot. You can test it [here](https://t.me/Koboldie_bot)
 
 ## Features
 
-- Easy add command system with dynamic /help list
+- Easy add command system with dynamic /help and popup suggestions list
 - Easy to create any button menu
-- Organized (cached) access to the database, which speeds up the process several times. 
-
-
+- Cached access to the database, which speeds up the process several times.
 
 ## Environment Variables
 
@@ -19,11 +16,14 @@ To run this project, you will need to add the following environment variables to
 
 `REDIS_URL` Redis database url. You can create your own [here](https://dashboard.render.com)
 
+`VK_TOKEN` (For MultiPublish module) Token of your VK application
+
 `ownerID` Your telegram id
 
 `logID` Id of chat where you wanna see logs ("user used a command", etc) and error messages
 
 `whereImRunning` Optional. Will shown when users uses /version command
+
 ## Run Locally
 
 Clone the project
@@ -50,10 +50,6 @@ Start the server
   node .
 ```
 
-
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-
-

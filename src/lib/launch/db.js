@@ -43,14 +43,20 @@ export class RedisDatabase {
 				barIncompleteChar: "..",
 				hideCursor: true,
 			});
-			b1.start(100, 0);
-			setInterval(() => {
-				if (b1.getProgress() < b1.getTotal()) b1.increment();
-			}, 10);
+			const total = 15;
+			let curent = 0;
+			b1.start(total, 0);
+
+			const int = setInterval(() => {
+				curent++;
+				if (curent <= total) b1.increment();
+			}, 100);
 
 			await c.connect();
+			clearInterval(int);
 			b1.stop();
 			clearLines(-1);
+
 			this.#CLIENT = c;
 			this.#CLOSED_CLIENT = "closed";
 			await this.collectionAsync(true);

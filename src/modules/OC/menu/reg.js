@@ -2,8 +2,7 @@ import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
 import { util } from "../../../lib/Class/Utils.js";
-import { err } from "../../../lib/utils/err.js";
-import { cacheEmpty, lang, not } from "../index.js";
+import { lang } from "../index.js";
 import { oclog, saveOC } from "../utils.js";
 
 new Query(
@@ -19,19 +18,17 @@ new Query(
 );
 
 // 1 этап, фото
-new EventListener("document", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 0)) return next();
+new EventListener("document", 0, async (ctx, next, data) => {
+	if (ssn.OC.state(data) !== 0) return next();
+
 	ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
 	ctx.reply(lang.create.name);
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} отравил(а) реф`);
 });
 
 // 2 этап, имя
-new EventListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 1)) return next();
-	if (cacheEmpty(qq)) return err(420, ctx);
+new EventListener("text", 0, async (ctx, next, data) => {
+	if (ssn.OC.state(data) !== 1) return next();
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
 	ssn.OC.enter(ctx.from.id, 2, ctx.message.text);
@@ -40,17 +37,16 @@ new EventListener("text", 0, async (ctx, next, ow) => {
 });
 
 // 3 этап - описание
-new EventListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 2) || typeof qq !== "object") return next();
-	if (cacheEmpty(qq, 1)) return err(420, ctx);
+new EventListener("text", 0, async (ctx, next, data) => {
+	if (ssn.OC.state(data) !== 2) return next();
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(ctx.from.id, {
-		name: qq.user.cache.sessionCache[1],
-		fileid: qq.user.cache.sessionCache[0],
+		name: data.user.cache.sessionCache[1],
+		fileid: data.user.cache.sessionCache[0],
 		description: ctx.message.text,
 	});
+
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);
 });

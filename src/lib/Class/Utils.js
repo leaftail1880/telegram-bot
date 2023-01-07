@@ -271,41 +271,41 @@ function lowlevelStackParse(e) {
 }
 
 /**
- * @typedef {string | number} Nval
+ * @typedef {string | number} StringLike
  */
 
 export const d = {
 	/**
 	 *
-	 * @param {Nval} id
+	 * @param {StringLike} id
 	 * @returns
 	 */
 	user: (id) => `User::${id}`,
 	/**
 	 *
-	 * @param {Nval} prefix
-	 * @param {Nval} name
+	 * @param {StringLike} prefix
+	 * @param {StringLike} name
 	 * @returns
 	 */
 	pn: (prefix, name) => `${prefix}::${name}`,
 	/**
 	 *
-	 * @param {Nval} id
+	 * @param {StringLike} id
 	 * @returns
 	 */
 	group: (id) => `Group::${id}`,
 	/**
 	 *
-	 * @param {Nval} name
-	 * @param {Nval} stage
+	 * @param {StringLike} name
+	 * @param {StringLike} stage
 	 * @returns
 	 */
 	session: (name, stage) => `${name}::${stage}`,
 	/**
 	 * Query link
-	 * @param {Nval} prefix
-	 * @param {Nval} name
-	 * @param  {...Nval} args
+	 * @param {StringLike} prefix
+	 * @param {StringLike} name
+	 * @param  {...StringLike} args
 	 * @returns
 	 */
 	query: (prefix, name, ...args) =>
@@ -332,7 +332,7 @@ export const d = {
 	},
 	/**
 	 *
-	 * @param {Nval[]} arr
+	 * @param {StringLike[]} arr
 	 * @param {string} separator
 	 */
 	safeJoin(arr, separator) {
@@ -340,5 +340,18 @@ export const d = {
 			.map(String)
 			.map((e) => e.replaceAll(separator, "\\" + separator))
 			.join(separator);
+	},
+	/**
+	 * Returns the array's elements joined together with
+	 * commas and an "and" between the last two elements
+	 * @param {StringLike[]} arr - The array to join.
+	 */
+	langJoin(arr) {
+		return arr
+			.map((v, i, a) => {
+				if (i === 0) return v;
+				return `${i === a.length - 1 ? " и " : ", "}${v}`;
+			})
+			.join("");
 	},
 };

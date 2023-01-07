@@ -11,9 +11,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 export const m = new MultiMenu("OC"),
 	link = BIND(m.link, m),
-	editMsg = BIND(m.editMsgFromQuery, m),
-	not = BIND(m.notPrivateChat, m),
-	cacheEmpty = (qq, lvl) => m.isCacheEmpty(qq?.user, lvl);
+	editMsg = BIND(m.editMsgFromQuery, m);
 
 export const lang = {
 	create: {

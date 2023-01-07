@@ -86,10 +86,10 @@ function loadQuerys() {
 			return next();
 		}
 
+		Query.Log(ctx, `${Qname} ${args.join("  ")}`);
 		await safeRun("Q", () =>
 			q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra))
 		);
-		Query.Log(ctx, `${Qname} ${args.join("  ")}`);
 		if (q.info.msg) ctx.answerCbQuery(q.info.msg);
 	});
 }

@@ -3,7 +3,7 @@ import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Session.js";
 import { util } from "../../../lib/Class/Utils.js";
 import { err } from "../../../lib/utils/err.js";
-import { cacheEmpty, lang, not } from "../index.js";
+import { lang } from "../index.js";
 import { getUserOCs, noCache, oclog, saveOC } from "../utils.js";
 
 new Query(
@@ -22,7 +22,7 @@ new Query(
 //                  1 этап, фото
 ----------------------------------------------------*/
 EventListener("document", 0, async (ctx, next, ow) => {
-	if (not(ctx, await ssn.OC.Q(ctx.from.id, true, ow.user), 10)) return next();
+	if (ssn.OC.state(ow) !== 10) return next();
 
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
@@ -45,9 +45,7 @@ ssn.OC.next(10, async (ctx, user) => {
 //                  2 этап, имя
 ----------------------------------------------------*/
 EventListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 11)) return next();
-	if (cacheEmpty(qq)) return err(421, ctx);
+	if (ssn.OC.state(ow) !== 11) return next();
 
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
@@ -72,19 +70,18 @@ ssn.OC.next(11, async (ctx, user) => {
 //                  3 этап, описание
 ----------------------------------------------------*/
 EventListener("text", 0, async (ctx, next, ow) => {
-	const qq = await ssn.OC.Q(ctx.from.id, true, ow.user);
-	if (not(ctx, qq, 12) || typeof qq !== "object") return next();
-	if (cacheEmpty(qq, 1)) return err(421, ctx);
+	if (ssn.OC.state(ow) !== 12) return next();
+
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(
 		ctx.from.id,
 		{
-			name: qq.user.cache.sessionCache[2],
-			fileid: qq.user.cache.sessionCache[1],
+			name: ow.user.cache.sessionCache[2],
+			fileid: ow.user.cache.sessionCache[1],
 			description: ctx.message.text,
 		},
-		parseInt(qq.user.cache.sessionCache[0])
+		parseInt(ow.user.cache.sessionCache[0])
 	);
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);

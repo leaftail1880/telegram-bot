@@ -3,16 +3,6 @@ import { Xitext } from "../../lib/Class/Xitext.js";
 import { safeRun } from "../../lib/utils/safeRun.js";
 import { artButton, artMenu } from "./utils.js";
 
-export const artLang = {
-	main: new Xitext()
-		.text("Кроссплатформенная публикация (Бета!)")
-		.inlineKeyboard(
-			[artButton("Новая публикация", "publish")],
-			[artButton("Платформы", "platforms")],
-			[artButton("Настройки", "settings")]
-		),
-};
-
 new Command(
 	{
 		name: "art",
@@ -20,17 +10,37 @@ new Command(
 		type: "private",
 	},
 	(ctx) => {
-		ctx.reply(...artLang.main._.build());
+		ctx.reply(...ART.lang.main._.build());
 	}
 );
 
 artMenu.query({ name: "back" }, (ctx, path, edit) => {
-	edit(...artLang.main._.build());
+	edit(...ART.lang.main._.build());
 });
 
-export const artPlatforms = ["telegram", "twitter", "vk"];
+export const ART = {
+	platfroms: ["telegram", "twitter", "vk"],
+	/** @type {Record<string, {attach: import("./types/Integrations.js").AttachFunction; post: import("./types/Integrations.js").PostFunction}>} */
+	platformActions: {},
+	lang: {
+		main: new Xitext()
+			.text("Кроссплатформенная публикация (Бета!)")
+			.inlineKeyboard(
+				[artButton("Новая публикация", "publish")],
+				[artButton("Платформы", "platforms")],
+				[artButton("Настройки", "settings")]
+			),
+	},
+	languages: {
+		ru: ["русский", "русском"],
+		en: ["английский", "английском"],
+	},
+};
 
-for (const service of artPlatforms) safeRun("MultiPublish import", () => import(`./services/${service}/index.js`));
+for (const service of ART.platfroms)
+	safeRun("MultiPublish import", async () => {
+		ART.platformActions[service] = await import(`./services/${service}/attach.js`);
+	});
 
 import "./menu/platforms.js";
 import "./menu/publish.js";

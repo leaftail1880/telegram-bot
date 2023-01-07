@@ -39,6 +39,11 @@ namespace IEvent {
 	};
 	type Data = {
 		user: DB.User;
+		session?: {
+			name: string;
+			int_state: number;
+			state: string;
+		};
 		group?: DB.Group;
 		user_rigths?: import("telegraf/types").ChatMember;
 	};
@@ -88,7 +93,7 @@ namespace DB {
 			nickname?: string;
 			dm?: 1 | 0 | undefined;
 			session?: string;
-			sessionCache?: string[];
+			sessionCache?: string[] | Record<string, any>;
 			tag?: string;
 		};
 		needSafe?: true;
@@ -106,6 +111,7 @@ namespace DB {
 			lastCall?: number;
 			lastPin?: {};
 			pin?: string;
+			artRepost?: 1 | undefined;
 		};
 	};
 }
@@ -141,6 +147,7 @@ type IhandledError = {
 type IEnv = {
 	TOKEN?: string;
 	REDIS_URL?: string;
+	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;
 	ownerID?: string;
