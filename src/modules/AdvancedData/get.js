@@ -39,6 +39,8 @@ export async function getUser(ctx) {
 				return false;
 			} else if (data.joinCodes[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно добавлены в список разрешенных пользователей.");
+				// Fix: Memory leak
+				delete data.joinCodes[ctx.from.id];
 			} else if (data.joinCodes[ctx.from.id] === "waiting") return false;
 		} else {
 			user = CreateUser(ctx);
