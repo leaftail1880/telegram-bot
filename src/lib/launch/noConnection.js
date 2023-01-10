@@ -1,8 +1,8 @@
-import clc from "cli-color";
 import config from "../../config.js";
 import { database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
-import { data } from "../SERVISE.js";
+import { data, SERVISE } from "../SERVISE.js";
+import styles from "../styles.js";
 import { bot } from "./tg.js";
 
 const Connect = {
@@ -23,13 +23,13 @@ const ErrorLog = new XTimer(config.ErrorCooldown);
  */
 export async function noConnection(type) {
 	if (data.isLaunched && !data.isStopped) {
-		bot.stop("NOCONNECTION");
 		data.isStopped = true;
+		bot.stop("NOCONNECTION");
 	}
 	if (!database.isClosed) database._.close(false);
 
 	if (ErrorLog.isExpired()) {
-		console.log(clc.redBright(`Нет подключения к интернету ${type ? `${type}` : ""}`));
+		console.log(styles.noConnection(`Нет подключения к интернету ${type ? `${type}` : ""}`));
 	}
 
 	if (!Connect.Interval) {
@@ -49,10 +49,9 @@ async function timer() {
 		await bot.telegram.getMe();
 
 		await database._.connect();
-		bot.launch();
-		data.isStopped = false;
+		SERVISE.safeBotLauch();
 
-		console.log(clc.greenBright("Подключение восстановлено!"));
+		console.log(styles.connectionResolved("Подключение восстановлено!"));
 
 		clearInterval(Connect.Interval);
 		delete Connect.Interval;

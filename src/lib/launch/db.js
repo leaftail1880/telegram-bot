@@ -1,7 +1,7 @@
-import clc from "cli-color";
 import { SingleBar } from "cli-progress";
 import { BIND } from "../../index.js";
 import { clearLines } from "../SERVISE.js";
+import styles from "../styles.js";
 
 /**
  * @typedef {import("redis").RedisClientType} cli
@@ -38,7 +38,7 @@ export class RedisDatabase {
 	async #connect(c) {
 		if (c) {
 			const b1 = new SingleBar({
-				format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} connecting`,
+				format: `[${styles.progressBar("{bar}")}] {percentage}% - {value}/{total} connecting`,
 				barCompleteChar: "#",
 				barIncompleteChar: "..",
 				hideCursor: true,
@@ -196,8 +196,9 @@ export class RedisDatabase {
 	async collectionAsync(renderProcess = false) {
 		const collection = {};
 		const keys = await this.keysAsync();
+
 		const b1 = new SingleBar({
-			format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} keys`,
+			format: `[${styles.progressBar("{bar}")}] {percentage}% - {value}/{total} keys`,
 			barCompleteChar: "#",
 			barIncompleteChar: "..",
 			hideCursor: true,

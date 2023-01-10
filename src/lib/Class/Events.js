@@ -1,4 +1,3 @@
-import clc from "cli-color";
 import config from "../../config.js";
 import { bot } from "../launch/tg.js";
 import { data as $data, newlog } from "../SERVISE.js";

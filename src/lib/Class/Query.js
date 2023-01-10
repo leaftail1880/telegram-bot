@@ -1,5 +1,4 @@
 import clc from "cli-color";
-import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
 import { newlog } from "../SERVISE.js";
 import { safeRun } from "../utils/safeRun.js";
@@ -45,7 +44,6 @@ export class Query {
 		const text = `${name}: ${message}`;
 		newlog({
 			consoleMessage: clc.blackBright("Q> ") + text,
-			fileName: "queries.txt",
 			fileMessage: text,
 		});
 	}

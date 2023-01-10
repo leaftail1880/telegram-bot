@@ -18,7 +18,7 @@ new Query(
 );
 
 // 1 этап, фото
-new EventListener("document", 0, async (ctx, next, data) => {
+EventListener("document", 0, async (ctx, next, data) => {
 	if (ssn.OC.state(data) !== 0) return next();
 
 	ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
@@ -27,7 +27,7 @@ new EventListener("document", 0, async (ctx, next, data) => {
 });
 
 // 2 этап, имя
-new EventListener("text", 0, async (ctx, next, data) => {
+EventListener("text", 0, async (ctx, next, data) => {
 	if (ssn.OC.state(data) !== 1) return next();
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
@@ -37,7 +37,7 @@ new EventListener("text", 0, async (ctx, next, data) => {
 });
 
 // 3 этап - описание
-new EventListener("text", 0, async (ctx, next, data) => {
+EventListener("text", 0, async (ctx, next, data) => {
 	if (ssn.OC.state(data) !== 2) return next();
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 

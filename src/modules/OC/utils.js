@@ -11,7 +11,6 @@ import { newlog } from "../../lib/SERVISE.js";
 export function oclog(message) {
 	newlog({
 		fileMessage: message,
-		fileName: "oc.txt",
 		consoleMessage: message,
 		xitext: new Xitext().text(message),
 	});

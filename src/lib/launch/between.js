@@ -128,11 +128,8 @@ export async function freeze() {
 		/**======================
 		 * Запуск бота
 		 *========================**/
-		bot.launch();
+		SERVISE.safeBotLauch();
 
-		data.isStopped = false;
-		data.isLaunched = true;
-		data.isFreezed = false;
 		const message = lang.logLaunch(info);
 		newlog({
 			fileMessage: message,

@@ -39,6 +39,7 @@ export const data = {
 	joinCodes: {},
 	errorLog: {},
 	updateTimer: null,
+	relaunchTimer: null,
 };
 
 import path from "path";
@@ -58,6 +59,8 @@ export const SERVISE = {
 		terminate_you: "terminate_you",
 		terminate_me: "terminate_me",
 	},
+	safeBotLauch,
+	safeBotStop,
 };
 
 export const handlers = {
@@ -98,15 +101,34 @@ export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
 
 	// fs.appendFile doesnt waiting for telegram to send message
 	if (fileMessage)
-		jobs.push(
-			fs.appendFile(
-				path.join("logs", fileName ?? "logs.txt"),
-				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r\n`
-			)
-		);
+		jobs.push(async () => {
+			const p = path.join("logs", fileName ?? "logs.txt");
+			await fs.writeFile(
+				p,
+				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r` + (await fs.readFile(p))
+			);
+		});
 
 	// Resolves when all jobs are done
 	return Promise.all(jobs);
+}
+
+function safeBotLauch() {
+	bot.launch();
+	data.isStopped = false;
+	data.isFreezed = false;
+	data.relaunchTimer = setInterval(() => {
+		if (data.isStopped || data.isFreezed) return clearInterval(data.relaunchTimer);
+		bot.stop("Relaunch");
+		bot.launch();
+	}, config.update.pollingRelaunchInterval);
+}
+
+function safeBotStop(freeze = false) {
+	clearInterval(data.relaunchTimer);
+	data.isStopped = true;
+	data.isFreezed = freeze;
+	bot.stop();
 }
 
 /**

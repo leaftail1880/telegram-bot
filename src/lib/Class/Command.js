@@ -3,7 +3,7 @@ import { Context } from "telegraf";
 import config from "../../config.js";
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
-import { data as $data, newlog } from "../SERVISE.js";
+import { data as Data, newlog } from "../SERVISE.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
@@ -86,19 +86,23 @@ export class Command {
 	 */
 	static async cantUse(command, ctx, user = null) {
 		// Условия разрешений
-		let _lg = command.info.type === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup"), // Где
-			_lp = command.info.type === "private" && ctx.chat.type === "private",
-			_lc = command.info.type === "channel" && ctx.chat.type === "channel",
-			_la = command.info.type === "all" || !command.info.type,
-			// Если команда для всех
-			_pall = command.info.perm === 0,
-			// Если команда для админов, и отправитель админ
-			_padmin = command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id, user)),
-			// Если команда хильки
-			_pxiller = command.info.perm === 2 && ctx.message.from.id == $data.chatID.owner;
+		const location_group =
+			command.info.type === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup"); // Где
+		const location_private = command.info.type === "private" && ctx.chat.type === "private";
+		const location_all = command.info.type === "all";
+
+		// Если команда для всех
+		const permission_all = command.info.perm === 0;
+		// Если команда для админов, и отправитель админ
+		const permission_admin = command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id, user));
+		// Если команда владельца бота
+		const permission_owner = command.info.perm === 2 && ctx.message.from.id === Data.chatID.owner;
 
 		// Если нет ни одного разрешения, значит нельзя
-		return !((_la || _lc || _lg || _lp) && (_pall || _padmin || _pxiller));
+		return !(
+			(location_all || location_group || location_private) &&
+			(permission_all || permission_admin || permission_owner)
+		);
 	}
 	/**
 	 *
@@ -112,17 +116,16 @@ export class Command {
 		const xt = new Xitext()
 			.text(`${V[ctx.chat.type]} `)
 			._.group(name)
-			.url(null, ctx.from.id !== $data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
+			.url(null, ctx.from.id !== Data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
 			.bold()
 			._.group()
 			.text(`${message ? ` ${message}` : ""}: ${ctx.message.text}`);
 		const text = xt._.text;
 
-		if (ctx.chat.id !== $data.chatID.log)
+		if (ctx.chat.id !== Data.chatID.log)
 			newlog({
 				xitext: xt,
 				consoleMessage: clc.blackBright("C> ") + text,
-				fileName: "commands.txt",
 				fileMessage: text,
 			});
 	}
@@ -142,14 +145,14 @@ EventListener("modules.load", 0, (_, next) => {
 		all = [];
 
 	for (const cmd of public_cmds) {
-		let m = { command: cmd.info.name, description: cmd.info.description };
 		if (cmd.info.hide) continue;
+		let m = { command: cmd.info.name, description: cmd.info.description };
 
-		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm == 0) groupCommands.push(m);
-		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm == 1) groupAdminCommands.push(m);
-		if ((cmd.info.type === "private" || cmd.info.type === "all") && cmd.info.perm == 0)
+		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm === 0) groupCommands.push(m);
+		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm === 1) groupAdminCommands.push(m);
+		if ((cmd.info.type === "private" || cmd.info.type === "all") && cmd.info.perm === 0)
 			privateCommands.push(m), botAdminCommands.push(m);
-		if (cmd.info.perm == 2) botAdminCommands.push(m);
+		if (cmd.info.perm === 2) botAdminCommands.push(m);
 
 		all.push(cmd.info.name);
 	}
@@ -172,7 +175,7 @@ EventListener("modules.load", 0, (_, next) => {
 
 	if (botAdminCommands[0])
 		bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
-			scope: { type: "chat", chat_id: $data.chatID.owner },
+			scope: { type: "chat", chat_id: Data.chatID.owner },
 		});
 
 	next();

@@ -34,7 +34,7 @@ const OnError = {
 		},
 	},
 	types: {
-		FetchError: () => noConnection(clc.red("Unhandled FetchError")),
+		FetchError: () => noConnection("Unhandled FetchError"),
 	},
 };
 
@@ -62,7 +62,7 @@ export async function handleError(err) {
  */
 export async function handleDB(err) {
 	if (err.message === "Client IP address is not in the allowlist.") {
-		await SERVISE.stop(clc.red("Put your ip addres to db allowlist"), "ALL", false);
+		await SERVISE.stop("Put your ip addres to db allowlist", "ALL", false);
 		return;
 	}
 	if (err.message === "Socket closed unexpectedly") {

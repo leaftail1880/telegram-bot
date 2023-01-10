@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 0, 7],
+	version: [9, 0, 8],
 
 	command: {
 		clearCommand: /^(?:.\S*)(?:@?\S)\s?/g,
@@ -19,6 +19,12 @@ export default {
 		 * @type {milliseconds}
 		 */
 		timerTime: 5000,
+
+		/**
+		 * Интервал перезапуска длинного поллинга воизбежание зависаний кеша
+		 * @type {milliseconds}
+		 */
+		pollingRelaunchInterval: 1000 * 60 * 60,
 	},
 
 	/**
