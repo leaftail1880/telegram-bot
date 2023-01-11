@@ -163,20 +163,17 @@ async function start() {
 	bot.telegram.sendMessage(data.chatID.log, ...lang.start());
 
 	/**======================
-	 * Загрузка плагинов
+	 * Загрузка модулей
 	 *========================**/
-	const progress_bar1 = lang.log.modules();
+	lang.log.modules();
 	const m = [];
-	for (const module of config.modules) {
+	for (const module of config.modules) try {
 		const start = performance.now();
 
-		await import(`../modules/${module}/index.js`).catch(SERVISE.error);
+	  await import(`../modules/${module}/index.js`)
 
-		m.push(`${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
-		progress_bar1.increment();
-	}
-	progress_bar1.stop();
-	clearLines(-1);
+	  console.log(` ${clc.cyanBright("[+]")} ${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
+	} catch (e) {SERVICE.error(e)}
 
 	// Инициализация команд и списков
 	TriggerEventListeners("modules.load", "");

@@ -10,8 +10,8 @@ import { data, SERVISE } from "./lib/SERVISE.js";
  * @param {*} Dta
  */
 export function sudo(ctx, _args, Dta) {
-	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, ks, rr",
-		func = `(async () => {${ctx.message.text.replace(config.command.clearCommand, "").replace(/\n/g, " ")}})();`;
+	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, keys, rr",
+		func = `(async () => {\n${ctx.message.text.replace(config.command.clearCommand, "")}\n})();`;
 	try {
 		new Function(a, func)(
 			a,

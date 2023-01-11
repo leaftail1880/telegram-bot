@@ -29,24 +29,14 @@ export const start_stop_lang = {
 				start_stop_lang.state(2, 4, `Type: ${clc.cyanBright(data.type)} Session: ${clc.cyanBright(data.session)}`)
 			),
 		modules: () => {
-			console.log(start_stop_lang.state(3, 4, "Loading modules..."));
-			const b1 = new SingleBar({
-				format: `[${clc.cyanBright("{bar}")}] {percentage}% - {value}/{total} modules`,
-				barCompleteChar: "#",
-				barIncompleteChar: "..",
-				hideCursor: true,
-			});
-			b1.start(config.modules.length, 0);
-			return b1;
+			console.log(start_stop_lang.state(3, 4, "Loading modules:"));
 		},
 		end: (/** @type {string[]} */ modules) =>
 			console.log(
 				start_stop_lang.state(
 					4,
 					4,
-					`Modules:${modules
-						.map((e) => `\n ${clc.cyanBright("[+]")} ${e}`)
-						.join("")}\n\nReady to work in ${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
+					`Ready to work in ${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
 				)
 			),
 	},
