@@ -4,8 +4,8 @@ new Command(
 	{
 		name: "ping",
 		description: "Отправляет скорость ответа",
-		type: "all",
-		specprefix: true,
+		target: "all",
+		prefix: true,
 	},
 	async (ctx) => {
 		const time = performance.now();

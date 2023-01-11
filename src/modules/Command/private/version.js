@@ -8,10 +8,10 @@ new Command(
 	{
 		name: "v",
 		description: "Версия бота",
-		permisson: 0,
-		type: "all",
-		hide: true,
-		specprefix: true,
+		permission: "all",
+		target: "all",
+		hideFromHelpList: true,
+		prefix: true,
 	},
 	(ctx) => {
 		ctx.reply(

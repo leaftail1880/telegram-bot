@@ -9,8 +9,8 @@ new Command(
 	{
 		name: "pin",
 		description: "Закрепляет на 5 часов",
-		permisson: 0,
-		type: "group",
+		permission: "all",
+		target: "group",
 	},
 	async (ctx, _args, data) => {
 		const g = data.group;

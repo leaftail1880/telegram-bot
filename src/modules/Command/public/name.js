@@ -6,8 +6,8 @@ new Command(
 	{
 		name: "name",
 		description: "Меняет ник",
-		permisson: 0,
-		type: "all",
+		permission: "all",
+		target: "all",
 	},
 	async (ctx, args, data) => {
 		const user = data.user,

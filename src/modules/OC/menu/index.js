@@ -7,8 +7,8 @@ new Command(
 	{
 		name: "oc",
 		description: "Все действия с OC",
-		permisson: 0,
-		type: "private",
+		permission: "all",
+		target: "private",
 	},
 	(ctx) => {
 		ctx.reply(...lang.main.inlineKeyboard(...lang.mainKeyboard)._.build());
@@ -39,12 +39,6 @@ new Query(
 		message: "Назад",
 	},
 	(ctx, data) => {
-		sendMessagDeleteRef(
-			ctx,
-			lang.main._.text,
-			lang.main._.entities,
-			lang.mainKeyboard,
-			data[0]
-		);
+		sendMessagDeleteRef(ctx, lang.main._.text, lang.main._.entities, lang.mainKeyboard, data[0]);
 	}
 );

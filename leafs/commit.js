@@ -13,5 +13,5 @@ commiter.on("before_commit", async ({ version, suffix, type, prev_version }) => 
 	await fs.writeFile(config_path, config);
 });
 
-commiter.emit("commit", { silentMode: false });
+commiter.emit("add_commit_push", { silentMode: false });
 // commiter.emit("after_commit", { version: [8, 1, 25] });

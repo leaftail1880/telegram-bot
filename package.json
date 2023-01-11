@@ -1,13 +1,11 @@
-{
-  "name": "koboldie",
+{  "name": "koboldie",
   "displayName": "Koboldie (TG-bot)",
-  "version": "9.0.10",
+  "version": "9.0.11",
   "main": "src/index.js",
   "scripts": {
     "run": "node src/index.js",
     "update_leafs": "cd node_modules/leafy-utils && node install.js",
-    "commit": "node leafs/commit.js",
-    "add_commit_push": "git add ./ && node leafs/commit.js && git push"
+    "commit": "node leafs/commit.js"
   },
   "keywords": [],
   "author": "leaftail1880",

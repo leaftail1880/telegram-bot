@@ -7,7 +7,7 @@ new Command(
 	{
 		name: "art",
 		description: "Публикация арта в нескольких соц-сетях",
-		type: "private",
+		target: "private",
 	},
 	(ctx) => {
 		ctx.reply(...ART.lang.main._.build());

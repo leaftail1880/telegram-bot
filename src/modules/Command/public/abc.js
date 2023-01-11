@@ -5,8 +5,8 @@ new Command(
 	{
 		name: "abc",
 		description: "Переводит",
-		permisson: 0,
-		type: "all",
+		permission: "all",
+		target: "all",
 	},
 	(ctx) => {
 		/**

@@ -6,8 +6,8 @@ import { $PREFIX, DefaultSubs, lang } from "./menu.js";
 new Command(
 	{
 		name: "sub",
-		type: "private",
-		permisson: 0,
+		target: "private",
+		permission: "all",
 		description: "Меню подписок/уведомлений",
 		aliases: ["s"],
 	},
@@ -32,8 +32,7 @@ new Query(
 		name: "c",
 	},
 	async (ctx, path, edit) => {
-		if (!Object.keys(DefaultSubs).includes(path[1]))
-			return console.warn(path.join(" "));
+		if (!Object.keys(DefaultSubs).includes(path[1])) return console.warn(path.join(" "));
 
 		const c = new PersonalSubs(ctx.from.id);
 

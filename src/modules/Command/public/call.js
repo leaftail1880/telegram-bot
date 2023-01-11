@@ -7,8 +7,8 @@ new Command(
 	{
 		name: "call",
 		description: "Созывает",
-		permisson: 1,
-		type: "group",
+		permission: "group_admins",
+		target: "group",
 	},
 	async (ctx, args, data) => {
 		const g = data.group;

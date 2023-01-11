@@ -7,7 +7,7 @@ new Command(
 	{
 		name: "db",
 		description: "Cтарая база данных",
-		permisson: 2,
+		permission: "bot_owner",
 	},
 	async (ctx, args) => {
 		switch (args[0]) {

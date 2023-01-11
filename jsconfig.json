@@ -7,8 +7,8 @@
 		"module": "Node16",
 		"paths": {
 			"vk-io": ["./node_modules/vk-io/lib/index.d.ts"]
-		}
+		},
+		"maxNodeModuleJsDepth": -1
 	},
-	"exclude": ["./src/modules/timeChecker"],
-	"include": ["./src/", "e.js"]
+	"include": ["./src/"]
 }

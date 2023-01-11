@@ -16,7 +16,7 @@ new Command(
 	{
 		name: "google",
 		description: "Гуглит",
-		type: "all",
+		target: "all",
 	},
 	(ctx) => {
 		/**

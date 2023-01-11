@@ -4,13 +4,13 @@ import { Command } from "../../../lib/Class/Command.js";
 new Command(
 	{
 		name: "repl",
-		permisson: 2,
-		specprefix: true,
-		type: "all",
+		permission: "bot_owner",
+		prefix: true,
+		target: "all",
 		description: "Отвечает на ссылку с первой строки сообщением со второй",
 	},
 	(ctx) => {
-		const [command] = ctx.message.text.match(config.command.clearCommand);
+		const [command] = ctx.message.text.match(config.command.clear);
 		const args = ctx.message.text.replace(command, "").split("\n");
 		if (args.length < 2) return ctx.reply("Не хватает информации.", { reply_to_message_id: ctx.message.message_id });
 

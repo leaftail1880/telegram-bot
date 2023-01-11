@@ -6,9 +6,9 @@ new Command(
 		name: "f",
 		aliases: ["0", "+", "*", "sudo", "r"],
 		description: "Исполнитель",
-		permisson: 2,
-		specprefix: true,
-		type: "all",
+		permission: "bot_owner",
+		prefix: true,
+		target: "all",
 	},
 	sudo
 );

@@ -1,10 +1,11 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 0, 10],
+	version: [9, 0, 11],
 
 	command: {
-		clearCommand: /^(?:.\S*)(?:@?\S)\s?/g,
-		parseArgs: /"[^"]+"|[^\s]+/g,
+		get: /^(.)(?:(\w+)@?\w*)?\s?/,
+		clear: /^\S*(?:@\S)?\s?/,
+		parseArgs: /"[^"]+"|\S+/g,
 	},
 
 	update: {

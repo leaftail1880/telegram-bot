@@ -109,9 +109,9 @@ import { bot } from "../../lib/launch/tg.js";
 		{
 			name: "db2",
 			description: "База данных нового поколения",
-			permisson: 2,
-			hide: false,
-			type: "private",
+			permission: "bot_owner",
+			hideFromHelpList: false,
+			target: "private",
 		},
 		async (ctx) => {
 			const newMsg = await ctx.reply("Загрузка...");

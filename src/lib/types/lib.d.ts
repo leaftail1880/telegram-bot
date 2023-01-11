@@ -3,32 +3,25 @@ type Context = import("telegraf").Context;
 type TextMessageContext = Context & { message: import("telegraf/types").Message.TextMessage };
 
 namespace CommandTypes {
-	type Stored = {
-		info: {
-			name: string;
-			description: string;
-			type: CommandTypes.Target;
-			perm: number;
-			hide: boolean;
-			session: string;
-			aliases: Array<string>;
-		};
-		callback: CommandTypes.Callback;
-	};
-
-	type Callback = (ctx: TextMessageContext, args: Array<string>, data: IEvent.Data, self: CommandTypes.Stored) => void;
+	type Callback = (ctx: TextMessageContext, args: string[], data: IEvent.Data, self: Stored) => void;
 
 	type Target = "group" | "private" | "all" | "channel";
+	type Permission = "all" | "group_admins" | "bot_owner";
 
 	type RegistrationInfo = {
+		prefix?: true | string | string[];
 		name: string;
-		aliases?: Array<string>;
-		hide?: boolean;
-		specprefix?: boolean;
 		description?: string;
-		session?: string;
-		permisson?: 0 | 1 | 2;
-		type?: CommandTypes.Target;
+		aliases?: string[];
+		allowSession?: true;
+		hideFromHelpList?: boolean;
+		permission?: Permission;
+		target?: Target;
+	};
+
+	type Stored = {
+		info: RegistrationInfo & { prefix: string[] };
+		callback: Callback;
 	};
 }
 

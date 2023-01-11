@@ -11,7 +11,7 @@ import { data, SERVISE } from "./lib/SERVISE.js";
  */
 export function sudo(ctx, _args, Dta) {
 	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, keys, rr",
-		func = `(async () => {\n${ctx.message.text.replace(config.command.clearCommand, "")}\n})();`;
+		func = `(async () => {\n${ctx.message.text.replace(config.command.clear, "")}\n})();`;
 	try {
 		new Function(a, func)(
 			a,

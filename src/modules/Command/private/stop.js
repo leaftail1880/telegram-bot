@@ -4,10 +4,10 @@ import { SERVISE } from "../../../lib/SERVISE.js";
 new Command(
 	{
 		name: "stop",
-		specprefix: true,
-		hide: true,
+		prefix: true,
+		hideFromHelpList: true,
 		description: "Bot App",
-		permisson: 2,
+		permission: "bot_owner",
 	},
 	(_a, args) => {
 		const c = args[0];

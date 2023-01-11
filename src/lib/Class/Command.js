@@ -11,15 +11,8 @@ import { ssn } from "./Session.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
-/**
- * @type {Array<CommandTypes.Stored>}
- */
-const public_cmds = [];
-
-/**
- * @type {Array<CommandTypes.Stored>}
- */
-const private_cmds = [];
+/** @type {CommandTypes.Stored[]} */
+const Commands = [];
 
 export class Command {
 	/**
@@ -32,51 +25,44 @@ export class Command {
 		if (!info.name) return;
 
 		// Регистрация инфы
-		const cmd = {
+		/** @type {CommandTypes.Stored} */
+		const StoreInfo = {
 			info: {
 				name: info.name,
 				description: info.description ?? "Пусто",
-				type: info.type,
-				perm: info.permisson ?? 0,
-				hide: info.hide,
-				session: info.session,
+				target: info.target,
+				permission: info.permission ?? "all",
+				hideFromHelpList: info.hideFromHelpList,
+				prefix: ["/"],
+				allowSession: info.allowSession,
 				aliases: info.aliases,
 			},
 			callback: callback,
 		};
 
-		// Ы
-		if (!info.specprefix) {
-			public_cmds.push(cmd);
-		} else {
-			private_cmds.push(cmd);
-		}
-		return this;
+		if (typeof info.prefix === "boolean") StoreInfo.info.prefix = ["-"];
+		if (typeof info.prefix === "string") StoreInfo.info.prefix = [info.prefix];
+
+		Commands.push(StoreInfo);
 	}
 	/**
 	 *
-	 * @param {string} a
+	 * @param {string} message
 	 * @returns {CommandTypes.Stored | "not_found" | boolean}
 	 */
-	static getCmd(a) {
-		if (!a) return false;
-		/**
-		 * @type {CommandTypes.Stored}
-		 */
-		let cmd;
+	static getCmd(message) {
+		if (!message) return false;
 
-		const type = /^\/\w+/.test(a) ? "slash" : /^\-\w*/.test(a) ? "special" : "message";
-		if (type === "message") return false;
+		const match = message.match(config.command.get);
+		if (!match) return false;
 
-		const // Команда из сообщения
-			cc = a.match(/^.([^@\s]*)/),
-			c = cc[1],
-			// Функция поиска команды в массиве по имени или сокращению
-			findC = (e) => e.info?.name == c || e.info?.aliases?.includes(c);
+		const [_, prefix, command] = match;
 
-		cmd = type === "slash" ? public_cmds.find(findC) : private_cmds.find(findC);
-
-		return cmd ?? "not_found";
+		return (
+			Commands.find(
+				(с) => с.info.prefix.includes(prefix) && (с.info.name === command || с.info.aliases?.includes(command))
+			) ?? "not_found"
+		);
 	}
 	/**
 	 *
@@ -85,20 +71,15 @@ export class Command {
 	 * @returns
 	 */
 	static async cantUse(command, ctx, user = null) {
-		// Условия разрешений
 		const location_group =
-			command.info.type === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup"); // Где
-		const location_private = command.info.type === "private" && ctx.chat.type === "private";
-		const location_all = command.info.type === "all";
+			command.info.target === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup");
+		const location_private = command.info.target === "private" && ctx.chat.type === "private";
+		const location_all = command.info.target === "all";
 
-		// Если команда для всех
-		const permission_all = command.info.perm === 0;
-		// Если команда для админов, и отправитель админ
-		const permission_admin = command.info.perm === 1 && (await isAdmin(ctx, ctx.message.from.id, user));
-		// Если команда владельца бота
-		const permission_owner = command.info.perm === 2 && ctx.message.from.id === Data.chatID.owner;
+		const permission_all = command.info.permission === "all";
+		const permission_admin = command.info.permission === "group_admins" && (await isAdmin(ctx, ctx.from.id, user));
+		const permission_owner = command.info.permission === "bot_owner" && ctx.from.id === Data.chatID.owner;
 
-		// Если нет ни одного разрешения, значит нельзя
 		return !(
 			(location_all || location_group || location_private) &&
 			(permission_all || permission_admin || permission_owner)
@@ -138,74 +119,74 @@ const V = {
 };
 
 EventListener("modules.load", 0, (_, next) => {
-	let groupCommands = [],
-		groupAdminCommands = [],
-		privateCommands = [],
-		botAdminCommands = [],
-		all = [];
+	const groupCommands = [];
+	const groupAdminCommands = [];
+	const privateCommands = [];
+	const botAdminCommands = [];
 
-	for (const cmd of public_cmds) {
-		if (cmd.info.hide) continue;
-		let m = { command: cmd.info.name, description: cmd.info.description };
+	for (const command of Commands.filter((e) => e.info.prefix.includes("/"))) {
+		if (command.info.hideFromHelpList) continue;
+		const packedCommand = { command: command.info.name, description: command.info.description };
 
-		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm === 0) groupCommands.push(m);
-		if ((cmd.info.type === "group" || cmd.info.type === "all") && cmd.info.perm === 1) groupAdminCommands.push(m);
-		if ((cmd.info.type === "private" || cmd.info.type === "all") && cmd.info.perm === 0)
-			privateCommands.push(m), botAdminCommands.push(m);
-		if (cmd.info.perm === 2) botAdminCommands.push(m);
+		if (["group", "all"].includes(command.info.target)) {
+			if (command.info.permission === "all") groupCommands.push(packedCommand);
+			if (command.info.permission === "group_admins") groupAdminCommands.push(packedCommand);
+		}
 
-		all.push(cmd.info.name);
+		if (["private", "all"].includes(command.info.target)) privateCommands.push(packedCommand);
+
+		if (command.info.permission === "bot_owner") botAdminCommands.push(packedCommand);
 	}
-	private_cmds.forEach((e) => all.push(e.info.name));
 
-	if (groupCommands[0])
-		bot.telegram.setMyCommands(groupCommands, {
-			scope: { type: "all_group_chats" },
-		});
+	/**
+	 *
+	 * @param {import("telegraf/types").BotCommand[]} commands
+	 * @param {import("telegraf/types").BotCommandScope} scope
+	 */
+	function addIfExists(commands, scope) {
+		if (commands.length > 0) bot.telegram.setMyCommands(commands, { scope });
+	}
 
-	if (groupAdminCommands[0])
-		bot.telegram.setMyCommands(groupAdminCommands.concat(groupCommands), {
-			scope: { type: "all_chat_administrators" },
-		});
-
-	if (privateCommands[0])
-		bot.telegram.setMyCommands(privateCommands, {
-			scope: { type: "all_private_chats" },
-		});
-
-	if (botAdminCommands[0])
-		bot.telegram.setMyCommands(botAdminCommands.concat(privateCommands), {
-			scope: { type: "chat", chat_id: Data.chatID.owner },
-		});
+	addIfExists(groupCommands, { type: "all_group_chats" });
+	addIfExists(groupAdminCommands.concat(groupCommands), { type: "all_chat_administrators" });
+	addIfExists(privateCommands, { type: "all_private_chats" });
+	addIfExists(botAdminCommands.concat(privateCommands), { type: "chat", chat_id: Data.chatID.owner });
 
 	next();
 });
 
 EventListener("text", 9, async (ctx, next, data) => {
 	const text = ctx.message.text;
+	function reply(/** @type {string} */ text) {
+		ctx.reply(text, {
+			reply_to_message_id: ctx.message.message_id,
+			allow_sending_without_reply: true,
+		});
+	}
 
 	const command = Command.getCmd(text);
 
 	if (command === "not_found" && ctx.chat.type === "private") {
-		ctx.reply("Неизвестная команда. /help");
+		reply("Неизвестная команда. /help");
 		Command.Log(ctx, data.user, "Неизвестная команда");
 		return;
 	}
-
 	if (typeof command !== "object") return next();
+
+	if (data.session && !command.info.allowSession)
+		return reply(
+			`В сессии ${data.session.name} ${data.session.state} вам доступны только ${d.langJoin(
+				Commands.filter((e) => e.info.allowSession).map((e) => e.info.prefix[0] + e.info.name)
+			)}`
+		);
 
 	data.user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-	if (await Command.cantUse(command, ctx, data.user_rigths))
-		return ctx.reply("В этом чате эта команда недоступна. /help", {
-			reply_to_message_id: ctx.message.message_id,
-			allow_sending_without_reply: true,
-		});
+	if (await Command.cantUse(command, ctx, data.user_rigths)) return reply("В этом чате эта команда недоступна. /help");
 
-	// All good, run
 	const args =
 		text
-			.replace(config.command.clearCommand, "")
+			.replace(config.command.clear, "")
 			?.match(config.command.parseArgs)
 			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
 
@@ -220,8 +201,8 @@ new Command(
 	{
 		name: "start",
 		description: "Начало работы с ботом в лс",
-		type: "private",
-		hide: true,
+		target: "private",
+		hideFromHelpList: true,
 	},
 	(ctx, _args, data) => {
 		ctx.reply(`${data.user.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`);
@@ -233,24 +214,24 @@ new Command(
 	{
 		name: "help",
 		description: "Список команд",
-		type: "all",
+		target: "all",
 	},
 	async (ctx) => {
 		let c = false;
 		const a = new Xitext();
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		for (const e of public_cmds) {
-			if ((await Command.cantUse(e, ctx, rigths)) || e.info.hide) continue;
+		for (const e of Commands.filter((e) => e.info.prefix.includes("/"))) {
+			if ((await Command.cantUse(e, ctx, rigths)) || e.info.hideFromHelpList) continue;
 			if (!c) a.text(`Команды:\n`), (c = true);
 			a.text(`  /${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
 
-		for (const e of private_cmds) {
+		for (const e of Commands.filter((e) => !e.info.prefix.includes("/"))) {
 			if (await Command.cantUse(e, ctx, rigths)) continue;
 			a.text(`  `);
-			a.mono(`-${e.info.name}`);
+			a.mono(`${e.info.prefix.length > 1 ? `[${e.info.prefix.join(", ")}]` : e.info.prefix[0]}${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
 
@@ -263,9 +244,10 @@ new Command(
 	{
 		name: "cancel",
 		description: "Выход из пошагового меню",
-		permisson: 0,
-		hide: true,
-		type: "private",
+		hideFromHelpList: true,
+		allowSession: true,
+		permission: "all",
+		target: "private",
 	},
 	async (ctx, _args, data) => {
 		const user = data.user;
@@ -282,9 +264,10 @@ new Command(
 	{
 		name: "next",
 		description: "Переходит на следующий шаг меню",
-		permisson: 0,
-		hide: true,
-		type: "private",
+		hideFromHelpList: true,
+		allowSession: true,
+		permission: "all",
+		target: "private",
 	},
 	async (ctx, _a, data) => {
 		const user = data.user;
