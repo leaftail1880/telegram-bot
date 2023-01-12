@@ -2,7 +2,7 @@ import { database } from "../../index.js";
 import { Query } from "../../lib/Class/Query.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
-import { data } from "../../lib/SERVISE.js";
+import { data } from "../../lib/Service.js";
 import { link } from "../OC/index.js";
 
 new Query(

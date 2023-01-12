@@ -1,6 +1,6 @@
 import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { ssn } from "../../../lib/Class/Session.js";
+import { ssn } from "../../../lib/Class/Stage.js";
 import { util } from "../../../lib/Class/Utils.js";
 import { err } from "../../../lib/utils/err.js";
 import { lang } from "../index.js";
@@ -33,7 +33,7 @@ ssn.OC.next(10, async (ctx, user) => {
 	const uOC = await getUserOCs(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
-	const oc = uOC[user.cache.sessionCache[0]];
+	const oc = uOC[user.cache.stageCache[0]];
 	ssn.OC.enter(ctx.from.id, 11, oc.fileid);
 	ctx.reply(lang.edit.name());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежний реф`);
@@ -58,7 +58,7 @@ ssn.OC.next(11, async (ctx, user) => {
 	const uOC = await getUserOCs(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
-	const oc = uOC[user?.cache?.sessionCache[0]];
+	const oc = uOC[user?.cache?.stageCache[0]];
 	ssn.OC.enter(ctx.from.id, 12, oc.name);
 	ctx.reply(lang.edit.description());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
@@ -77,11 +77,11 @@ EventListener("text", 0, async (ctx, next, ow) => {
 	saveOC(
 		ctx.from.id,
 		{
-			name: ow.user.cache.sessionCache[2],
-			fileid: ow.user.cache.sessionCache[1],
+			name: ow.user.cache.stageCache[2],
+			fileid: ow.user.cache.stageCache[1],
 			description: ctx.message.text,
 		},
-		parseInt(ow.user.cache.sessionCache[0])
+		parseInt(ow.user.cache.stageCache[0])
 	);
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);
@@ -91,16 +91,16 @@ ssn.OC.next(12, async (ctx, user) => {
 	const uOC = await getUserOCs(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
-	const oc = uOC[user?.cache?.sessionCache[0]];
+	const oc = uOC[user?.cache?.stageCache[0]];
 
 	saveOC(
 		ctx.from.id,
 		{
-			name: user.cache.sessionCache[2],
-			fileid: user.cache.sessionCache[1],
+			name: user.cache.stageCache[2],
+			fileid: user.cache.stageCache[1],
 			description: oc.description,
 		},
-		Number(user.cache.sessionCache[0])
+		Number(user.cache.stageCache[0])
 	);
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);

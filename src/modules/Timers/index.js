@@ -1,7 +1,7 @@
 import { database } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
 import { bot } from "../../lib/launch/tg.js";
-import { data, SERVISE } from "../../lib/SERVISE.js";
+import { data, Service } from "../../lib/Service.js";
 import { cooldown } from "../Command/index.js";
 
 setInterval(async () => {
@@ -22,7 +22,7 @@ setInterval(async () => {
 			if (!date || !id) return;
 			if (date + cooldown <= Date.now()) {
 				const result = bot.telegram.unpinChatMessage(group.static.id, id);
-				result.catch((e) => SERVISE.error(e));
+				result.catch((e) => Service.error(e));
 				delete group.cache.pin;
 				await database.set(d.group(e), group);
 			}

@@ -1,7 +1,7 @@
 import { database } from "../../index.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
-import { data, newlog } from "../../lib/SERVISE.js";
+import { data, newlog } from "../../lib/Service.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
 /**
@@ -117,7 +117,7 @@ export async function getGroup(ctx) {
 							.mono(ctx.from.id.toString(16))
 							._.build()
 					);
-				ctx.leaveChat();
+				// ctx.leaveChat();
 				return false;
 			} else if (data.joinCodes[ctx.chat.id] === "accepted") {
 				ctx.reply("Группа успешно добавлена в список разрешенных.");

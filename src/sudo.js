@@ -2,32 +2,35 @@ import config from "./config.js";
 import { database } from "./index.js";
 import { d, util } from "./lib/Class/Utils.js";
 import { Xitext } from "./lib/Class/Xitext.js";
-import { data, SERVISE } from "./lib/SERVISE.js";
+import { bot } from "./lib/launch/tg.js";
+import { data, Service } from "./lib/Service.js";
 
 /**
  *
  * @param {TextMessageContext} ctx
- * @param {*} Dta
+ * @param {unknown} _
+ * @param {unknown} Data
  */
-export function sudo(ctx, _args, Dta) {
-	const a = "help, ctx, global, db, data, cdata, Xitext, format, r, d, keys, rr",
-		func = `(async () => {\n${ctx.message.text.replace(config.command.clear, "")}\n})();`;
+export async function sudo(ctx, _, Data) {
+	const args = "help, ctx, db, data, edata, Xitext, util, r, d, keys, rr, bot";
+	const code = `(async () => {\n${ctx.message.text.replace(config.command.clear, "")}\n})();`;
+	const func = new Function(args, code);
 	try {
-		new Function(a, func)(
-			a,
+		await func(
+			args, //help
 			ctx,
-			global,
-			database,
-			data,
-			Dta,
+			database, //db
+			data, // bot data
+			Data, // event data
 			Xitext,
 			util,
 			(m) => util.sendSeparatedMessage(util.toStr(m), (r) => ctx.reply(r)),
 			d,
-			(o) => Object.keys(o),
-			ctx.reply.bind(ctx)
+			(o) => Object.keys(o), //keys
+			ctx.reply.bind(ctx), //rr
+			bot
 		);
 	} catch (error) {
-		SERVISE.error(error);
+		Service.error(error);
 	}
 }

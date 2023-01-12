@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 0, 11],
+	version: [9, 1, 0],
 
 	command: {
 		get: /^(.)(?:(\w+)@?\w*)?\s?/,
@@ -39,9 +39,14 @@ export default {
 	 */
 	ReconnectTimerWaitTime: 1,
 
+	middlewares: [
+		//"DataGuard",
+		//"Stage"
+	],
+
 	modules: [
 		"AdvancedData",
-		"AdvancedSession",
+		"AdvancedStage",
 		"Command",
 		"OC",
 		"ManageDB",
@@ -54,7 +59,7 @@ export default {
 	],
 
 	dbkey: {
-		session: "bot_session",
+		stage: "bot_session",
 		version: "bot_latest_version",
 		request: "bot_request",
 	},

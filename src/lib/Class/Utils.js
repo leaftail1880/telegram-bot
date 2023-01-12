@@ -300,7 +300,7 @@ export const d = {
 	 * @param {StringLike} stage
 	 * @returns
 	 */
-	session: (name, stage) => `${name}::${stage}`,
+	stage: (name, stage) => `${name}::${stage}`,
 	/**
 	 * Query link
 	 * @param {StringLike} prefix

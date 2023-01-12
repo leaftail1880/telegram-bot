@@ -2,7 +2,7 @@ import { Command } from "../../../lib/Class/Command.js";
 import { d } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 import { env } from "../../../lib/launch/tg.js";
-import { data } from "../../../lib/SERVISE.js";
+import { data } from "../../../lib/Service.js";
 
 new Command(
 	{

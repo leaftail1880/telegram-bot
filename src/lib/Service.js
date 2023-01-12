@@ -19,7 +19,7 @@ export const data = {
 	/** @type {'work' | 'realese' | 'old'} */
 	type: "realese",
 
-	session: 0,
+	stage: 0,
 	start_time: Date.now(),
 
 	isLaunched: false,
@@ -46,10 +46,10 @@ import path from "path";
 import { XTimer } from "./Class/XTimer.js";
 import { freeze, UpdateCheckTimer } from "./launch/between.js";
 import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
-import { start_stop_lang as lang } from "./launch/lang.js";
+import { service_lang as lang } from "./launch/lang.js";
 import styles from "./styles.js";
 
-export const SERVISE = {
+export const Service = {
 	freeze,
 	start,
 	stop,
@@ -114,9 +114,10 @@ export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
 }
 
 function safeBotLauch() {
-	bot.launch();
+	data.isLaunched = true;
 	data.isStopped = false;
 	data.isFreezed = false;
+	bot.launch();
 	data.relaunchTimer = setInterval(() => {
 		if (data.isStopped || data.isFreezed) return clearInterval(data.relaunchTimer);
 		bot.stop("Relaunch");
@@ -129,6 +130,26 @@ function safeBotStop(freeze = false) {
 	data.isStopped = true;
 	data.isFreezed = freeze;
 	bot.stop();
+}
+
+/**
+ * It loads all the files in a folder and logs the time it took to load each file
+ * @param {string[]} folderArray - An array of folders to load.
+ * @param  {string}dirFolder - The folder that the files are in.
+ */
+async function LoadFromArray(folderArray, dirFolder) {
+	for (const folder of folderArray) {
+		try {
+			const start = performance.now();
+
+			await import(`../${dirFolder}/${folder}/index.js`);
+
+			console.log(`${styles.load}${folder} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
+		} catch (e) {
+			console.log(`${styles.loadError}${folder}`);
+			Service.error(e);
+		}
+	}
 }
 
 /**
@@ -156,37 +177,37 @@ async function start() {
 
 	// Обновляет сессию
 	await updateInfo(data);
-	lang.log.session();
+	lang.log.stage();
 
 	bot.catch(handlers.bot);
 
 	bot.telegram.sendMessage(data.chatID.log, ...lang.start());
 
-	/**======================
-	 * Загрузка модулей
-	 *========================**/
+	/**
+	 * Middlewares
+	 */
+	lang.log.middlewares();
+	await LoadFromArray(config.middlewares, "middlewares");
+
+	/**
+	 * Modules
+	 */
 	lang.log.modules();
-	const m = [];
-	for (const module of config.modules) try {
-		const start = performance.now();
+	await LoadFromArray(config.modules, "modules");
 
-	  await import(`../modules/${module}/index.js`)
-
-	  console.log(` ${clc.cyanBright("[+]")} ${module} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
-	} catch (e) {SERVICE.error(e)}
-
-	// Инициализация команд и списков
+	/**
+	 * Command and lists initalization
+	 */
 	TriggerEventListeners("modules.load", "");
 
-	/**======================
-	 * Запуск бота
-	 *========================**/
+	/**
+	 * Bot launch
+	 */
 	const me = await bot.telegram.getMe();
 	bot.botInfo = me;
-	bot.launch();
-	data.isLaunched = true;
+	safeBotLauch();
 
-	lang.log.end(m);
+	lang.log.end();
 	UpdateCheckTimer.open();
 }
 

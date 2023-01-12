@@ -1,5 +1,5 @@
 import { Command } from "../../../lib/Class/Command.js";
-import { SERVISE } from "../../../lib/SERVISE.js";
+import { Service } from "../../../lib/Service.js";
 
 new Command(
 	{
@@ -12,6 +12,6 @@ new Command(
 	(_a, args) => {
 		const c = args[0];
 		if (c !== "BOT" && c !== "ALL" && c !== "none") return;
-		SERVISE.stop("Ручная остановка", c);
+		Service.stop("Ручная остановка", c);
 	}
 );

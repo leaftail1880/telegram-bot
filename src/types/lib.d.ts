@@ -3,7 +3,12 @@ type Context = import("telegraf").Context;
 type TextMessageContext = Context & { message: import("telegraf/types").Message.TextMessage };
 
 namespace CommandTypes {
-	type Callback = (ctx: TextMessageContext, args: string[], data: IEvent.Data, self: Stored) => void;
+	type Callback = (
+		ctx: TextMessageContext,
+		args: string[],
+		data: IEvent.Data & { user_rigths: import("telegraf/types").ChatMember },
+		self: Stored
+	) => void;
 
 	type Target = "group" | "private" | "all" | "channel";
 	type Permission = "all" | "group_admins" | "bot_owner";
@@ -13,7 +18,7 @@ namespace CommandTypes {
 		name: string;
 		description?: string;
 		aliases?: string[];
-		allowSession?: true;
+		allowStage?: true;
 		hideFromHelpList?: boolean;
 		permission?: Permission;
 		target?: Target;
@@ -32,18 +37,14 @@ namespace IEvent {
 	};
 	type Data = {
 		user: DB.User;
-		session?: {
+		group?: DB.Group;
+		stage?: {
 			name: string;
 			int_state: number;
 			state: string;
 		};
-		group?: DB.Group;
-		user_rigths?: import("telegraf/types").ChatMember;
 	};
-	type CacheUser = {
-		time: number;
-		data: IEvent.Data;
-	};
+
 	type Creator = <T extends keyof IEvent.Events>(
 		type: T,
 		position: number,
@@ -60,20 +61,9 @@ namespace IEvent {
 		"new.release": any;
 		"new.member": any;
 	}
-
-	type Store = Record<
-		string,
-		{
-			position: number;
-			callback: Function;
-		}
-	>;
 }
 
-type CustomEmitter<events extends Record<string | symbol, any>> = {
-	on<N extends keyof events>(eventName: N, listener: (arg: events[N]) => void): import("events").EventEmitter;
-	emit<N extends keyof events>(eventName: N, arg: events[N]): boolean;
-};
+type Stage = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
 
 namespace DB {
 	type User = {
@@ -85,8 +75,8 @@ namespace DB {
 		cache: {
 			nickname?: string;
 			dm?: 1 | 0 | undefined;
-			session?: string;
-			sessionCache?: string[] | Record<string, any>;
+			stage?: string;
+			stageCache?: string[] | Record<string, any>;
 			tag?: string;
 		};
 		needSafe?: true;
@@ -109,20 +99,16 @@ namespace DB {
 	};
 }
 
-namespace IQueryTypes {
-	type Callback = (
-		ctx: Context,
-		path: string[],
-		edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraReplyMessage) => Promise<void>
-	) => void;
-}
+type QueryCallback = (
+	ctx: Context & { callbackQuery },
+	path: string[],
+	edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraReplyMessage) => Promise<void>
+) => void;
 
-type ISessionData = typeof import("../SERVISE.js").data;
-
-type EXTENDS<EX, Value extends EX> = Value;
+type ServiceData = typeof import("../lib/Service.js").data;
 
 type IOnErrorActions = {
-	timer: import("../Class/XTimer.js").XTimer;
+	timer: import("../lib/Class/XTimer.js").XTimer;
 	codes: Record<string | number, (err?: IhandledError) => void>;
 	types: Record<string, (err: IhandledError) => void>;
 };
@@ -149,6 +135,8 @@ type IEnv = {
 
 type seconds = number;
 type milliseconds = number;
+type minutes = number;
+type hours = number;
 
 declare module "hooman" {
 	const got: import("got").Got;

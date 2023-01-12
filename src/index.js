@@ -1,7 +1,7 @@
 import "dotenv/config.js";
 
 import { RedisDatabase } from "./lib/launch/db.js";
-import { handlers, SERVISE } from "./lib/SERVISE.js";
+import { handlers, Service } from "./lib/Service.js";
 
 /**
  * Typed bind
@@ -19,12 +19,13 @@ export function BIND(func, context) {
 // Database
 export const database = new RedisDatabase();
 
-// Global error handler
+// Global error handlers
 process.on("unhandledRejection", handlers.processError);
+process.on("uncaughtException", handlers.processError);
 
 // Gracefull stop
-process.once("SIGINT", () => SERVISE.stop("SIGINT", "ALL"));
-process.once("SIGTERM", () => SERVISE.stop("SIGTERM", "ALL"));
+process.once("SIGINT", () => Service.stop("SIGINT", "ALL"));
+process.once("SIGTERM", () => Service.stop("SIGTERM", "ALL"));
 
 // All done, start
-SERVISE.start();
+Service.start();

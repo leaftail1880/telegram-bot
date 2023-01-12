@@ -5,4 +5,6 @@ export default {
 	progressBar: clc.cyanBright,
 	noConnection: clc.redBright,
 	connectionResolved: clc.greenBright,
+	load: clc.cyanBright(" [+] "),
+	loadError: clc.redBright(" [-] "),
 };

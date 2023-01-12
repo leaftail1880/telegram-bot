@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import { database } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
-import { newlog } from "../../lib/SERVISE.js";
+import { newlog } from "../../lib/Service.js";
 
 /**
  *
@@ -139,7 +139,7 @@ export function getRefType(fileid, text) {
  * @returns
  */
 export function noCache(user, uOC) {
-	return !user?.cache?.sessionCache[0] || !uOC || !uOC[user?.cache?.sessionCache[0]];
+	return !user?.cache?.stageCache[0] || !uOC || !uOC[user?.cache?.stageCache[0]];
 }
 
 /**

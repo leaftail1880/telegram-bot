@@ -1,6 +1,6 @@
 import { database } from "../../index.js";
 import { bot } from "../../lib/launch/tg.js";
-import { data } from "../../lib/SERVISE.js";
+import { data } from "../../lib/Service.js";
 /**
  *
  * @returns {Promise<Array<DB.Group>>}

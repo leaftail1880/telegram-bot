@@ -1,4 +1,4 @@
-import { SERVISE } from "../SERVISE.js";
+import { Service } from "../Service.js";
 
 /**
  *
@@ -11,7 +11,7 @@ export async function safeRun(runnerName, callback) {
 		await callback();
 		return true;
 	} catch (error) {
-		SERVISE.error({
+		Service.error({
 			name: `${runnerName} error: `,
 			message: error.message,
 			stack: error.stack,

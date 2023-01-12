@@ -1,7 +1,7 @@
 import { database } from "../../index.js";
 import { d } from "./Utils.js";
 
-export class Session {
+export class Stage {
 	/**
 	 *
 	 * @param {string} name
@@ -11,7 +11,7 @@ export class Session {
 		this.executers = {};
 	}
 	/**
-	 * Entering an user to specified session
+	 * Entering an user to specified stage
 	 * @param {string | number} id
 	 * @param {string | number} stage
 	 * @param {any} cache
@@ -24,12 +24,12 @@ export class Session {
 		 */
 		const user = await database.get(d.user(id), true);
 		if (!user || typeof user !== "object") return;
-		user.cache.session = d.session(this.name, stage);
-		if (cache) newCache ? (user.cache.sessionCache = cache) : user.cache.sessionCache.push(cache);
+		user.cache.stage = d.stage(this.name, stage);
+		if (cache) newCache ? (user.cache.stageCache = cache) : user.cache.stageCache.push(cache);
 		await database.set(d.user(id), user);
 	}
 	/**
-	 * Deletes all cache and session info from user with specified id
+	 * Deletes all cache and stage info from user with specified id
 	 * @param {string | number} id Id of user
 	 * @returns {Promise<void>}
 	 */
@@ -39,8 +39,8 @@ export class Session {
 		 */
 		const user = await database.get(d.user(id), true);
 		if (!user || typeof user != "object") return;
-		delete user.cache.session;
-		delete user.cache.sessionCache;
+		delete user.cache.stage;
+		delete user.cache.stageCache;
 		await database.set(d.user(id), user);
 	}
 	/**
@@ -52,10 +52,10 @@ export class Session {
 	 */
 	// @ts-expect-error
 	state(data, type = "number") {
-		if (!("session" in data) || data.session.name !== this.name || "group" in data) return false;
+		if (!("stage" in data) || data.stage.name !== this.name || "group" in data) return false;
 
 		// @ts-expect-error
-		return data.session[type === "number" ? "int_state" : "state"];
+		return data.stage[type === "number" ? "int_state" : "state"];
 	}
 	/**
 	 * Register the handler for entering specified scene stage
@@ -68,8 +68,8 @@ export class Session {
 }
 
 export const ssn = {
-	OC: new Session("OC"),
-	Art: new Session("art"),
+	OC: new Stage("OC"),
+	Art: new Stage("art"),
 };
 
 const types = {

@@ -1,6 +1,6 @@
 import config from "../../config.js";
 import { bot } from "../launch/tg.js";
-import { data as $data, newlog } from "../SERVISE.js";
+import { data as $data, newlog } from "../Service.js";
 
 /**
  * @type {Record<string, Array<IEvent.Stored>>}

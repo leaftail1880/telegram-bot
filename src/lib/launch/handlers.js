@@ -1,7 +1,7 @@
 import clc from "cli-color";
 import { database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
-import { data, SERVISE } from "../SERVISE.js";
+import { data, Service } from "../Service.js";
 import { noConnection } from "./noConnection.js";
 import { bot } from "./tg.js";
 
@@ -13,9 +13,9 @@ const OnError = {
 	codes: {
 		ECONNRESET: () => noConnection("Err CONNECTION RESET"),
 		ERR_MODULE_NOT_FOUND: (err) => {
-			SERVISE.error(err);
+			Service.error(err);
 		},
-		409: () => SERVISE.freeze(),
+		409: () => Service.freeze(),
 		400: (err) => {
 			if (err?.response?.description?.includes("not enough rights")) {
 				bot.telegram.sendMessage(
@@ -24,13 +24,13 @@ const OnError = {
 				);
 				return;
 			}
-			SERVISE.error(err);
+			Service.error(err);
 		},
 		429: (err) => {
 			if (OnError.timer.isExpired()) console.warn(err.stack);
 		},
 		413: (err) => {
-			SERVISE.error(err);
+			Service.error(err);
 		},
 	},
 	types: {
@@ -49,7 +49,7 @@ export async function handleError(err) {
 		type_action(err);
 	} else if (code_action) {
 		code_action(err);
-	} else SERVISE.error(err);
+	} else Service.error(err);
 
 	data.errorLog[err?.name] = data.errorLog[err?.name] ?? [];
 	data.errorLog[err?.name].push(err);
@@ -62,7 +62,7 @@ export async function handleError(err) {
  */
 export async function handleDB(err) {
 	if (err.message === "Client IP address is not in the allowlist.") {
-		await SERVISE.stop("Put your ip addres to db allowlist", "ALL", false);
+		await Service.stop("Put your ip addres to db allowlist", "ALL", false);
 		return;
 	}
 	if (err.message === "Socket closed unexpectedly") {
@@ -79,5 +79,5 @@ export async function handleDB(err) {
  */
 export async function handleBotError(err) {
 	if (err && err.name === "FetchError") noConnection(clc.cyanBright("Telegraf"));
-	else SERVISE.error(err);
+	else Service.error(err);
 }

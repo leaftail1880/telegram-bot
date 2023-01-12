@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
-import { ssn } from "../Class/Session.js";
+import { ssn } from "../Class/Stage.js";
 import { Xitext } from "../Class/Xitext.js";
-import { SERVISE } from "../SERVISE.js";
+import { Service } from "../Service.js";
 
 export const ERRCODES = {
 	num: {
@@ -14,11 +14,11 @@ export const ERRCODES = {
 	},
 	420: {
 		user: `Потеряны значения предыдущих шагов при создании. Попробуй снова создать персонажа.`,
-		log: `No session cache`,
+		log: `No stage cache`,
 	},
 	421: {
 		user: `Потеряны значения предыдущих шагов при редактировании. Попробуй снова отредактировать персонажа.`,
-		log: `No session cache`,
+		log: `No stage cache`,
 	},
 };
 
@@ -31,6 +31,6 @@ export function err(code, ctx) {
 	const ErrText = ERRCODES[code].user ?? ERRCODES[800].user;
 	if (ctx)
 		ctx.reply(...new Xitext()._.group(`Ошибка ${code}`).bold().mono()._.group().text(" ").text(ErrText)._.build());
-	SERVISE.error({ name: "SessionError", message: `${code} ${ErrText}` });
+	Service.error({ name: "StageError", message: `${code} ${ErrText}` });
 	`ERR ${code} ${ErrText}\nUser: ${ctx.from.username ?? ctx.from.id}, Text: ${ctx.message.text || ctx.message.caption}`;
 }

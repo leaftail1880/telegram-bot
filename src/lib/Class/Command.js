@@ -3,11 +3,11 @@ import { Context } from "telegraf";
 import config from "../../config.js";
 import { database } from "../../index.js";
 import { bot } from "../launch/tg.js";
-import { data as Data, newlog } from "../SERVISE.js";
+import { data as Data, newlog } from "../Service.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
-import { ssn } from "./Session.js";
+import { ssn } from "./Stage.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
@@ -34,7 +34,7 @@ export class Command {
 				permission: info.permission ?? "all",
 				hideFromHelpList: info.hideFromHelpList,
 				prefix: ["/"],
-				allowSession: info.allowSession,
+				allowStage: info.allowStage,
 				aliases: info.aliases,
 			},
 			callback: callback,
@@ -155,6 +155,11 @@ EventListener("modules.load", 0, (_, next) => {
 	next();
 });
 
+import { message } from "telegraf/filters";
+bot.use((ctx, next) => {
+	if (!message("text")) return;
+});
+
 EventListener("text", 9, async (ctx, next, data) => {
 	const text = ctx.message.text;
 	function reply(/** @type {string} */ text) {
@@ -173,16 +178,16 @@ EventListener("text", 9, async (ctx, next, data) => {
 	}
 	if (typeof command !== "object") return next();
 
-	if (data.session && !command.info.allowSession)
+	if (data.stage && !command.info.allowStage)
 		return reply(
-			`В сессии ${data.session.name} ${data.session.state} вам доступны только ${d.langJoin(
-				Commands.filter((e) => e.info.allowSession).map((e) => e.info.prefix[0] + e.info.name)
+			`В сессии ${data.stage.name} ${data.stage.state} вам доступны только ${d.langJoin(
+				Commands.filter((e) => e.info.allowStage).map((e) => e.info.prefix[0] + e.info.name)
 			)}`
 		);
 
-	data.user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+	const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-	if (await Command.cantUse(command, ctx, data.user_rigths)) return reply("В этом чате эта команда недоступна. /help");
+	if (await Command.cantUse(command, ctx, user_rigths)) return reply("В этом чате эта команда недоступна. /help");
 
 	const args =
 		text
@@ -191,7 +196,7 @@ EventListener("text", 9, async (ctx, next, data) => {
 			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
 
 	Command.Log(ctx, data.user);
-	await safeRun(`Command`, () => command.callback(ctx, args, data, command));
+	await safeRun(`Command`, () => command.callback(ctx, args, { ...data, user_rigths }, command));
 });
 
 /**======================ss
@@ -245,16 +250,16 @@ new Command(
 		name: "cancel",
 		description: "Выход из пошагового меню",
 		hideFromHelpList: true,
-		allowSession: true,
+		allowStage: true,
 		permission: "all",
 		target: "private",
 	},
 	async (ctx, _args, data) => {
 		const user = data.user;
-		if (user?.cache?.session || user?.cache?.sessionCache) {
-			await ctx.reply(`Вы вышли из меню ${user.cache.session.replace("::", " ")}`);
-			delete user.cache.session;
-			delete user.cache.sessionCache;
+		if (user?.cache?.stage || user?.cache?.stageCache) {
+			await ctx.reply(`Вы вышли из меню ${user.cache.stage.replace("::", " ")}`);
+			delete user.cache.stage;
+			delete user.cache.stageCache;
 			await database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
@@ -265,7 +270,7 @@ new Command(
 		name: "next",
 		description: "Переходит на следующий шаг меню",
 		hideFromHelpList: true,
-		allowSession: true,
+		allowStage: true,
 		permission: "all",
 		target: "private",
 	},
@@ -274,15 +279,15 @@ new Command(
 		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
 		const no_menu = () => ctx.reply("Вы не находитесь в меню!");
 
-		if (typeof user?.cache?.session === "string") {
-			const match = user.cache.session.match(/^(.+)::(.+)$/);
+		if (typeof user?.cache?.stage === "string") {
+			const match = user.cache.stage.match(/^(.+)::(.+)$/);
 			if (!match) return no_skip();
-			const [_, sessionKey, stage] = match;
-			const session = ssn[sessionKey];
+			const [_, stageKey, stage_name] = match;
+			const stage = ssn[stageKey];
 
-			if (session) {
-				if (typeof session.executers[stage] === "function") {
-					session.executers[stage](ctx, user);
+			if (stage) {
+				if (typeof stage.executers[stage_name] === "function") {
+					stage.executers[stage_name](ctx, user);
 				} else no_skip();
 			} else no_menu();
 

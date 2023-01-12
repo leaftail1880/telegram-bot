@@ -1,6 +1,6 @@
 import clc from "cli-color";
 import { bot } from "../launch/tg.js";
-import { newlog } from "../SERVISE.js";
+import { newlog } from "../Service.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
 import { editMsg } from "./Menu.js";
@@ -19,7 +19,7 @@ export class Query {
 	 * @param {string} info.prefix Без ::
 	 * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
 	 * @param {number} [info.permisson]
-	 * @param {IQueryTypes.Callback} callback
+	 * @param {QueryCallback} callback
 	 */
 	constructor(info, callback) {
 		if (!info?.name) return;

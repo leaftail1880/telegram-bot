@@ -3,8 +3,8 @@
 import clc from "cli-color";
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { data, log, newlog, SERVISE } from "../SERVISE.js";
-import { start_stop_lang as lang } from "./lang.js";
+import { data, log, newlog, Service } from "../Service.js";
+import { service_lang as lang } from "./lang.js";
 import { bot } from "./tg.js";
 import { bigger, updateInfo } from "./update.js";
 
@@ -35,13 +35,13 @@ async function updateCheckInterval() {
 		return database.set(config.dbkey.request, message);
 	}
 
-	if (data.development) return await answer(SERVISE.message.development);
+	if (data.development) return await answer(Service.message.development);
 
-	if (q === "realese") return await answer(SERVISE.message.terminate_you);
+	if (q === "realese") return await answer(Service.message.terminate_you);
 
 	if (q === "old" || q === "work") {
-		await answer(SERVISE.message.terminate_me);
-		return SERVISE.stop(lang.stop.old(), "ALL");
+		await answer(Service.message.terminate_me);
+		return Service.stop(lang.stop.old(), "ALL");
 	}
 }
 
@@ -82,16 +82,16 @@ export async function freeze() {
 
 	const timeout = setInterval(async () => {
 		const answer = await database.getActualData(config.dbkey.request);
-		if (answer === SERVISE.message.terminate_you) {
+		if (answer === Service.message.terminate_you) {
 			await database.delete(config.dbkey.request);
-			return SERVISE.stop(lang.stop.terminate(), "ALL");
+			return Service.stop(lang.stop.terminate(), "ALL");
 		}
 
-		if (answer === SERVISE.message.terminate_me) {
+		if (answer === Service.message.terminate_me) {
 			await launch("Запущена как новая", "NEW");
 			return;
 		}
-		if (answer === SERVISE.message.development) {
+		if (answer === Service.message.development) {
 			if (devTimes === 0) log("Ожидает конца разработки...");
 			devTimes++;
 			times = 0;
@@ -122,13 +122,13 @@ export async function freeze() {
 		if (data.isStopped === false) return;
 		data.start_time = Date.now();
 
-		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и session
+		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и stage
 		await updateInfo(data);
 
 		/**======================
 		 * Запуск бота
 		 *========================**/
-		SERVISE.safeBotLauch();
+		Service.safeBotLauch();
 
 		const message = lang.logLaunch(info);
 		newlog({

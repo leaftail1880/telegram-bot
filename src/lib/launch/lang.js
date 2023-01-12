@@ -1,10 +1,9 @@
 import clc from "cli-color";
-import { SingleBar } from "cli-progress";
 import config from "../../config.js";
 import { Xitext } from "../Class/Xitext.js";
-import { data } from "../SERVISE.js";
+import { data } from "../Service.js";
 
-export const start_stop_lang = {
+export const service_lang = {
 	logLaunch: (reason) => `⌬ ${data.logVersion} ${reason}`,
 	stop: {
 		terminate: () => `${data.logVersion} принудительно остановлена.`,
@@ -21,21 +20,18 @@ export const start_stop_lang = {
 	log: {
 		start: () =>
 			console.log(
-				start_stop_lang.state(0, 4, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
+				service_lang.state(0, 5, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
 			),
-		db: () => console.log(start_stop_lang.state(1, 4, "Fetching db data...")),
-		session: () =>
-			console.log(
-				start_stop_lang.state(2, 4, `Type: ${clc.cyanBright(data.type)} Session: ${clc.cyanBright(data.session)}`)
-			),
-		modules: () => {
-			console.log(start_stop_lang.state(3, 4, "Loading modules:"));
-		},
+		db: () => console.log(service_lang.state(1, 5, "Fetching db data...")),
+		stage: () =>
+			console.log(service_lang.state(2, 5, `Type: ${clc.cyanBright(data.type)} Stage: ${clc.cyanBright(data.stage)}`)),
+		middlewares: () => console.log(service_lang.state(3, 5, "Loading middlewares:")),
+		modules: () => console.log(service_lang.state(4, 5, "Loading modules:")),
 		end: (/** @type {string[]} */ modules) =>
 			console.log(
-				start_stop_lang.state(
-					4,
-					4,
+				service_lang.state(
+					5,
+					5,
 					`Ready to work in ${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
 				)
 			),

@@ -31,7 +31,7 @@ export type ArtService = {
 export type AttachFunction = (ctx: Context) => any;
 export type PostFunction = (ctx: Context) => any;
 
-export interface ArtSessionCache {
+export interface ArtStageCache {
 	file_id?: string;
 	waiting_lang?: Language;
 	descriptions: Record<Language, string> | {};

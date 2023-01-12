@@ -1,6 +1,6 @@
 import { SingleBar } from "cli-progress";
 import { BIND } from "../../index.js";
-import { clearLines } from "../SERVISE.js";
+import { clearLines } from "../Service.js";
 import styles from "../styles.js";
 
 /**

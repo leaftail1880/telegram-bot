@@ -44,11 +44,11 @@ export class MultiMenu {
 	 *
 	 * @param {Context} ctx
 	 * @param {*} qq
-	 * @param {number} session
+	 * @param {number} stage
 	 * @returns
 	 */
-	notPrivateChat(ctx, qq, session) {
-		return ctx.chat.type !== "private" || qq === "not" || qq.session !== session;
+	notPrivateChat(ctx, qq, stage) {
+		return ctx.chat.type !== "private" || qq === "not" || qq.stage !== stage;
 	}
 	/**
 	 *
@@ -57,7 +57,7 @@ export class MultiMenu {
 	 * @returns
 	 */
 	isCacheEmpty(user, lvl = 0) {
-		return !user?.cache?.sessionCache?.map || !user?.cache?.sessionCache[lvl];
+		return !user?.cache?.stageCache?.map || !user?.cache?.stageCache[lvl];
 	}
 	/**
 	 *
@@ -95,7 +95,7 @@ export class MultiMenu {
 	 * @param {string} info.name Имя
 	 * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
 	 * @param {number} [info.permisson]
-	 * @param {IQueryTypes.Callback} callback
+	 * @param {QueryCallback} callback
 	 */
 	query(info, callback) {
 		return new Query({ prefix: this.prefix, ...info }, callback);

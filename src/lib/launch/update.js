@@ -21,39 +21,40 @@ export function bigger(array, array2, [first, second, equal]) {
 
 /**
  * Обновляет всё
- * @param {ISessionData} data
+ * @param {ServiceData} data
  */
 export async function updateInfo(data) {
-	await updateSession(data);
+	await updateStage(data);
 	await updateVisualVersion(data);
 }
 
 /**
- * Обновляет session
- * @param {ISessionData} data
+ * Обновляет stage
+ * @param {ServiceData} data
  */
-async function updateSession(data) {
-	if (!(await database.has(config.dbkey.session))) {
-		await database.set(config.dbkey.session, 0);
+async function updateStage(data) {
+	if (!(await database.has(config.dbkey.stage))) {
+		await database.set(config.dbkey.stage, 0);
 	}
 
-	await database.increase(config.dbkey.session, 1);
+	await database.increase(config.dbkey.stage, 1);
 
-	data.session = await database.getActualData(config.dbkey.session, true);
+	data.stage = await database.getActualData(config.dbkey.stage, true);
 }
 
 /**
  * Обновляет data.v, data.versionMSG, data.isLatest и version
- * @param {ISessionData} data
+ * @param {ServiceData} data
  */
 async function updateVisualVersion(data) {
 	// Получаем данные
-	let session = data.session;
+	let stage = data.stage;
+
 	/**
 	 * @type {number[]}
 	 */
-	const dbversion = await database.getActualData(config.dbkey.version, true);
-	if (dbversion.splice) dbversion.splice(3, 10);
+	const dbversion = (await database.getActualData(config.dbkey.version, true)) ?? [0, 0, 0];
+	dbversion.splice(3, 10);
 
 	// Сравниваем версии
 	data.type = bigger([config.version[0], config.version[1], config.version[2]], dbversion, ["realese", "old", "work"]);
@@ -67,7 +68,7 @@ async function updateVisualVersion(data) {
 	}
 
 	// Записываем значения
-	data.v = `${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
+	data.v = `${config.version.join(".")}.x${`${stage}`.padStart(5, "0")}`;
 
 	const d = translate_version[data.type];
 
@@ -75,7 +76,7 @@ async function updateVisualVersion(data) {
 	data.logVersion = `v${data.v}`;
 }
 
-/** @type {Record<ISessionData["type"], string>} */
+/** @type {Record<ServiceData["type"], string>} */
 const translate_version = {
 	old: "Старая",
 	realese: "Релиз",
