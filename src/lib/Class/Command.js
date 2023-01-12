@@ -155,10 +155,10 @@ EventListener("modules.load", 0, (_, next) => {
 	next();
 });
 
-import { message } from "telegraf/filters";
-bot.use((ctx, next) => {
-	if (!message("text")) return;
-});
+// import { message } from "telegraf/filters";
+// bot.use((ctx, next) => {
+// 	if (!message("text")) return;
+// });
 
 EventListener("text", 9, async (ctx, next, data) => {
 	const text = ctx.message.text;

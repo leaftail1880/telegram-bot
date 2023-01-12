@@ -117,7 +117,7 @@ export async function getGroup(ctx) {
 							.mono(ctx.from.id.toString(16))
 							._.build()
 					);
-				// ctx.leaveChat();
+				ctx.leaveChat();
 				return false;
 			} else if (data.joinCodes[ctx.chat.id] === "accepted") {
 				ctx.reply("Группа успешно добавлена в список разрешенных.");
