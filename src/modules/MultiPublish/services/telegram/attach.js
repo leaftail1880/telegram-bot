@@ -1,6 +1,6 @@
+import { bot } from "../../../../index.js";
 import { d } from "../../../../lib/Class/Utils.js";
 import { Xitext } from "../../../../lib/Class/Xitext.js";
-import { bot } from "../../../../lib/launch/tg.js";
 import { ART } from "../../index.js";
 import { getUserArtInfo, setUserArtInfo } from "../../utils.js";
 

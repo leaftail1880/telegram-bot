@@ -1,8 +1,8 @@
 import { API, Upload } from "vk-io";
+import { env } from "../../../../index.js";
 import { EventListener } from "../../../../lib/Class/Events.js";
 import { Scene } from "../../../../lib/Class/Scene.js";
 import { Xitext } from "../../../../lib/Class/Xitext.js";
-import { env } from "../../../../lib/launch/tg.js";
 import { ART } from "../../index.js";
 import { getUserArtInfo, setUserArtInfo } from "../../utils.js";
 

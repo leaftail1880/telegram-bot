@@ -1,9 +1,8 @@
 import clc from "cli-color";
-import { database } from "../../index.js";
+import { bot, database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import { data, Service } from "../Service.js";
 import { noConnection } from "./noConnection.js";
-import { bot } from "./tg.js";
 
 /**
  * @type {IOnErrorActions}
@@ -66,7 +65,7 @@ export async function handleDB(err) {
 		return;
 	}
 	if (err.message === "Socket closed unexpectedly") {
-		await database._.connect();
+		await database._.reconnect();
 		return;
 	}
 	noConnection();

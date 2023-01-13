@@ -1,8 +1,7 @@
 import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
-import { database } from "../../index.js";
-import { bot } from "../launch/tg.js";
+import { bot, database } from "../../index.js";
 import { data as Data, newlog } from "../Service.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";

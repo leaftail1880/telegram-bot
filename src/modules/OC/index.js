@@ -1,5 +1,5 @@
 import { MultiMenu } from "../../lib/Class/Menu.js";
-import { d } from "../../lib/Class/Utils.js";
+import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 /**
@@ -10,8 +10,8 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
  */
 
 export const m = new MultiMenu("OC"),
-	link = BIND(m.link, m),
-	editMsg = BIND(m.editMsgFromQuery, m);
+	link = util.TypedBind(m.link, m),
+	editMsg = util.TypedBind(m.editMsgFromQuery, m);
 
 export const lang = {
 	create: {
@@ -99,5 +99,4 @@ import "./menu/edit.js";
 import "./menu/my.js";
 import "./menu/myoc.js";
 
-import { BIND } from "../../index.js";
 import "./menu/reg.js";

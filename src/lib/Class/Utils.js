@@ -192,9 +192,20 @@ export const util = {
 			: `${type.includes(":") ? type : `${type}: `}${message}${stringStack}`;
 	},
 	/**
-	 *
+	 * Typed bind
+	 * @template {Function} F
+	 * @param {F} func
+	 * @param {unknown} context
+	 * @returns {F}
+	 */
+	TypedBind(func, context) {
+		if (typeof func !== "function") return func;
+		return func.bind(context);
+	},
+
+	/**
+	 * Only user first_name, username, id and last_name if string is less then 10 characters length
 	 * @param {import("telegraf/types").User} user
-	 * @returns
 	 */
 	getName(user) {
 		let res = String(user?.first_name ?? user?.username ?? user?.id ?? "WTF");
@@ -204,7 +215,7 @@ export const util = {
 		return res;
 	},
 	/**
-	 *
+	 * Gets name from db or from user if no db name found
 	 * @param {DB.User | null} [dbuser]
 	 * @param {import("telegraf/types").User | null} [user]
 	 */
@@ -216,7 +227,7 @@ export const util = {
 	},
 
 	/**
-	 *
+	 * Gets user from cache and then uses getFullName (db user name ?? tg user name)
 	 * @param {import("telegraf/types").User} user
 	 * @returns
 	 */

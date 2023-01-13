@@ -1,14 +1,12 @@
 import clc from "cli-color";
 import fs from "fs/promises";
-import { createClient } from "redis";
 import config from "../config.js";
-import { database } from "../index.js";
+import { bot, database, env } from "../index.js";
 import "./Class/Command.js";
 import { TriggerEventListeners } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
-import { bot, env } from "./launch/tg.js";
 import { updateInfo } from "./launch/update.js";
 
 export const data = {
@@ -162,22 +160,11 @@ async function start() {
 		await fs.mkdir("logs");
 	} catch {}
 
-	/**======================
-	 * Подключение к базе данных
-	 *========================**/
-	const client = createClient({
-		url: process.env.REDIS_URL,
-	});
-
-	client.on("error", handlers.dbError);
-
-	// Сохранение клиента
 	lang.log.db();
-	await database._.connect(client);
+	await database._.reconnect();
 
-	// Обновляет сессию
-	await updateInfo(data);
 	lang.log.session();
+	await updateInfo(data);
 
 	bot.catch(handlers.bot);
 

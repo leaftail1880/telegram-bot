@@ -2,10 +2,9 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { database } from "../../index.js";
+import { bot, database } from "../../index.js";
 import { data, log, newlog, Service } from "../Service.js";
 import { service_lang as lang } from "./lang.js";
-import { bot } from "./tg.js";
 import { bigger, updateInfo } from "./update.js";
 
 /** @type {NodeJS.Timer} */

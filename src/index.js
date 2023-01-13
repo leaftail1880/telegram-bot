@@ -1,22 +1,17 @@
 import "dotenv/config.js";
 
-import { RedisDatabase } from "./lib/launch/db.js";
+if (!process.env.TOKEN || !process.env.REDIS_URL) throw new TypeError("No tokens found");
+
+import { Telegraf } from "telegraf";
+import { RedisDatabase } from "./lib/Class/Database.js";
 import { handlers, Service } from "./lib/Service.js";
 
-/**
- * Typed bind
- * @template {Function} Func
- * @template This
- * @param {Func} func
- * @param {This} context
- * @returns {Func}
- */
-export function BIND(func, context) {
-	if (typeof func !== "function") return func;
-	return func.bind(context);
-}
+/** @type {IEnv} */
+//@ts-expect-error We already checked this, trust me TS
+export const env = process.env;
 
-// Database
+export const bot = new Telegraf(env.TOKEN);
+
 export const database = new RedisDatabase();
 
 // Global error handlers

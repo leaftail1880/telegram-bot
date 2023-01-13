@@ -1,10 +1,9 @@
-import { database } from "../../index.js";
+import { bot, database } from "../../index.js";
 import { Command } from "../../lib/Class/Command.js";
 import { editMsg, MultiMenu } from "../../lib/Class/Menu.js";
 import { Query } from "../../lib/Class/Query.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
-import { bot } from "../../lib/launch/tg.js";
 
 (async () => {
 	const m = new MultiMenu("DB");

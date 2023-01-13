@@ -1,6 +1,5 @@
-import { database } from "../../index.js";
+import { bot, database } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
-import { bot } from "../../lib/launch/tg.js";
 import { data, Service } from "../../lib/Service.js";
 import { cooldown } from "../Command/index.js";
 

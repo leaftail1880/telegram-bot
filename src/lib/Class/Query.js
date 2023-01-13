@@ -1,5 +1,5 @@
 import clc from "cli-color";
-import { bot } from "../launch/tg.js";
+import { bot } from "../../index.js";
 import { newlog } from "../Service.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";

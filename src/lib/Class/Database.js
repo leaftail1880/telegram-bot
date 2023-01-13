@@ -1,7 +1,9 @@
 import { SingleBar } from "cli-progress";
-import { BIND } from "../../index.js";
-import { clearLines } from "../Service.js";
+import { createClient } from "redis";
+import { env } from "../../index.js";
+import { clearLines, handlers } from "../Service.js";
 import styles from "../styles.js";
+import { util } from "./Utils.js";
 
 /**
  * @typedef {import("redis").RedisClientType} cli
@@ -23,44 +25,59 @@ export class RedisDatabase {
 	#CACHE = {};
 
 	_ = {
-		close: BIND(this.#close, this),
-		connect: BIND(this.#connect, this),
+		connect: util.TypedBind(this.connect, this),
+		reconnect: util.TypedBind(this.reconnect, this),
+		close: util.TypedBind(this.close, this),
 	};
+	/**
+	 * @private
+	 */
+	async connect() {
+		const b1 = new SingleBar({
+			format: `[${styles.progressBar("{bar}")}] {percentage}% - {value}/{total} connecting`,
+			barCompleteChar: "#",
+			barIncompleteChar: "..",
+			hideCursor: true,
+		});
+		const total = 15;
+		let curent = 0;
+		b1.start(total, 0);
 
-	async #close(quit = true) {
+		const int = setInterval(() => {
+			curent++;
+			if (curent <= total) b1.increment();
+		}, 100);
+
+		const c = createClient({
+			url: env.REDIS_URL,
+		});
+		c.on("error", handlers.dbError);
+
+		await c.connect();
+		clearInterval(int);
+		b1.stop();
+		clearLines(-1);
+
+		// @ts-expect-error
+		this.#CLIENT = c;
+		this.#CLOSED_CLIENT = "closed";
+		await this.collectionAsync(true);
+	}
+	/**
+	 *
+	 * @param {boolean} quit
+	 * @private
+	 */
+	async close(quit = true) {
 		if (quit) await this.client.quit();
 		[this.#CLOSED_CLIENT, this.#CLIENT] = [this.#CLIENT, this.#CLOSED_CLIENT];
 	}
 	/**
 	 *
-	 * @param {*} c
+	 * @private
 	 */
-	async #connect(c) {
-		if (c) {
-			const b1 = new SingleBar({
-				format: `[${styles.progressBar("{bar}")}] {percentage}% - {value}/{total} connecting`,
-				barCompleteChar: "#",
-				barIncompleteChar: "..",
-				hideCursor: true,
-			});
-			const total = 15;
-			let curent = 0;
-			b1.start(total, 0);
-
-			const int = setInterval(() => {
-				curent++;
-				if (curent <= total) b1.increment();
-			}, 100);
-
-			await c.connect();
-			clearInterval(int);
-			b1.stop();
-			clearLines(-1);
-
-			this.#CLIENT = c;
-			this.#CLOSED_CLIENT = "closed";
-			await this.collectionAsync(true);
-		} else if (this.#CLOSED_CLIENT !== "closed") {
+	async reconnect() {
+		if (this.#CLOSED_CLIENT !== "closed") {
 			[this.#CLOSED_CLIENT, this.#CLIENT] = [this.#CLIENT, this.#CLOSED_CLIENT];
 		}
 	}

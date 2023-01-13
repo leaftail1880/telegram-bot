@@ -1,5 +1,4 @@
-import { database } from "../../index.js";
-import { bot } from "../../lib/launch/tg.js";
+import { bot, database } from "../../index.js";
 import { data } from "../../lib/Service.js";
 /**
  *

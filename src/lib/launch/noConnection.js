@@ -1,9 +1,8 @@
 import config from "../../config.js";
-import { database } from "../../index.js";
+import { bot, database } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import { data, Service } from "../Service.js";
 import styles from "../styles.js";
-import { bot } from "./tg.js";
 
 const Connect = {
 	/** @type {NodeJS.Timer} */
@@ -48,7 +47,7 @@ async function timer() {
 		if (!data.isStopped) return;
 		await bot.telegram.getMe();
 
-		await database._.connect();
+		await database._.reconnect();
 		Service.safeBotLauch();
 
 		console.log(styles.connectionResolved("Подключение восстановлено!"));

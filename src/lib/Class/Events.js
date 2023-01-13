@@ -1,5 +1,5 @@
 import config from "../../config.js";
-import { bot } from "../launch/tg.js";
+import { bot } from "../../index.js";
 import { data as $data, newlog } from "../Service.js";
 
 /**
