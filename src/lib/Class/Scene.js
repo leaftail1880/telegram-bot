@@ -1,35 +1,35 @@
 import { database } from "../../index.js";
 import { d } from "./Utils.js";
 
-export class Stage {
+export class Scene {
 	/**
 	 *
 	 * @param {string} name
 	 */
 	constructor(name) {
 		this.name = name;
-		this.executers = {};
+		this.executors = {};
 	}
 	/**
-	 * Entering an user to specified stage
+	 * Entering an user to specified scene
 	 * @param {string | number} id
-	 * @param {string | number} stage
+	 * @param {string | number} scene
 	 * @param {any} cache
 	 * @param {boolean} newCache
 	 * @returns {Promise<void>}
 	 */
-	async enter(id, stage = 0, cache, newCache = false) {
+	async enter(id, scene = 0, cache, newCache = false) {
 		/**
 		 * @type {DB.User}
 		 */
 		const user = await database.get(d.user(id), true);
 		if (!user || typeof user !== "object") return;
-		user.cache.stage = d.stage(this.name, stage);
-		if (cache) newCache ? (user.cache.stageCache = cache) : user.cache.stageCache.push(cache);
+		user.cache.scene = d.scene(this.name, scene);
+		if (cache) newCache ? (user.cache.sceneCache = cache) : user.cache.sceneCache.push(cache);
 		await database.set(d.user(id), user);
 	}
 	/**
-	 * Deletes all cache and stage info from user with specified id
+	 * Deletes all cache and scene info from user with specified id
 	 * @param {string | number} id Id of user
 	 * @returns {Promise<void>}
 	 */
@@ -39,8 +39,8 @@ export class Stage {
 		 */
 		const user = await database.get(d.user(id), true);
 		if (!user || typeof user != "object") return;
-		delete user.cache.stage;
-		delete user.cache.stageCache;
+		delete user.cache.scene;
+		delete user.cache.sceneCache;
 		await database.set(d.user(id), user);
 	}
 	/**
@@ -52,24 +52,24 @@ export class Stage {
 	 */
 	// @ts-expect-error
 	state(data, type = "number") {
-		if (!("stage" in data) || data.stage.name !== this.name || "group" in data) return false;
+		if (!("scene" in data) || data.scene.name !== this.name || "group" in data) return false;
 
 		// @ts-expect-error
-		return data.stage[type === "number" ? "int_state" : "state"];
+		return data.scene[type === "number" ? "int_state" : "state"];
 	}
 	/**
-	 * Register the handler for entering specified scene stage
-	 * @param {number | string} stage
+	 * Register the handler for entering specified scene scene
+	 * @param {number | string} scene
 	 * @param {(ctx: TextMessageContext, data: DB.User) => void} callback
 	 */
-	next(stage, callback) {
-		this.executers[`${stage}`] = callback;
+	next(scene, callback) {
+		this.executors[`${scene}`] = callback;
 	}
 }
 
 export const ssn = {
-	OC: new Stage("OC"),
-	Art: new Stage("art"),
+	OC: new Scene("OC"),
+	Art: new Scene("art"),
 };
 
 const types = {

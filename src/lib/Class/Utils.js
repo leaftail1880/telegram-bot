@@ -297,10 +297,10 @@ export const d = {
 	/**
 	 *
 	 * @param {StringLike} name
-	 * @param {StringLike} stage
+	 * @param {StringLike} scene
 	 * @returns
 	 */
-	stage: (name, stage) => `${name}::${stage}`,
+	scene: (name, scene) => `${name}::${scene}`,
 	/**
 	 * Query link
 	 * @param {StringLike} prefix

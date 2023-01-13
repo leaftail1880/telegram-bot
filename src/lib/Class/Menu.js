@@ -42,22 +42,12 @@ export class MultiMenu {
 	}
 	/**
 	 *
-	 * @param {Context} ctx
-	 * @param {*} qq
-	 * @param {number} stage
-	 * @returns
-	 */
-	notPrivateChat(ctx, qq, stage) {
-		return ctx.chat.type !== "private" || qq === "not" || qq.stage !== stage;
-	}
-	/**
-	 *
 	 * @param {DB.User} user
 	 * @param {number} lvl
 	 * @returns
 	 */
 	isCacheEmpty(user, lvl = 0) {
-		return !user?.cache?.stageCache?.map || !user?.cache?.stageCache[lvl];
+		return !user?.cache?.sceneCache?.map || !user?.cache?.sceneCache[lvl];
 	}
 	/**
 	 *

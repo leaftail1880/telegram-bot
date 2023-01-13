@@ -7,7 +7,7 @@ import { data as Data, newlog } from "../Service.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
-import { ssn } from "./Stage.js";
+import { ssn } from "./Scene.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
@@ -34,7 +34,7 @@ export class Command {
 				permission: info.permission ?? "all",
 				hideFromHelpList: info.hideFromHelpList,
 				prefix: ["/"],
-				allowStage: info.allowStage,
+				allowScene: info.allowScene,
 				aliases: info.aliases,
 			},
 			callback: callback,
@@ -178,10 +178,10 @@ EventListener("text", 9, async (ctx, next, data) => {
 	}
 	if (typeof command !== "object") return next();
 
-	if (data.stage && !command.info.allowStage)
+	if (data.scene && !command.info.allowScene)
 		return reply(
-			`В сессии ${data.stage.name} ${data.stage.state} вам доступны только ${d.langJoin(
-				Commands.filter((e) => e.info.allowStage).map((e) => e.info.prefix[0] + e.info.name)
+			`В сессии ${data.scene.name} ${data.scene.state} вам доступны только ${d.langJoin(
+				Commands.filter((e) => e.info.allowScene).map((e) => e.info.prefix[0] + e.info.name)
 			)}`
 		);
 
@@ -250,16 +250,16 @@ new Command(
 		name: "cancel",
 		description: "Выход из пошагового меню",
 		hideFromHelpList: true,
-		allowStage: true,
+		allowScene: true,
 		permission: "all",
 		target: "private",
 	},
 	async (ctx, _args, data) => {
 		const user = data.user;
-		if (user?.cache?.stage || user?.cache?.stageCache) {
-			await ctx.reply(`Вы вышли из меню ${user.cache.stage.replace("::", " ")}`);
-			delete user.cache.stage;
-			delete user.cache.stageCache;
+		if (user?.cache?.scene || user?.cache?.sceneCache) {
+			await ctx.reply(`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`);
+			delete user.cache.scene;
+			delete user.cache.sceneCache;
 			await database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
@@ -270,28 +270,21 @@ new Command(
 		name: "next",
 		description: "Переходит на следующий шаг меню",
 		hideFromHelpList: true,
-		allowStage: true,
+		allowScene: true,
 		permission: "all",
 		target: "private",
 	},
 	async (ctx, _a, data) => {
-		const user = data.user;
-		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
 		const no_menu = () => ctx.reply("Вы не находитесь в меню!");
+		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
 
-		if (typeof user?.cache?.stage === "string") {
-			const match = user.cache.stage.match(/^(.+)::(.+)$/);
-			if (!match) return no_skip();
-			const [_, stageKey, stage_name] = match;
-			const stage = ssn[stageKey];
+		if (!data.scene) return no_menu();
 
-			if (stage) {
-				if (typeof stage.executers[stage_name] === "function") {
-					stage.executers[stage_name](ctx, user);
-				} else no_skip();
-			} else no_menu();
+		const scene = ssn[data.scene.name];
+		if (!scene) return no_menu();
 
-			await database.set(d.user(ctx.from.id), user);
-		} else no_menu();
+		if (typeof scene.executors[data.scene.state] !== "function") return no_skip();
+
+		scene.executors[data.scene.state](ctx, data.user);
 	}
 );

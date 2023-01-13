@@ -1,6 +1,6 @@
 import { API, Upload } from "vk-io";
 import { EventListener } from "../../../../lib/Class/Events.js";
-import { Stage } from "../../../../lib/Class/Stage.js";
+import { Scene } from "../../../../lib/Class/Scene.js";
 import { Xitext } from "../../../../lib/Class/Xitext.js";
 import { env } from "../../../../lib/launch/tg.js";
 import { ART } from "../../index.js";
@@ -14,7 +14,7 @@ const attach_url = `https://oauth.vk.com/authorize?client_id=${
 	env.VK_TOKEN
 }&redirect_uri=${blank_uri}&scope=${scopes.join(",")}&response_type=token&v=5.131`;
 
-const stage = new Stage("vk");
+const scene = new Scene("vk");
 
 /** @type {import("../../types/Integrations.js").AttachFunction} */
 export async function attach(ctx) {
@@ -32,11 +32,11 @@ export async function attach(ctx) {
 
 	ctx.reply(...xt._.build());
 
-	stage.enter(ctx.from.id, "connect token", {}, true);
+	scene.enter(ctx.from.id, "connect token", {}, true);
 }
 
 EventListener("text", 0, (ctx, next, data) => {
-	if (stage.state(data, "string") !== "connect token") return next();
+	if (scene.state(data, "string") !== "connect token") return next();
 
 	const match = ctx.message.text.match(
 		new RegExp(`^${blank_uri.replace("/", "\\/")}#access_token=(.+)&expires_in=0&user_id=\\d+`)
@@ -59,17 +59,17 @@ EventListener("text", 0, (ctx, next, data) => {
 			._.build()
 	);
 
-	stage.enter(ctx.from.id, "connect group id", [match[1]], true);
+	scene.enter(ctx.from.id, "connect group id", [match[1]], true);
 });
 
 EventListener("text", 0, async (ctx, next, data) => {
-	if (stage.state(data, "string") !== "connect group id") return next();
+	if (scene.state(data, "string") !== "connect group id") return next();
 
 	const id = parseInt(ctx.message.text);
 
 	if (isNaN(id)) return ctx.reply("Не удалось распознать ID. Пришли ID ввиде числа.");
 
-	const token = data.user.cache.stageCache[0];
+	const token = data.user.cache.sceneCache[0];
 
 	const userData = await getUserArtInfo(ctx.from.id);
 	userData.services.vk.token = token;
@@ -84,7 +84,7 @@ EventListener("text", 0, async (ctx, next, data) => {
 		},
 	});
 
-	stage.exit(ctx.from.id);
+	scene.exit(ctx.from.id);
 });
 
 /** @type {import("../../types/Integrations.js").PostFunction} */

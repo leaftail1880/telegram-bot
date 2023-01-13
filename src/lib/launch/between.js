@@ -122,7 +122,7 @@ export async function freeze() {
 		if (data.isStopped === false) return;
 		data.start_time = Date.now();
 
-		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и stage
+		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и session
 		await updateInfo(data);
 
 		/**======================

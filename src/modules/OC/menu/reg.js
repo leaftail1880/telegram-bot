@@ -1,6 +1,6 @@
 import { EventListener } from "../../../lib/Class/Events.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { ssn } from "../../../lib/Class/Stage.js";
+import { ssn } from "../../../lib/Class/Scene.js";
 import { util } from "../../../lib/Class/Utils.js";
 import { lang } from "../index.js";
 import { oclog, saveOC } from "../utils.js";
@@ -42,8 +42,8 @@ EventListener("text", 0, async (ctx, next, data) => {
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(ctx.from.id, {
-		name: data.user.cache.stageCache[1],
-		fileid: data.user.cache.stageCache[0],
+		name: data.user.cache.sceneCache[1],
+		fileid: data.user.cache.sceneCache[0],
 		description: ctx.message.text,
 	});
 

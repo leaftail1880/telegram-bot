@@ -139,7 +139,7 @@ export function getRefType(fileid, text) {
  * @returns
  */
 export function noCache(user, uOC) {
-	return !user?.cache?.stageCache[0] || !uOC || !uOC[user?.cache?.stageCache[0]];
+	return !user?.cache?.sceneCache[0] || !uOC || !uOC[user?.cache?.sceneCache[0]];
 }
 
 /**

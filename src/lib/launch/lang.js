@@ -23,8 +23,10 @@ export const service_lang = {
 				service_lang.state(0, 5, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
 			),
 		db: () => console.log(service_lang.state(1, 5, "Fetching db data...")),
-		stage: () =>
-			console.log(service_lang.state(2, 5, `Type: ${clc.cyanBright(data.type)} Stage: ${clc.cyanBright(data.stage)}`)),
+		session: () =>
+			console.log(
+				service_lang.state(2, 5, `Type: ${clc.cyanBright(data.type)} Session: ${clc.cyanBright(data.session)}`)
+			),
 		middlewares: () => console.log(service_lang.state(3, 5, "Loading middlewares:")),
 		modules: () => console.log(service_lang.state(4, 5, "Loading modules:")),
 		end: (/** @type {string[]} */ modules) =>

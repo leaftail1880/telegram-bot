@@ -1,6 +1,6 @@
 import { database } from "../../../index.js";
 import { EventListener } from "../../../lib/Class/Events.js";
-import { ssn } from "../../../lib/Class/Stage.js";
+import { ssn } from "../../../lib/Class/Scene.js";
 import { d } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 import { ART } from "../index.js";
@@ -49,7 +49,7 @@ const publish = {
 };
 
 /**
- * @typedef {import("../types/Integrations.js").ArtStageCache} ArtStageCache
+ * @typedef {import("../types/Integrations.js").ArtSceneCache} ArtSceneCache
  */
 
 artMenu.query(
@@ -61,11 +61,11 @@ artMenu.query(
 		 * @type {DB.User}
 		 */
 		const user = await database.get(d.user(ctx.from.id), true);
-		user.cache.stage = "art::photo";
+		user.cache.scene = "art::photo";
 
-		/** @type {ArtStageCache} */
+		/** @type {ArtSceneCache} */
 		const c = { descriptions: {}, tags: {} };
-		user.cache.stageCache = c;
+		user.cache.sceneCache = c;
 
 		database.set(d.user(ctx.from.id), user);
 		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
@@ -80,10 +80,10 @@ EventListener("document", 0, async (ctx, next, data) => {
 	if (ctx.chat.type !== "private") return;
 	if (ssn.Art.state(data, "string") !== "photo") return next();
 
-	data.user.cache.stage = "art::description";
-	/** @type {ArtStageCache} */
+	data.user.cache.scene = "art::description";
+	/** @type {ArtSceneCache} */
 	// @ts-expect-error
-	const c = data.user.cache.stageCache;
+	const c = data.user.cache.sceneCache;
 	c.file_id = ctx.message.document.file_id;
 
 	const userData = await getUserArtInfo(ctx.from.id);
@@ -99,7 +99,7 @@ EventListener("document", 0, async (ctx, next, data) => {
 		.map((e) => e[0]);
 
 	c.waiting_lang = firstLang;
-	data.user.cache.stageCache = c;
+	data.user.cache.sceneCache = c;
 	database.set(d.user(ctx.from.id), data.user);
 
 	ctx.reply(...publish.description(firstLangServices, firstLang)._.build());
@@ -112,9 +112,9 @@ EventListener("text", 0, async (ctx, next, data) => {
 	if (ctx.chat.type !== "private") return next();
 	if (ssn.Art.state(data, "string") !== "description") return next();
 
-	/** @type {ArtStageCache} */
+	/** @type {ArtSceneCache} */
 	// @ts-expect-error
-	const c = data.user.cache.stageCache;
+	const c = data.user.cache.sceneCache;
 	c.descriptions[c.waiting_lang] = ctx.message.text;
 
 	const userData = await getUserArtInfo(ctx.from.id);
@@ -135,7 +135,7 @@ EventListener("text", 0, async (ctx, next, data) => {
 		c.waiting_lang = nextLang;
 		ctx.reply(...publish.description(nextLangServices, nextLang)._.build());
 	} else {
-		delete data.user.cache.stage;
+		delete data.user.cache.scene;
 		delete c.waiting_lang;
 		const service = enabledServices[0];
 		c.tags[service[0]] ??= [];
@@ -143,7 +143,7 @@ EventListener("text", 0, async (ctx, next, data) => {
 		ctx.reply(...publish.tags(service[0], service[1].default_tags, service[1].tags)._.build());
 	}
 
-	data.user.cache.stageCache = c;
+	data.user.cache.sceneCache = c;
 	database.set(d.user(ctx.from.id), data.user);
 });
 
@@ -172,9 +172,9 @@ artMenu.query(
 		/** @type {import("../types/Integrations.js").ArtService} */
 		const service = userArtInfo.services[platform];
 
-		/** @type {ArtStageCache} */
+		/** @type {ArtSceneCache} */
 		// @ts-expect-error
-		const c = user.cache.stageCache;
+		const c = user.cache.sceneCache;
 
 		if (action === "add") c.tags[platform].push(tag);
 		if (action === "remove") {

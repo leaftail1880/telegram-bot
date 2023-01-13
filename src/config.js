@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 1, 1],
+	version: [9, 1, 2],
 
 	command: {
 		get: /^(.)(?:(\w+)@?\w*)?\s?/,
@@ -59,7 +59,7 @@ export default {
 	],
 
 	dbkey: {
-		stage: "bot_session",
+		session: "bot_session",
 		version: "bot_latest_version",
 		request: "bot_request",
 	},

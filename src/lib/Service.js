@@ -19,7 +19,7 @@ export const data = {
 	/** @type {'work' | 'realese' | 'old'} */
 	type: "realese",
 
-	stage: 0,
+	session: 0,
 	start_time: Date.now(),
 
 	isLaunched: false,
@@ -177,7 +177,7 @@ async function start() {
 
 	// Обновляет сессию
 	await updateInfo(data);
-	lang.log.stage();
+	lang.log.session();
 
 	bot.catch(handlers.bot);
 

@@ -18,7 +18,7 @@ namespace CommandTypes {
 		name: string;
 		description?: string;
 		aliases?: string[];
-		allowStage?: true;
+		allowScene?: true;
 		hideFromHelpList?: boolean;
 		permission?: Permission;
 		target?: Target;
@@ -38,7 +38,7 @@ namespace IEvent {
 	type Data = {
 		user: DB.User;
 		group?: DB.Group;
-		stage?: {
+		scene?: {
 			name: string;
 			int_state: number;
 			state: string;
@@ -75,8 +75,8 @@ namespace DB {
 		cache: {
 			nickname?: string;
 			dm?: 1 | 0 | undefined;
-			stage?: string;
-			stageCache?: string[] | Record<string, any>;
+			scene?: string;
+			sceneCache?: string[] | Record<string, any>;
 			tag?: string;
 		};
 		needSafe?: true;

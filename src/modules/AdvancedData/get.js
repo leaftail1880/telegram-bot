@@ -6,6 +6,32 @@ import { CreateGroup, CreateUser } from "./create.js";
 
 /**
  *
+ * @param {Xitext} XT
+ */
+function logReq(XT) {
+	newlog({
+		xitext: XT,
+		consoleMessage: XT._.text,
+		fileMessage: XT._.text,
+		fileName: "addReq.txt",
+	});
+}
+
+/**
+ *
+ * @param {Context} ctx
+ */
+function logNotAccepted(ctx) {
+	const XT = new Xitext()
+		.text("Лс (NoReg) ")
+		.url(util.getName(ctx.from), ctx.from.username ? `https://t.me/${ctx.from.username}` : d.userLink(ctx.from.id));
+
+	if ("text" in ctx.message) XT.text(`: ${ctx.message.text}`);
+	logReq(XT);
+}
+
+/**
+ *
  * @param {Context} ctx
  * @returns {Promise<DB.User | false>}
  */
@@ -30,19 +56,19 @@ export async function getUser(ctx) {
 						[new Button("Игнорировать").data(d.query("all", "delmsg"))]
 					);
 
-				newlog({
-					xitext: XT,
-					consoleMessage: XT._.text,
-					fileMessage: XT._.text,
-					fileName: "addReq.txt",
-				});
+				logReq(XT);
+				logNotAccepted(ctx);
+
 				return false;
 			} else if (data.joinCodes[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно добавлены в список разрешенных пользователей.");
 
 				// 9.0.7 Fix: Memory leak
 				delete data.joinCodes[ctx.from.id];
-			} else if (data.joinCodes[ctx.from.id] === "waiting") return false;
+			} else if (data.joinCodes[ctx.from.id] === "waiting") {
+				logNotAccepted(ctx);
+				return false;
+			}
 		} else {
 			user = CreateUser(ctx);
 			user.needSafe = true;

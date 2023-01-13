@@ -24,22 +24,22 @@ export function bigger(array, array2, [first, second, equal]) {
  * @param {ServiceData} data
  */
 export async function updateInfo(data) {
-	await updateStage(data);
+	await updateSession(data);
 	await updateVisualVersion(data);
 }
 
 /**
- * Обновляет stage
+ * Обновляет session
  * @param {ServiceData} data
  */
-async function updateStage(data) {
-	if (!(await database.has(config.dbkey.stage))) {
-		await database.set(config.dbkey.stage, 0);
+async function updateSession(data) {
+	if (!(await database.has(config.dbkey.session))) {
+		await database.set(config.dbkey.session, 0);
 	}
 
-	await database.increase(config.dbkey.stage, 1);
+	await database.increase(config.dbkey.session, 1);
 
-	data.stage = await database.getActualData(config.dbkey.stage, true);
+	data.session = await database.getActualData(config.dbkey.session, true);
 }
 
 /**
@@ -48,7 +48,7 @@ async function updateStage(data) {
  */
 async function updateVisualVersion(data) {
 	// Получаем данные
-	let stage = data.stage;
+	let session = data.session;
 
 	/**
 	 * @type {number[]}
@@ -68,7 +68,7 @@ async function updateVisualVersion(data) {
 	}
 
 	// Записываем значения
-	data.v = `${config.version.join(".")}.x${`${stage}`.padStart(5, "0")}`;
+	data.v = `${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
 
 	const d = translate_version[data.type];
 
