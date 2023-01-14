@@ -163,8 +163,8 @@ async function start() {
 	lang.log.db();
 	await database._.connect();
 
-	lang.log.session();
 	await updateInfo(data);
+	lang.log.session();
 
 	bot.catch(handlers.bot);
 
