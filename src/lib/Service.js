@@ -161,7 +161,7 @@ async function start() {
 	} catch {}
 
 	lang.log.db();
-	await database._.reconnect();
+	await database._.connect();
 
 	lang.log.session();
 	await updateInfo(data);

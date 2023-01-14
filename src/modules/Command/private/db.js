@@ -12,7 +12,7 @@ new Command(
 	async (ctx, args) => {
 		switch (args[0]) {
 			case "pairs":
-				const a = await database.collectionAsync();
+				const a = await database.downloadDB();
 				console.log(a);
 				util.sendSeparatedMessage(util.toStr(a, " "), ctx.reply);
 				break;

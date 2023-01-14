@@ -112,6 +112,8 @@ export async function getGroup(ctx) {
 
 	if (!group) {
 		if (data.private) {
+			if (ctx.chat.id === data.chatID.log) data.joinCodes[ctx.chat.id] = "accepted";
+
 			if (!(ctx.chat.id in data.joinCodes)) {
 				data.joinCodes[ctx.chat.id] = "waiting";
 

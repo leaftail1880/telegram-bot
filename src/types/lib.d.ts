@@ -126,7 +126,6 @@ type IhandledError = {
 type IEnv = {
 	TOKEN?: string;
 	REDIS_URL?: string;
-  REDIS2_URL?: string;
 	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;

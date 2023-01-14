@@ -37,9 +37,7 @@ async function updateSession(data) {
 		await database.set(config.dbkey.session, 0);
 	}
 
-	await database.increase(config.dbkey.session, 1);
-
-	data.session = await database.getActualData(config.dbkey.session, true);
+	data.session = await database.increase(config.dbkey.session, 1);
 }
 
 /**
@@ -47,27 +45,20 @@ async function updateSession(data) {
  * @param {ServiceData} data
  */
 async function updateVisualVersion(data) {
-	// Получаем данные
 	let session = data.session;
 
-	/**
-	 * @type {number[]}
-	 */
-	const dbversion = (await database.getActualData(config.dbkey.version, true)) ?? [0, 0, 0];
+	const raw_version = await database.getActualData(config.dbkey.version, true);
+	const dbversion = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
 	dbversion.splice(3, 10);
 
-	// Сравниваем версии
 	data.type = bigger([config.version[0], config.version[1], config.version[2]], dbversion, ["realese", "old", "work"]);
 
-	// Если версия новая
 	if (data.type === "realese" && !data.development) {
 		EventListener("modules.load", 0, () => TriggerEventListeners("new.release", ""));
 
-		// Прописываем ее в базе данных
 		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);
 	}
 
-	// Записываем значения
 	data.v = `${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
 
 	const d = translate_version[data.type];
