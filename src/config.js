@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 1, 4],
+	version: [9, 1, 5],
 
 	command: {
 		get: /^(.)(?:(\w+)@?\w*)?\s?/,
@@ -40,7 +40,7 @@ export default {
 	ReconnectTimerWaitTime: 1,
 
 	middlewares: [
-		//"DataGuard",
+		"DataGuard",
 		//"Stage"
 	],
 
