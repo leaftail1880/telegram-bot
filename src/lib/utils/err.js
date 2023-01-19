@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
+import { Service } from "../../index.js";
 import { ssn } from "../Class/Scene.js";
 import { Xitext } from "../Class/Xitext.js";
-import { Service } from "../Service.js";
 
 export const ERRCODES = {
 	num: {

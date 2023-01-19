@@ -1,5 +1,5 @@
+import { Service } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
-import { Service } from "../../../lib/Service.js";
 
 new Command(
 	{

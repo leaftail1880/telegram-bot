@@ -1,7 +1,6 @@
 import clc from "cli-color";
-import { bot, database } from "../../index.js";
+import { bot, data, database, Service } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
-import { data, Service } from "../Service.js";
 import { noConnection } from "./noConnection.js";
 
 /**

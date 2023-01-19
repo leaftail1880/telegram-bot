@@ -24,7 +24,7 @@ export function bigger(array, array2, [first, second, equal]) {
  * @param {ServiceData} data
  */
 export async function updateInfo(data) {
-	const raw_version = await database.client.get(config.dbkey.version, true);
+	const raw_version = database.get(config.dbkey.version);
 	const dbversion = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
 	dbversion.splice(3, 10);
 

@@ -1,8 +1,7 @@
 import { Context } from "telegraf";
-import { database } from "../../index.js";
+import { database, newlog } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
-import { newlog } from "../../lib/Service.js";
 
 /**
  *

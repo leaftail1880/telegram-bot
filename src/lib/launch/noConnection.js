@@ -1,7 +1,6 @@
 import config from "../../config.js";
-import { bot, database } from "../../index.js";
+import { bot, data, database, Service } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
-import { data, Service } from "../Service.js";
 import styles from "../styles.js";
 
 const Connect = {
@@ -25,7 +24,7 @@ export async function noConnection(type) {
 		data.isStopped = true;
 		bot.stop("NOCONNECTION");
 	}
-	if (!database.isClosed) database._.close(false);
+	if (!database.isClosed) database._.close();
 
 	if (ErrorLog.isExpired()) {
 		console.log(styles.noConnection(`Нет подключения к интернету ${type ? `${type}` : ""}`));

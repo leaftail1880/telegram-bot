@@ -1,23 +1,24 @@
-import "dotenv/config.js";
 import { DatabaseManager, DatabaseWrapper } from "leafy-db";
+
 export * from "./lib/launch/tg.js";
+export * from "./lib/Service.js";
 
 import { env } from "./lib/launch/tg.js";
 import { handlers, Service } from "./lib/Service.js";
 
-const Manager = new DatabaseManager({
+export const DBManager = new DatabaseManager({
 	repositoryURL: env.DB_REPO,
 	token: env.DB_TOKEN,
 	username: "leaftail1880",
 });
-export const database = Manager.Database;
+export const database = DBManager.Database;
 
 export const tables = {
 	/** @type {DatabaseWrapper<DB.User>} */
-	users: Manager.CreateTable("users.json"),
+	users: DBManager.CreateTable("users.json"),
 
 	/** @type {DatabaseWrapper<DB.Group>} */
-	groups: Manager.CreateTable("groups.json"),
+	groups: DBManager.CreateTable("groups.json"),
 };
 
 // Global error handlers

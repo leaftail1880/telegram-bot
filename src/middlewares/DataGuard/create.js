@@ -1,7 +1,7 @@
+import { newlog } from "../../index.js";
 import { TriggerEventListeners } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
-import { newlog } from "../../lib/Service.js";
 
 const newUsers = {};
 

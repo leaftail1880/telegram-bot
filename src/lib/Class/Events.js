@@ -1,6 +1,5 @@
 import config from "../../config.js";
-import { bot } from "../../index.js";
-import { data as $data, newlog } from "../Service.js";
+import { bot, data as $data, newlog } from "../../index.js";
 
 /**
  * @type {Record<string, Array<IEvent.Stored>>}

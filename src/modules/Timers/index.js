@@ -1,6 +1,5 @@
-import { bot, database } from "../../index.js";
+import { bot, data, database, Service } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
-import { data, Service } from "../../lib/Service.js";
 import { cooldown } from "../Command/index.js";
 
 setInterval(async () => {

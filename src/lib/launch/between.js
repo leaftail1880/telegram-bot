@@ -2,8 +2,7 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { bot, database } from "../../index.js";
-import { data, log, newlog, Service } from "../Service.js";
+import { bot, data, database, log, newlog, Service } from "../../index.js";
 import { service_lang as lang } from "./lang.js";
 import { bigger, updateInfo } from "./update.js";
 

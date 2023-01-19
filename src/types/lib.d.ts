@@ -105,7 +105,7 @@ type QueryCallback = (
 	edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraReplyMessage) => Promise<void>
 ) => void;
 
-type ServiceData = typeof import("../lib/Service.js").data;
+type ServiceData = typeof import("../index.js").data;
 
 type IOnErrorActions = {
 	timer: import("../lib/Class/XTimer.js").XTimer;

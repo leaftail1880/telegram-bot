@@ -1,7 +1,6 @@
-import { database, tables } from "../../index.js";
+import { data, database, newlog, tables } from "../../index.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
-import { data, newlog } from "../../lib/Service.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
 /**

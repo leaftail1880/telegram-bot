@@ -1,8 +1,7 @@
 import config from "./config.js";
-import { bot, database } from "./index.js";
+import { bot, data, database, Service } from "./index.js";
 import { d, util } from "./lib/Class/Utils.js";
 import { Xitext } from "./lib/Class/Xitext.js";
-import { data, Service } from "./lib/Service.js";
 
 /**
  *

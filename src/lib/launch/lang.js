@@ -1,7 +1,7 @@
 import clc from "cli-color";
 import config from "../../config.js";
+import { data } from "../../index.js";
 import { Xitext } from "../Class/Xitext.js";
-import { data } from "../Service.js";
 
 export const service_lang = {
 	launch: (/** @type {string} */ reason) => `⌬ ${data.logVersion} ${reason}`,

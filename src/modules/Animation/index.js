@@ -1,6 +1,5 @@
-import { bot, database } from "../../index.js";
-import { data } from "../../lib/Service.js";
 import { message } from "telegraf/filters";
+import { bot, data, database } from "../../index.js";
 
 const filter = message("new_chat_title");
 
