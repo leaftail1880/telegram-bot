@@ -20,34 +20,11 @@ export function bigger(array, array2, [first, second, equal]) {
 }
 
 /**
- * Обновляет всё
- * @param {ServiceData} data
- */
-export async function updateInfo(data) {
-	await updateSession(data);
-	await updateVisualVersion(data);
-}
-
-/**
- * Обновляет session
- * @param {ServiceData} data
- */
-async function updateSession(data) {
-	if (!(await database.has(config.dbkey.session))) {
-		await database.set(config.dbkey.session, 0);
-	}
-
-	data.session = await database.increase(config.dbkey.session, 1);
-}
-
-/**
  * Обновляет data.v, data.versionMSG, data.isLatest и version
  * @param {ServiceData} data
  */
-async function updateVisualVersion(data) {
-	let session = data.session;
-
-	const raw_version = await database.getActualData(config.dbkey.version, true);
+export async function updateInfo(data) {
+	const raw_version = await database.client.get(config.dbkey.version, true);
 	const dbversion = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
 	dbversion.splice(3, 10);
 
@@ -59,11 +36,9 @@ async function updateVisualVersion(data) {
 		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);
 	}
 
-	data.v = `${config.version.join(".")}.x${`${session}`.padStart(5, "0")}`;
-
 	const d = translate_version[data.type];
 
-	data.publicVersion = `v${data.v} ${d}`;
+	data.readableVersion = `v${data.v} ${d}`;
 	data.logVersion = `v${data.v}`;
 }
 

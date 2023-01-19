@@ -191,17 +191,6 @@ export const util = {
 			? [type, message, stringStack, err.on ? util.toStr(err.on, " ") : undefined]
 			: `${type.includes(":") ? type : `${type}: `}${message}${stringStack}`;
 	},
-	/**
-	 * Typed bind
-	 * @template {Function} F
-	 * @param {F} func
-	 * @param {unknown} context
-	 * @returns {F}
-	 */
-	TypedBind(func, context) {
-		if (typeof func !== "function") return func;
-		return func.bind(context);
-	},
 
 	/**
 	 * Only user first_name, username, id and last_name if string is less then 10 characters length

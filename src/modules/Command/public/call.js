@@ -39,7 +39,7 @@ new Command(
 			if (obj.status === "kicked" || obj.status === "left" || obj.user.is_bot) continue;
 			const text = new Xitext()
 				.url(
-					(await database.get(d.user(e), true)).cache.nickname ??
+					(tables.users.get(e), true).cache.nickname ??
 						`${obj.user.first_name}${obj.user.last_name ? obj.user.last_name : ""}` ??
 						obj.user.username,
 					`https://t.me/${obj.user.username}`
@@ -53,6 +53,6 @@ new Command(
 		const mbs = all.filter((e) => e.status != "kicked" && e.status != "left");
 		if (all.length != mbs.length) group.members = mbs.map((e) => e.user.id);
 		group.lastCall = Date.now();
-		await database.set(`Group::${g.static.id}`, g);
+		database.set(`Group::${g.static.id}`, g);
 	}
 );

@@ -63,7 +63,7 @@ namespace IEvent {
 	}
 }
 
-type Stage = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
+type State = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
 
 namespace DB {
 	type User = {
@@ -125,7 +125,8 @@ type IhandledError = {
 
 type IEnv = {
 	TOKEN?: string;
-	REDIS_URL?: string;
+	DB_TOKEN?: string;
+	DB_REPO?: string;
 	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;

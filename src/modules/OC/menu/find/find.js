@@ -1,6 +1,6 @@
-import { database } from "../../../../index.js";
+import { database, tables } from "../../../../index.js";
 import { Query } from "../../../../lib/Class/Query.js";
-import { d, util } from "../../../../lib/Class/Utils.js";
+import { util } from "../../../../lib/Class/Utils.js";
 import { Button } from "../../../../lib/Class/Xitext.js";
 import { editMsg, lang, link, m } from "../../index.js";
 import { noOC } from "../../utils.js";
@@ -13,7 +13,10 @@ new Query(
 	},
 	async (ctx, data) => {
 		// editMsg(ctx, "Загрузка...");
-		const keys = (await database.keysAsync("*")).filter((e) => e.startsWith("oc::")).map((e) => e.split("::")[1]);
+		const keys = database
+			.keys()
+			.filter((e) => e.startsWith("oc::"))
+			.map((e) => e.split("::")[1]);
 		if (!keys[0]) {
 			editMsg(ctx, lang.main._.text, {
 				entities: lang.main._.entities,
@@ -31,10 +34,7 @@ new Query(
 
 		for (const id of keys) {
 			try {
-				/**
-				 * @type {DB.User}
-				 */
-				const user = await database.get(d.user(id), true);
+				const user = tables.users.get(id);
 
 				const u = util.getFullName(user);
 

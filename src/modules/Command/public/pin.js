@@ -55,6 +55,6 @@ new Command(
 		});
 		g.cache.lastPin[u.static.id] = Date.now();
 		g.cache.pin = `${ctx.message.reply_to_message.message_id}::${Date.now()}`;
-		await database.set(`Group::${g.static.id}`, g);
+		database.set(`Group::${g.static.id}`, g);
 	}
 );

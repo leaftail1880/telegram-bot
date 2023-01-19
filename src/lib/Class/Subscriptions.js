@@ -34,7 +34,7 @@ export const Subscriptions = {
 	async set(id, key, value) {
 		const settings = await this.get(id);
 		settings[key] = value;
-		await database.set(this.keyLink(id), settings);
+		database.set(this.keyLink(id), settings);
 	},
 	/**
 	 *

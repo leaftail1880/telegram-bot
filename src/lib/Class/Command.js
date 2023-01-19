@@ -259,7 +259,7 @@ new Command(
 			await ctx.reply(`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`);
 			delete user.cache.scene;
 			delete user.cache.sceneCache;
-			await database.set(d.user(ctx.from.id), user);
+			database.set(d.user(ctx.from.id), user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
 );

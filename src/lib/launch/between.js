@@ -22,7 +22,12 @@ export const UpdateCheckTimer = {
 async function updateCheckInterval() {
 	if (database.isClosed) return;
 
-	const query = await database.getActualData(config.dbkey.request, true);
+	const raw_query = await database.client.get(config.dbkey.request);
+	let query;
+	try {
+		query = JSON.stringify(raw_query);
+	} catch {}
+
 	if (!Array.isArray(query)) return;
 
 	/**
@@ -70,8 +75,7 @@ export async function freeze() {
 	}
 
 	async function updateRequest() {
-		await database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]]);
-		await database.client.expire(config.dbkey.request, 300);
+		database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]]);
 	}
 
 	await updateRequest();
@@ -80,7 +84,7 @@ export async function freeze() {
 	let devTimes = 0;
 
 	const timeout = setInterval(async () => {
-		const answer = await database.getActualData(config.dbkey.request);
+		const answer = await database.client.get(config.dbkey.request);
 		if (answer === Service.message.terminate_you) {
 			await database.delete(config.dbkey.request);
 			return Service.stop(lang.stop.terminate(), "ALL");
@@ -129,7 +133,7 @@ export async function freeze() {
 		 *========================**/
 		Service.safeBotLauch();
 
-		const message = lang.logLaunch(info);
+		const message = lang.launch(info);
 		newlog({
 			fileMessage: message,
 			consoleMessage: message,

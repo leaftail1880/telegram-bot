@@ -12,25 +12,25 @@ new Command(
 	async (ctx, args) => {
 		switch (args[0]) {
 			case "pairs":
-				const a = await database.downloadDB();
+				const a = database.collection();
 				console.log(a);
 				util.sendSeparatedMessage(util.toStr(a, " "), ctx.reply);
 				break;
 			case "get":
 				if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
-				const get = await database.getActualData(args[1], true);
+				const get = database.get(args[1]);
 				console.log(get);
 				util.sendSeparatedMessage(util.toStr(get, " "), (msg) => ctx.reply(...new Xitext().code(msg)._.build()));
 				break;
 			case "del":
 				if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");
-				const del = (await database.delete(args[1])) + "";
+				const del = database.delete(args[1]) + "";
 				console.log(del);
 				ctx.reply(del);
 				break;
 			case "keys":
-				const keys = await database.keysAsync(),
-					text = new Xitext().text("Ключи:");
+				const keys = database.keys();
+				const text = new Xitext().text("Ключи:");
 				keys.sort().forEach((e) => {
 					text.text("\n");
 					text.mono(e);
@@ -40,7 +40,7 @@ new Command(
 				break;
 			case "set":
 				if (!args[1] || !args[2]) return ctx.reply("Нужно указать ключ и значение (-db set <key> <value>)");
-				const set = await database.set(args[1], args[2]);
+				const set = database.set(args[1], args[2]);
 				console.log(set);
 				ctx.reply("Успешно!");
 				break;

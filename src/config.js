@@ -1,10 +1,20 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 1, 6],
+	version: [9, 1, 7],
 
 	command: {
+		/**
+		 * Returns: [0] - full command, [1] - command prefix, [2] - command name
+		 */
 		get: /^(.)(?:(\w+)@?\w*)?\s?/,
+		/**
+		 * Use this with replace() to clear any command from message
+		 */
 		clear: /^\S*(?:@\S)?\s?/,
+		/**
+		 * Use it to parse command args
+		 * @deprecated No one use args with tg bots
+		 */
 		parseArgs: /"[^"]+"|\S+/g,
 	},
 
@@ -40,13 +50,19 @@ export default {
 	ReconnectTimerWaitTime: 1,
 
 	middlewares: [
+		/**
+		 * Downloading user/group data from db and cancels
+		 * parsing update if user is not logged
+		 */
 		"DataGuard",
-		//"Stage"
+		/**
+		 * Parsing ctx.data.user.scene and ctx.data.sceneCache
+		 * to ctx.scene object
+		 */
+		"Stage",
 	],
 
 	modules: [
-		"AdvancedData",
-		"AdvancedStage",
 		"Command",
 		"OC",
 		"ManageDB",

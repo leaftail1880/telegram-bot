@@ -1,4 +1,4 @@
-import { database } from "../../index.js";
+import { database, tables } from "../../index.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 import { data, newlog } from "../../lib/Service.js";
@@ -36,10 +36,7 @@ function logNotAccepted(ctx) {
  * @returns {Promise<DB.User | false>}
  */
 export async function getUser(ctx) {
-	/**
-	 * @type {DB.User}
-	 */
-	let user = await database.get(d.user(ctx.from.id), true);
+	let user = tables.users.get(ctx.from.id);
 
 	if (!user) {
 		if (ctx.chat.type === "private" && data.private) {
@@ -107,7 +104,7 @@ export async function getGroup(ctx) {
 	/**
 	 * @type {DB.Group}
 	 */
-	let group = await database.get(d.group(ctx.chat.id), true);
+	let group = tables.groups.get(ctx.chat.id);
 	let update = false;
 
 	if (!group) {
@@ -182,7 +179,7 @@ export async function getGroup(ctx) {
 		update = true;
 	}
 
-	if (update) await database.set(d.group(ctx.chat.id), group);
+	if (update) database.set(d.group(ctx.chat.id), group);
 
 	return group;
 }

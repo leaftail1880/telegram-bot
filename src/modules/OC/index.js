@@ -10,8 +10,8 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
  */
 
 export const m = new MultiMenu("OC"),
-	link = util.TypedBind(m.link, m),
-	editMsg = util.TypedBind(m.editMsgFromQuery, m);
+	link = TypedBind(m.link, m),
+	editMsg = TypedBind(m.editMsgFromQuery, m);
 
 export const lang = {
 	create: {
@@ -100,3 +100,4 @@ import "./menu/my.js";
 import "./menu/myoc.js";
 
 import "./menu/reg.js";
+import { TypedBind } from "leafy-utils";

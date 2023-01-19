@@ -15,12 +15,10 @@ new Command(
 	},
 	(ctx) => {
 		ctx.reply(
-			...new Xitext()._.group(data.publicVersion.split(" ")[0])
+			...new Xitext()._.group(data.readableVersion)
 				.url(null, d.guide(8))
 				.bold()
 				._.group()
-				.text(" ")
-				.italic(data.publicVersion.split(" ")[1])
 				.text(` `)
 				.bold(env.whereImRunning)
 				._.build()

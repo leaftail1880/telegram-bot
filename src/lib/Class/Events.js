@@ -26,42 +26,44 @@ export function TriggerEventListeners(type, context) {
 		}
 }
 
-bot.on("message", async (ctx) => {
-	if (ctx.from.is_bot) {
-		if (ctx.from.id !== ctx.botInfo.id) return;
-		if (!("text" in ctx.message)) return;
-		if (!ctx.message.text.includes("--emit")) return;
-	}
+EventListener("modules.load", 0, () => {
+	bot.on("message", async (ctx, next) => {
+		if (ctx.from.is_bot) {
+			if (ctx.from.id !== ctx.botInfo.id) return;
+			if (!("text" in ctx.message)) return;
+			if (!ctx.message.text.includes("--emit")) return;
+		}
 
-	const start = performance.now();
-	const Executors = EVENTS.message?.length > 0 ? EVENTS.message : [];
-	if ("text" in ctx.message && EVENTS.text) Executors.push(...EVENTS.text);
-	if ("document" in ctx.message && EVENTS.document) Executors.push(...EVENTS.document);
+		const start = performance.now();
+		const Executors = EVENTS.message?.length > 0 ? EVENTS.message : [];
+		if ("text" in ctx.message && EVENTS.text) Executors.push(...EVENTS.text);
+		if ("document" in ctx.message && EVENTS.document) Executors.push(...EVENTS.document);
 
-	/** @type {IEvent.Data} */
-	const data = {
-		user: {
-			static: {
-				id: ctx.from.id,
-				name: ctx.from.first_name,
-				nickname: ctx.from.username,
+		/** @type {IEvent.Data} */
+		const data = {
+			user: {
+				static: {
+					id: ctx.from.id,
+					name: ctx.from.first_name,
+					nickname: ctx.from.username,
+				},
+				cache: {},
 			},
-			cache: {},
-		},
-	};
+		};
 
-	execute(
-		ctx,
-		Executors.map((e) => e.callback),
-		data
-	);
+		execute(
+			ctx,
+			Executors.map((e) => e.callback),
+			data
+		);
 
-	if (Date.now() - $data.start_time < config.update.logTime) {
-		newlog({
-			fileName: "updates.txt",
-			fileMessage: (performance.now() - start).toFixed(2),
-		});
-	}
+		if (Date.now() - $data.start_time < config.update.logTime) {
+			newlog({
+				fileName: "updates.txt",
+				fileMessage: (performance.now() - start).toFixed(2),
+			});
+		}
+	});
 });
 
 /**

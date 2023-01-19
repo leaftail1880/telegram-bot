@@ -1,13 +1,23 @@
 import "dotenv/config.js";
+import { DatabaseManager, DatabaseWrapper } from "leafy-db";
 export * from "./lib/launch/tg.js";
 
 import { env } from "./lib/launch/tg.js";
-import { RedisDatabase } from "./lib/Class/Database.js";
 import { handlers, Service } from "./lib/Service.js";
 
-export const database = new RedisDatabase(env.REDIS_URL);
+const Manager = new DatabaseManager({
+	repositoryURL: env.DB_REPO,
+	token: env.DB_TOKEN,
+	username: "leaftail1880",
+});
+export const database = Manager.Database;
+
 export const tables = {
-	Users: database._.createTable("Users"),
+	/** @type {DatabaseWrapper<DB.User>} */
+	users: Manager.CreateTable("users.json"),
+
+	/** @type {DatabaseWrapper<DB.Group>} */
+	groups: Manager.CreateTable("groups.json"),
 };
 
 // Global error handlers

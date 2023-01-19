@@ -34,7 +34,7 @@ export async function getUserOCs(id) {
  * @param {Character[]} ocs
  */
 export async function saveUserOCs(id, ocs) {
-	await database.set(d.pn("oc", id), ocs);
+	database.set(d.pn("oc", id), ocs);
 }
 
 /**

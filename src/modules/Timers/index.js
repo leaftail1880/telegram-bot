@@ -12,7 +12,7 @@ setInterval(async () => {
 		.filter((e) => typeof e === "number");
 
 	groups.forEach(async (e) => {
-		const group = await database.get(d.group(e), true);
+		const group = tables.groups.get(e);
 		if (typeof group?.cache?.pin === "string") {
 			const id = Number(group.cache.pin.split("::")[0]);
 
@@ -23,7 +23,7 @@ setInterval(async () => {
 				const result = bot.telegram.unpinChatMessage(group.static.id, id);
 				result.catch((e) => Service.error(e));
 				delete group.cache.pin;
-				await database.set(d.group(e), group);
+				database.set(d.group(e), group);
 			}
 		}
 	});

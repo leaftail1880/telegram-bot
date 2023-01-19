@@ -1,6 +1,8 @@
-import { EventListener } from "../../lib/Class/Events.js";
+import { bot } from "../../index.js";
 
-EventListener("message", 10, async (_ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	const data = ctx.data;
+
 	if (typeof data.user.cache.scene !== "string") return next();
 
 	const match = data.user.cache.scene.match(/^(.+)::(.+)$/);

@@ -12,8 +12,8 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 	const lang = {
 		main: (page) => new Xitext().text(`[${page}] База данных `).url(util.getName(me), d.userLink(me.id)),
-		generateMenu: async (page = 1) => {
-			let keys = await database.keysAsync();
+		generateMenu: (page = 1) => {
+			let keys = database.keys();
 			let buttons = [];
 
 			for (const e of keys.sort()) {
@@ -74,7 +74,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			prefix: m.prefix,
 		},
 		async (_ctx, data, edit) => {
-			const dat = util.toStr(await database.get(data[0], true));
+			const dat = util.toStr(await database.get(data[0]));
 			edit(...lang.see(data[0], dat, data[1]));
 		}
 	);
@@ -85,10 +85,10 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			prefix: m.prefix,
 		},
 		async (_ctx, data, edit) => {
-			await database.delete(data[0]);
+			database.delete(data[0]);
 			edit("Успешно удалено.", {
 				reply_markup: {
-					inline_keyboard: await lang.generateMenu(Number(data[1])),
+					inline_keyboard: lang.generateMenu(Number(data[1])),
 				},
 			});
 		}
@@ -113,13 +113,10 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			target: "private",
 		},
 		async (ctx) => {
-			const newMsg = await ctx.reply("Загрузка...");
-			editMsg(
-				ctx,
-				newMsg,
+			ctx.reply(
 				...lang
 					.main(1)
-					.inlineKeyboard(...(await lang.generateMenu(1)))
+					.inlineKeyboard(...lang.generateMenu(1))
 					._.build()
 			);
 		}

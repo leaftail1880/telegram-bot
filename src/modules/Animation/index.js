@@ -1,5 +1,16 @@
 import { bot, database } from "../../index.js";
 import { data } from "../../lib/Service.js";
+import { message } from "telegraf/filters";
+
+const filter = message("new_chat_title");
+
+bot.use((ctx, next) => {
+	if (filter(ctx.update)) {
+		ctx.deleteMessage(ctx.message.message_id);
+	}
+	next();
+});
+
 /**
  *
  * @returns {Promise<Array<DB.Group>>}

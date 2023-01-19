@@ -1,4 +1,4 @@
-import { database } from "../../../index.js";
+import { database, tables } from "../../../index.js";
 import { EventListener } from "../../../lib/Class/Events.js";
 import { ssn } from "../../../lib/Class/Scene.js";
 import { d } from "../../../lib/Class/Utils.js";
@@ -57,10 +57,7 @@ artMenu.query(
 		name: "publish",
 	},
 	async (ctx) => {
-		/**
-		 * @type {DB.User}
-		 */
-		const user = await database.get(d.user(ctx.from.id), true);
+		const user = tables.users.get(ctx.from.id);
 		user.cache.scene = "art::photo";
 
 		/** @type {ArtSceneCache} */
@@ -165,8 +162,7 @@ artMenu.query(
 		const index = parseInt(raw_index);
 		const tag = !isNaN(index) ? tags[index] : "<no-tag>";
 
-		/** @type {DB.User}*/
-		const user = await database.get(d.user(ctx.from.id), true);
+		const user = tables.users.get(ctx.from.id);
 		const userArtInfo = await getUserArtInfo(ctx.from.id);
 
 		/** @type {import("../types/Integrations.js").ArtService} */

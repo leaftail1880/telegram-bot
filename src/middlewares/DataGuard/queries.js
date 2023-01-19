@@ -3,7 +3,7 @@ import { Query } from "../../lib/Class/Query.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 import { data } from "../../lib/Service.js";
-import { link } from "../OC/index.js";
+import { link } from "../../modules/OC/index.js";
 
 new Query(
 	{

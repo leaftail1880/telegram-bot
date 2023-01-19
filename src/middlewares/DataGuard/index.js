@@ -1,28 +1,27 @@
-import { message } from "telegraf/filters";
-import { bot } from "../../index.js";
+import { bot, database } from "../../index.js";
+import { d } from "../../lib/Class/Utils.js";
+import { getGroup, getUser } from "./get.js";
+import "./queries.js";
 
-bot.use((ctx, next) => {
-	ctx.state.e = 1;
+bot.on("message", async (ctx, next) => {
+	ctx.data ??= {};
 
-	next();
-});
+	if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {
+		const group = await getGroup(ctx);
 
-bot.use((ctx, next) => {
-	/** @type {Stage} */
-	const data = ctx.state;
-
-	console.log(data);
-	console.log(ctx.update);
-
-	next();
-});
-
-const u = message("new_chat_title");
-
-bot.use((ctx, next) => {
-	if (u(ctx.update)) {
-		console.log(true);
-		ctx.deleteMessage(ctx.message.message_id);
+		if (!group) return;
+		ctx.data.group = group;
 	}
+
+	const user = await getUser(ctx);
+	if (!user) return;
+
+	ctx.data.user = user;
+
+	if (ctx.data.user.needSafe) {
+		delete ctx.data.user.needSafe;
+		database.set(d.user(ctx.from.id), ctx.data.user);
+	}
+
 	next();
 });

@@ -12,12 +12,11 @@ import { updateInfo } from "./launch/update.js";
 export const data = {
 	v: config.version.join("."),
 
-	publicVersion: `v${config.version.join(".")}`,
+	readableVersion: `v${config.version.join(".")}`,
 	logVersion: `v${config.version.join(".")} I`,
 	/** @type {'work' | 'realese' | 'old'} */
 	type: "realese",
 
-	session: 0,
 	start_time: Date.now(),
 
 	isLaunched: false,
@@ -66,11 +65,6 @@ export const handlers = {
 	dbError: handleDB,
 	bot: handleBotError,
 };
-
-export function clearLines(count = -1) {
-	process.stdout.moveCursor(0, count); // up one line
-	process.stdout.clearLine(1); // from cursor to end
-}
 
 /**
  *
@@ -155,16 +149,16 @@ async function LoadFromArray(folderArray, dirFolder) {
  * @returns {Promise<void>}
  */
 async function start() {
-	lang.log.start();
+	lang.s.start();
 	try {
 		await fs.mkdir("logs");
 	} catch {}
 
-	lang.log.db();
+	lang.s.db();
 	await database._.connect();
 
 	await updateInfo(data);
-	lang.log.session();
+	lang.s.session();
 
 	bot.catch(handlers.bot);
 
@@ -173,13 +167,13 @@ async function start() {
 	/**
 	 * Middlewares
 	 */
-	lang.log.middlewares();
+	lang.s.middlewares();
 	await LoadFromArray(config.middlewares, "middlewares");
 
 	/**
 	 * Modules
 	 */
-	lang.log.modules();
+	lang.s.modules();
 	await LoadFromArray(config.modules, "modules");
 
 	/**
@@ -194,7 +188,7 @@ async function start() {
 	bot.botInfo = me;
 	safeBotLauch();
 
-	lang.log.end();
+	lang.s.end();
 	UpdateCheckTimer.open();
 }
 
@@ -217,8 +211,10 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 
 	let skipMessage = false;
 	if (data.development && ["SIGINT", "SIGTERM"].includes(reason)) skipMessage = true;
+
 	if (!skipMessage)
 		console.log(styles.error(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
+
 	if (data.isLaunched && sendMessage && !skipMessage)
 		await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
 

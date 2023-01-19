@@ -1,4 +1,4 @@
-import { database } from "../../index.js";
+import { database, tables } from "../../index.js";
 import { d } from "./Utils.js";
 
 export class Scene {
@@ -19,14 +19,11 @@ export class Scene {
 	 * @returns {Promise<void>}
 	 */
 	async enter(id, scene = 0, cache, newCache = false) {
-		/**
-		 * @type {DB.User}
-		 */
-		const user = await database.get(d.user(id), true);
+		const user = tables.users.get(id);
 		if (!user || typeof user !== "object") return;
 		user.cache.scene = d.scene(this.name, scene);
 		if (cache) newCache ? (user.cache.sceneCache = cache) : user.cache.sceneCache.push(cache);
-		await database.set(d.user(id), user);
+		database.set(d.user(id), user);
 	}
 	/**
 	 * Deletes all cache and scene info from user with specified id
@@ -34,14 +31,11 @@ export class Scene {
 	 * @returns {Promise<void>}
 	 */
 	async exit(id) {
-		/**
-		 * @type {DB.User}
-		 */
-		const user = await database.get(d.user(id), true);
+		const user = tables.users.get(id);
 		if (!user || typeof user != "object") return;
 		delete user.cache.scene;
 		delete user.cache.sceneCache;
-		await database.set(d.user(id), user);
+		database.set(d.user(id), user);
 	}
 	/**
 	 *
