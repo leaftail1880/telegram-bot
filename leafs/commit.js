@@ -1,7 +1,9 @@
-import { commiter } from "leafy-utils";
-import fs from "fs/promises";
+// @ts-check
 
-commiter.on("before_commit", async ({ version, suffix, type, prev_version }) => {
+import fs from "fs/promises";
+import { Commiter } from "leafy-utils";
+
+Commiter.subscribe("before_commit", async ({ version, prev_version }) => {
 	console.log(prev_version.join("."), "->", version.join("."));
 
 	const config_path = "./src/config.js";
@@ -13,5 +15,4 @@ commiter.on("before_commit", async ({ version, suffix, type, prev_version }) => 
 	await fs.writeFile(config_path, config);
 });
 
-commiter.emit("add_commit_push", { silentMode: false });
-// commiter.emit("after_commit", { version: [8, 1, 25] });
+Commiter.add_commit_push({ silentMode: false, arg: process.argv[2] });
