@@ -1,6 +1,6 @@
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { EventListener, TriggerEventListeners } from "../Class/Events.js";
+import { EventListener, EmitEventListeners } from "../Class/Events.js";
 
 /**
  * @template F, S, E
@@ -31,7 +31,7 @@ export async function updateInfo(data) {
 	data.type = bigger([config.version[0], config.version[1], config.version[2]], dbversion, ["realese", "old", "work"]);
 
 	if (data.type === "realese" && !data.development) {
-		EventListener("modules.load", 0, () => TriggerEventListeners("new.release", ""));
+		EventListener("modules.load", 0, () => EmitEventListeners("new.release", ""));
 
 		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);
 	}

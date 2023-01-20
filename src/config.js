@@ -78,5 +78,7 @@ export default {
 		session: "bot_session",
 		version: "bot_latest_version",
 		request: "bot_request",
+		ip: "ip",
+		ip_passcode: "ip_passcode",
 	},
 };

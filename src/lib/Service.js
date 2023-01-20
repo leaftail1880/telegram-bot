@@ -1,9 +1,9 @@
 import clc from "cli-color";
 import fs from "fs/promises";
 import config from "../config.js";
-import { bot, database, env } from "../index.js";
+import { bot, DBManager, env } from "../index.js";
 import "./Class/Command.js";
-import { TriggerEventListeners } from "./Class/Events.js";
+import { EmitEventListeners } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
@@ -41,9 +41,10 @@ export const data = {
 
 import path from "path";
 import { XTimer } from "./Class/XTimer.js";
-import { freeze, UpdateCheckTimer } from "./launch/between.js";
-import { handleBotError, handleDB, handleError } from "./launch/handlers.js";
+import { freeze, UpdateServer } from "./launch/between.js";
+import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
+import { setupDB } from "./launch/setupDB.js";
 import styles from "./styles.js";
 
 export const Service = {
@@ -62,7 +63,6 @@ export const Service = {
 
 export const handlers = {
 	processError: handleError,
-	dbError: handleDB,
 	bot: handleBotError,
 };
 
@@ -97,7 +97,7 @@ export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
 			const p = path.join("logs", fileName ?? "logs.txt");
 			await fs.writeFile(
 				p,
-				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r` + (await fs.readFile(p))
+				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r` + (await fs.readFile(p)).toString()
 			);
 		});
 
@@ -154,8 +154,16 @@ async function start() {
 		await fs.mkdir("logs");
 	} catch {}
 
+	/**
+	 * Seting default get/set values and progress renderer
+	 */
+	setupDB();
+
+	/**
+	 * Connecting to main tables like db.json, users.json and groups.json
+	 */
 	lang.s.db();
-	await database._.connect();
+	await DBManager.Connect();
 
 	await updateInfo(data);
 	lang.s.session();
@@ -177,9 +185,14 @@ async function start() {
 	await LoadFromArray(config.modules, "modules");
 
 	/**
+	 * Connecting to module tables if they exists
+	 */
+	await DBManager.Connect();
+
+	/**
 	 * Command and lists initalization
 	 */
-	TriggerEventListeners("modules.load", "");
+	await EmitEventListeners("modules.load", "");
 
 	/**
 	 * Bot launch
@@ -188,8 +201,8 @@ async function start() {
 	bot.botInfo = me;
 	safeBotLauch();
 
+	await UpdateServer.open();
 	lang.s.end();
-	UpdateCheckTimer.open();
 }
 
 /**
@@ -199,7 +212,7 @@ async function start() {
  * @param {boolean} sendMessage
  */
 async function stop(reason = "Остановка", type = "none", sendMessage = true) {
-	UpdateCheckTimer.close();
+	UpdateServer.close();
 	const text = new Xitext()._.group("✕  ").url(null, "https://t.me").bold()._.group();
 
 	text.text(`${type}. `);
@@ -224,7 +237,7 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	}
 
 	if (type === "ALL") {
-		await database._.close();
+		await DBManager.commitAll();
 		process.exit(0);
 	}
 }

@@ -1,4 +1,4 @@
-import { data, database } from "../../index.js";
+import { data, database, tables } from "../../index.js";
 import { Query } from "../../lib/Class/Query.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
@@ -44,7 +44,7 @@ new Query(
 		name: "del",
 	},
 	async (ctx, [type, chat]) => {
-		await database.delete(type === "g" ? d.group(chat) : d.user(chat));
+		tables[type === "g" ? "groups" : "users"].delete(chat);
 		await ctx.deleteMessage(ctx.callbackQuery.message.message_id);
 		ctx.answerCbQuery("Успешно!");
 	}

@@ -1,5 +1,4 @@
-import { bot, database } from "../../index.js";
-import { d } from "../../lib/Class/Utils.js";
+import { bot, tables } from "../../index.js";
 import { getGroup, getUser } from "./get.js";
 import "./queries.js";
 
@@ -20,7 +19,7 @@ bot.on("message", async (ctx, next) => {
 
 	if (ctx.data.user.needSafe) {
 		delete ctx.data.user.needSafe;
-		database.set(d.user(ctx.from.id), ctx.data.user);
+		tables.users.set(ctx.from.id, ctx.data.user);
 	}
 
 	next();

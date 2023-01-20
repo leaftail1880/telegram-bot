@@ -1,5 +1,5 @@
 import { newlog } from "../../index.js";
-import { TriggerEventListeners } from "../../lib/Class/Events.js";
+import { EmitEventListeners } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
 
@@ -27,7 +27,7 @@ export function CreateUser(ctx) {
 		fileName: "groups.txt",
 	});
 
-	TriggerEventListeners("new.member", ctx);
+	EmitEventListeners("new.member", ctx);
 
 	const user = {
 		static: {

@@ -1,6 +1,6 @@
 import { bot, database } from "../../index.js";
 import { Command } from "../../lib/Class/Command.js";
-import { editMsg, MultiMenu } from "../../lib/Class/Menu.js";
+import { MultiMenu } from "../../lib/Class/Menu.js";
 import { Query } from "../../lib/Class/Query.js";
 import { d, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
@@ -74,7 +74,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			prefix: m.prefix,
 		},
 		async (_ctx, data, edit) => {
-			const dat = util.toStr(await database.get(data[0]));
+			const dat = util.inspect(await database.get(data[0]));
 			edit(...lang.see(data[0], dat, data[1]));
 		}
 	);

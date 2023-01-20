@@ -14,13 +14,13 @@ new Command(
 			case "pairs":
 				const a = database.collection();
 				console.log(a);
-				util.sendSeparatedMessage(util.toStr(a, " "), ctx.reply);
+				util.sendSeparatedMessage(util.inspect(a), ctx.reply);
 				break;
 			case "get":
 				if (!args[1]) return ctx.reply("Нужно указать ключ (-db get <key>)");
 				const get = database.get(args[1]);
 				console.log(get);
-				util.sendSeparatedMessage(util.toStr(get, " "), (msg) => ctx.reply(...new Xitext().code(msg)._.build()));
+				util.sendSeparatedMessage(util.inspect(get), (msg) => ctx.reply(...new Xitext().code(msg)._.build()));
 				break;
 			case "del":
 				if (!args[1]) return ctx.reply("Нужно указать ключ (-db del <key>)");

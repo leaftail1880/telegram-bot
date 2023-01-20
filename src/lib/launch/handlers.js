@@ -1,6 +1,7 @@
 import clc from "cli-color";
-import { bot, data, database, Service } from "../../index.js";
+import { bot, data, Service } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
+import styles from "../styles.js";
 import { noConnection } from "./noConnection.js";
 
 /**
@@ -55,27 +56,10 @@ export async function handleError(err) {
 
 /**
  *
- * @param {Error & {code: string}} err
- * @returns
- */
-export async function handleDB(err) {
-	if (err.message === "Client IP address is not in the allowlist.") {
-		await Service.stop("Put your ip addres to db allowlist", "ALL", false);
-		return;
-	}
-	if (err.message === "Socket closed unexpectedly") {
-		await database._.reconnect();
-		return;
-	}
-	noConnection();
-}
-
-/**
- *
  * @param {Error & {code: string; stack: string}} err
  * @returns
  */
 export async function handleBotError(err) {
-	if (err && err.name === "FetchError") noConnection(clc.cyanBright("Telegraf"));
+	if (err && err.name === "FetchError") noConnection(styles.highlight("Telegraf"));
 	else Service.error(err);
 }

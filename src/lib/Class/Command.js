@@ -1,7 +1,7 @@
 import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
-import { bot, data as Data, database, newlog } from "../../index.js";
+import { bot, data as Data, newlog } from "../../index.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
@@ -258,7 +258,7 @@ new Command(
 			await ctx.reply(`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`);
 			delete user.cache.scene;
 			delete user.cache.sceneCache;
-			database.set(d.user(ctx.from.id), user);
+			tables.users.set(ctx.from.id, user);
 		} else ctx.reply("Вы не находитесь в меню!");
 	}
 );

@@ -2,117 +2,127 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { bot, data, database, log, newlog, Service } from "../../index.js";
+import { bot, data, database, DBManager, log, newlog, Service } from "../../index.js";
+import { OpenServer, SendMessage } from "../utils/net.js";
 import { service_lang as lang } from "./lang.js";
 import { bigger, updateInfo } from "./update.js";
 
-/** @type {NodeJS.Timer} */
-let $UpdateCheckTimer;
+export const UpdateServer = {
+	passcode: "test",
+	isClosed: false,
+	ip: OpenServer(~~(Math.random() * 10000), (message) => {
+		if (UpdateServer.isClosed) return "closed";
 
-export const UpdateCheckTimer = {
-	open() {
-		$UpdateCheckTimer = setInterval(updateCheckInterval, config.update.timerTime);
+		/** @type {{passcode: string; version: [number, number, number]}} */
+		let request;
+		try {
+			request = JSON.parse(message);
+		} catch (e) {
+			console.log(e);
+			return `Bad json: ${e.message}`;
+		}
+
+		if (request.passcode !== UpdateServer.passcode) return "Bad passcode";
+
+		/**
+		 * @type {typeof data.type}
+		 */
+		const q = bigger([config.version[0], config.version[1], config.version[2]], request.version, [
+			"realese",
+			"old",
+			"work",
+		]);
+
+		if (data.development) return Service.message.development;
+
+		if (q === "realese") return Service.message.terminate_you;
+
+		if (q === "old" || q === "work") {
+			Service.stop(lang.stop.old(), "ALL");
+			return Service.message.terminate_me;
+		}
+	}),
+	async open() {
+		await database._.reconnect();
+		database.set(config.dbkey.ip, UpdateServer.ip);
+		database.set(config.dbkey.ip_passcode, UpdateServer.passcode);
+		await database._.commit();
+		this.isClosed = false;
 	},
 	close() {
-		clearInterval($UpdateCheckTimer);
+		this.isClosed = true;
 	},
 };
-
-async function updateCheckInterval() {
-	if (database.isClosed) return;
-
-	const raw_query = await database.client.get(config.dbkey.request);
-	let query;
-	try {
-		query = JSON.stringify(raw_query);
-	} catch {}
-
-	if (!Array.isArray(query)) return;
-
-	/**
-	 * @type {typeof data.type}
-	 */
-	const q = bigger([config.version[0], config.version[1], config.version[2]], query, ["realese", "old", "work"]);
-
-	function answer(/** @type {string} */ message) {
-		return database.set(config.dbkey.request, message);
-	}
-
-	if (data.development) return await answer(Service.message.development);
-
-	if (q === "realese") return await answer(Service.message.terminate_you);
-
-	if (q === "old" || q === "work") {
-		await answer(Service.message.terminate_me);
-		return Service.stop(lang.stop.old(), "ALL");
-	}
-}
 
 export async function freeze() {
 	if (data.isFreezed) return;
 	data.isFreezed = true;
-	UpdateCheckTimer.close();
+	UpdateServer.close();
+	database._.close();
 	if (data.isLaunched) {
 		const l = lang.stop.freeze();
 		newlog({
-			xitext: {
-				// @ts-expect-error
-				_: {
-					build() {
-						return l;
-					},
-				},
-			},
-			consoleMessage: clc.bgCyanBright.black(l[0]),
-			fileMessage: l[0],
+			xitext: l,
+			consoleMessage: clc.bgCyanBright.black(l._.text),
+			fileMessage: l._.text,
 		});
 	}
 
 	if (data.isLaunched && !data.isStopped) {
-		data.isStopped = true;
 		bot.stop("freeze");
+		data.isStopped = true;
 	}
-
-	async function updateRequest() {
-		database.set(config.dbkey.request, [config.version[0], config.version[1], config.version[2]]);
-	}
-
-	await updateRequest();
 
 	let times = 0;
 	let devTimes = 0;
+	let timeout;
 
-	const timeout = setInterval(async () => {
-		const answer = await database.client.get(config.dbkey.request);
+	async function Check() {
+		await database._.connect();
+		const ip = database.get(config.dbkey.ip);
+		if (ip === UpdateServer.ip) return launch("Сам себя убил");
+		const passcode = database.get(config.dbkey.ip_passcode);
+		let answer;
+
+		try {
+			answer = await SendMessage(
+				ip,
+				JSON.stringify({ passcode, version: [config.version[0], config.version[1], config.version[2]] })
+			);
+		} catch (e) {
+			if (e.name === "FetchError") return launch("Не смог достучаться до сервера разработки", "↩️");
+			throw e;
+		}
+
 		if (answer === Service.message.terminate_you) {
-			await database.delete(config.dbkey.request);
 			return Service.stop(lang.stop.terminate(), "ALL");
 		}
 
 		if (answer === Service.message.terminate_me) {
-			await launch("Запущена как новая", "NEW");
-			return;
+			return launch("Запущена как новая", "NEW");
 		}
 		if (answer === Service.message.development) {
 			if (devTimes === 0) log("Ожидает конца разработки...");
 			devTimes++;
 			times = 0;
-			await updateRequest();
 			return;
 		}
 
 		times++;
 		console.log(times >= 1 ? `Нет ответа ${times}` : `Ждет ответ...`);
 		if (times >= 1) {
-			await launch(
-				devTimes
-					? `Запущена после разработки [${((devTimes * config.update.timerTime) / 1000).toFixed(2)} сек]`
-					: `Не получила ответа`,
-				"↩️"
-			);
+			const message = devTimes
+				? `Запущена после разработки [${((devTimes * config.update.timerTime) / 1000).toFixed(2)} сек]`
+				: `Не получила ответа`;
+
+			await launch(message, "↩️");
 			return;
 		}
-	}, config.update.timerTime);
+	}
+
+	Check();
+
+	timeout = setInterval(Check, config.update.timerTime);
 
 	/**
 	 *
@@ -120,16 +130,21 @@ export async function freeze() {
 	 * @param {string} [prefix]
 	 */
 	async function launch(info, prefix) {
-		clearInterval(timeout);
+		if (timeout) clearInterval(timeout);
 		if (data.isStopped === false) return;
 		data.start_time = Date.now();
 
-		// Обновляет сессию, data.v, data.versionMSG, data.isLatest, version и session
+		/**
+		 * Updates data.v, data.versionMSG, data.isLatest, version и session
+		 */
 		await updateInfo(data);
 
-		/**======================
-		 * Запуск бота
-		 *========================**/
+		/**
+		 * Updates local cache to actual data
+		 */
+		for (const table in DBManager.tables) DBManager.tables[table]._.isConnected = false;
+		await DBManager.Connect();
+
 		Service.safeBotLauch();
 
 		const message = lang.launch(info);
@@ -139,7 +154,6 @@ export async function freeze() {
 		});
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
 
-		UpdateCheckTimer.open();
-		database.delete(config.dbkey.request);
+		UpdateServer.open();
 	}
 }

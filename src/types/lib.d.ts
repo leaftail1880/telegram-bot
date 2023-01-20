@@ -51,7 +51,7 @@ namespace IEvent {
 		callback: (ctx: IEvent.Events[T], next: () => void, data: IEvent.Data, extraData?: Object) => any
 	) => void;
 
-	type Trigger = <T extends keyof IEvent.Events>(type: T, context?: IEvent.Events[T]) => void;
+	type Trigger = <T extends keyof IEvent.Events>(type: T, context?: IEvent.Events[T]) => Promise<void>;
 
 	interface Events {
 		message: Context & import("telegraf/types").Message;

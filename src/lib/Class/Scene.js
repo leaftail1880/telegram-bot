@@ -1,4 +1,4 @@
-import { database, tables } from "../../index.js";
+import { tables } from "../../index.js";
 import { d } from "./Utils.js";
 
 export class Scene {
@@ -23,7 +23,7 @@ export class Scene {
 		if (!user || typeof user !== "object") return;
 		user.cache.scene = d.scene(this.name, scene);
 		if (cache) newCache ? (user.cache.sceneCache = cache) : user.cache.sceneCache.push(cache);
-		database.set(d.user(id), user);
+		tables.users.set(id, user);
 	}
 	/**
 	 * Deletes all cache and scene info from user with specified id
@@ -35,7 +35,7 @@ export class Scene {
 		if (!user || typeof user != "object") return;
 		delete user.cache.scene;
 		delete user.cache.sceneCache;
-		database.set(d.user(id), user);
+		tables.users.set(id, user);
 	}
 	/**
 	 *

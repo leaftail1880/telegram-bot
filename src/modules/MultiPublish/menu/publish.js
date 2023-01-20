@@ -1,4 +1,4 @@
-import { database, tables } from "../../../index.js";
+import { tables } from "../../../index.js";
 import { EventListener } from "../../../lib/Class/Events.js";
 import { ssn } from "../../../lib/Class/Scene.js";
 import { d } from "../../../lib/Class/Utils.js";
@@ -64,7 +64,7 @@ artMenu.query(
 		const c = { descriptions: {}, tags: {} };
 		user.cache.sceneCache = c;
 
-		database.set(d.user(ctx.from.id), user);
+		tables.users.set(ctx.from.id, user);
 		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
 		ctx.reply(...publish.start._.build());
 	}
@@ -97,7 +97,7 @@ EventListener("document", 0, async (ctx, next, data) => {
 
 	c.waiting_lang = firstLang;
 	data.user.cache.sceneCache = c;
-	database.set(d.user(ctx.from.id), data.user);
+	tables.users.set(ctx.from.id, data.user);
 
 	ctx.reply(...publish.description(firstLangServices, firstLang)._.build());
 });
@@ -141,7 +141,7 @@ EventListener("text", 0, async (ctx, next, data) => {
 	}
 
 	data.user.cache.sceneCache = c;
-	database.set(d.user(ctx.from.id), data.user);
+	tables.users.set(ctx.from.id, data.user);
 });
 
 artMenu.query(
@@ -178,7 +178,7 @@ artMenu.query(
 			c.tags[platform] = c.tags[platform].filter((e) => e !== clearTag);
 		}
 
-		database.set(d.user(ctx.from.id), user);
+		tables.users.set(ctx.from.id, user);
 
 		if (action !== "next")
 			edit(

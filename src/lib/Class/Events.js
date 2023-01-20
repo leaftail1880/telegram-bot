@@ -18,10 +18,10 @@ export function EventListener(type, position, callback) {
 }
 
 /** @type {IEvent.Trigger} */
-export function TriggerEventListeners(type, context) {
+export async function EmitEventListeners(type, context) {
 	if (EVENTS[type])
 		for (const { callback } of EVENTS[type]) {
-			callback({}, () => void 0, context);
+			await callback({}, () => void 0, context);
 		}
 }
 

@@ -2,13 +2,14 @@ import clc from "cli-color";
 import config from "../../config.js";
 import { data } from "../../index.js";
 import { Xitext } from "../Class/Xitext.js";
+import styles from "../styles.js";
 
 export const service_lang = {
 	launch: (/** @type {string} */ reason) => `⌬ ${data.logVersion} ${reason}`,
 	stop: {
 		terminate: () => `${data.logVersion} принудительно остановлена.`,
 		old: () => `${data.logVersion} выключена как старая`,
-		freeze: () => new Xitext().text(`${data.readableVersion} ждет ответа...`)._.build(),
+		freeze: () => new Xitext().text(`${data.readableVersion} ждет ответа...`),
 	},
 
 	s: {
@@ -17,7 +18,7 @@ export const service_lang = {
 				service_lang.state(0, 5, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
 			),
 		db: () => console.log(service_lang.state(1, 5, "Fetching db data...")),
-		session: () => console.log(service_lang.state(2, 5, `Type: ${clc.cyanBright(data.type)}`)),
+		session: () => console.log(service_lang.state(2, 5, `Type: ${styles.highlight(data.type)}`)),
 		middlewares: () => console.log(service_lang.state(3, 5, "Loading middlewares")),
 		modules: () => console.log(service_lang.state(4, 5, "Loading modules")),
 		end: () =>
@@ -25,7 +26,7 @@ export const service_lang = {
 				service_lang.state(
 					5,
 					5,
-					`Ready to work in ${clc.cyanBright(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
+					`Ready to work in ${styles.highlight(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
 				)
 			),
 	},

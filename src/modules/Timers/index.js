@@ -1,5 +1,4 @@
-import { bot, data, database, Service } from "../../index.js";
-import { d } from "../../lib/Class/Utils.js";
+import { bot, data, database, Service, tables } from "../../index.js";
 import { cooldown } from "../Command/index.js";
 
 setInterval(async () => {
@@ -11,7 +10,7 @@ setInterval(async () => {
 		.filter((e) => typeof e === "number");
 
 	groups.forEach(async (e) => {
-		const group = tables.groups.get(e);
+		const { data: group, save } = tables.groups.work(e);
 		if (typeof group?.cache?.pin === "string") {
 			const id = Number(group.cache.pin.split("::")[0]);
 
@@ -22,7 +21,7 @@ setInterval(async () => {
 				const result = bot.telegram.unpinChatMessage(group.static.id, id);
 				result.catch((e) => Service.error(e));
 				delete group.cache.pin;
-				database.set(d.group(e), group);
+				save();
 			}
 		}
 	});
