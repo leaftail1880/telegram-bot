@@ -103,7 +103,7 @@ export async function freeze() {
 				JSON.stringify({ passcode, version: [config.version[0], config.version[1], config.version[2]] })
 			);
 		} catch (e) {
-			if (e.name === "FetchError") return launch("Не смог достучаться до сервера разработки", "↩️");
+			if (e.name === "FetchError") return launch("Не смог достучаться до сервера разработки: " + e.message, "↩️");
 			throw e;
 		}
 
@@ -176,5 +176,6 @@ export async function freeze() {
 		Service.safeBotLauch();
 
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
+		console.log("Запущен.");
 	}
 }
