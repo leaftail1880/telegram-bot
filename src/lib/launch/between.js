@@ -44,9 +44,22 @@ export const UpdateServer = {
 	}),
 	async open() {
 		await database._.reconnect();
-		database.set(config.dbkey.ip, UpdateServer.ip);
-		database.set(config.dbkey.ip_passcode, UpdateServer.passcode);
-		await database._.commit();
+		const activeIP = database.get(config.dbkey.ip);
+		const activePASSCODE = database.get(config.dbkey.ip_passcode);
+		if (activeIP !== UpdateServer.ip && activePASSCODE !== UpdateServer.passcode) {
+			if (data.development)
+				try {
+					await SendMessage(
+						activeIP,
+						JSON.stringify({ passcode: activePASSCODE, message: Service.message.development })
+					);
+				} catch {}
+
+			database.set(config.dbkey.ip, UpdateServer.ip);
+			database.set(config.dbkey.ip_passcode, UpdateServer.passcode);
+			await database._.commit();
+		}
+
 		this.isClosed = false;
 	},
 	close() {
@@ -80,7 +93,7 @@ export async function freeze() {
 	async function Check() {
 		await database._.connect();
 		const ip = database.get(config.dbkey.ip);
-		if (ip === UpdateServer.ip) return launch("Двойной запрос...");
+		if (ip === UpdateServer.ip) return launch("Запрос самому себе...");
 		const passcode = database.get(config.dbkey.ip_passcode);
 		let answer;
 
@@ -92,6 +105,14 @@ export async function freeze() {
 		} catch (e) {
 			if (e.name === "FetchError") return launch("Не смог достучаться до сервера разработки", "↩️");
 			throw e;
+		}
+
+		if (answer?.startsWith("Bad json:")) {
+			return Service.stop(answer, "ALL");
+		}
+
+		if (answer === "closed") {
+			return launch("Запрашиваемый сервер заморожен");
 		}
 
 		if (answer === Service.message.terminate_you) {
@@ -151,10 +172,9 @@ export async function freeze() {
 		for (const table in DBManager.tables) DBManager.tables[table]._.isConnected = false;
 		await DBManager.Connect();
 
+		await UpdateServer.open();
 		Service.safeBotLauch();
 
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
-
-		UpdateServer.open();
 	}
 }

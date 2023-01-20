@@ -190,6 +190,11 @@ async function start() {
 	await DBManager.Connect();
 
 	/**
+	 * Tells another active sessions that they need to be freezed until development
+	 */
+	await UpdateServer.open();
+
+	/**
 	 * Command and lists initalization
 	 */
 	await EmitEventListeners("modules.load", "");
@@ -201,7 +206,6 @@ async function start() {
 	bot.botInfo = me;
 	safeBotLauch();
 
-	await UpdateServer.open();
 	lang.s.end();
 }
 
