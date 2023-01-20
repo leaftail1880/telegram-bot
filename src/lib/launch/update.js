@@ -1,6 +1,5 @@
 import config from "../../config.js";
 import { database } from "../../index.js";
-import { EventListener, EmitEventListeners } from "../Class/Events.js";
 
 /**
  * @template F, S, E
@@ -23,27 +22,23 @@ export function bigger(array, array2, [first, second, equal]) {
  * Обновляет data.v, data.versionMSG, data.isLatest и version
  * @param {ServiceData} data
  */
-export async function updateInfo(data) {
+export function setDataType(data) {
 	const raw_version = database.get(config.dbkey.version);
-	const dbversion = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
-	dbversion.splice(3, 10);
+	const version = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
+	version.splice(3, 10);
 
-	data.type = bigger([config.version[0], config.version[1], config.version[2]], dbversion, ["realese", "old", "work"]);
+	data.type = bigger(config.version, version, ["realese", "old", "work"]);
 
-	if (data.type === "realese" && !data.development) {
-		EventListener("modules.load", 0, () => EmitEventListeners("new.release", ""));
+	if (data.type === "realese" && !data.development) database.set(config.dbkey.version, config.version);
 
-		database.set(config.dbkey.version, [config.version[0], config.version[1], config.version[2]]);
-	}
+	const ReadableType = types[data.type];
 
-	const d = translate_version[data.type];
-
-	data.readableVersion = `v${data.v} ${d}`;
+	data.readableVersion = `v${data.v} ${ReadableType}`;
 	data.logVersion = `v${data.v}`;
 }
 
 /** @type {Record<ServiceData["type"], string>} */
-const translate_version = {
+const types = {
 	old: "Старая",
 	realese: "Релиз",
 	work: "Рабочая",

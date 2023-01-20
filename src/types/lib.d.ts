@@ -58,8 +58,6 @@ namespace IEvent {
 		text: Context & { message: import("telegraf/types").Message.TextMessage };
 		document: Context & { message: import("telegraf/types").Message.DocumentMessage };
 		"modules.load": any;
-		"new.release": any;
-		"new.member": any;
 	}
 }
 

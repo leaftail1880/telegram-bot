@@ -5,7 +5,7 @@ import config from "../../config.js";
 import { bot, data, database, DBManager, log, newlog, Service } from "../../index.js";
 import { OpenServer, SendMessage } from "../utils/net.js";
 import { service_lang as lang } from "./lang.js";
-import { bigger, updateInfo } from "./update.js";
+import { bigger, setDataType } from "./update.js";
 
 export const UpdateServer = {
 	passcode: "test",
@@ -173,7 +173,7 @@ export async function freeze() {
 		/**
 		 * Updates data.v, data.versionMSG, data.isLatest, version и session
 		 */
-		await updateInfo(data);
+		await setDataType(data);
 
 		/**
 		 * Updates local cache to actual data

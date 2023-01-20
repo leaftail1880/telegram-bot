@@ -21,8 +21,8 @@ export function Button(text, data) {
 
 export class Xitext {
 	_ = {
-		group: TypedBind(this.group),
-		build: TypedBind(this.build),
+		group: TypedBind(this.group, this),
+		build: TypedBind(this.build, this),
 		text: "",
 		entities: [],
 	};

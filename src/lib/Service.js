@@ -7,7 +7,7 @@ import { EmitEventListeners } from "./Class/Events.js";
 import "./Class/Query.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
-import { updateInfo } from "./launch/update.js";
+import { setDataType } from "./launch/update.js";
 
 export const data = {
 	v: config.version.join("."),
@@ -165,7 +165,7 @@ async function start() {
 	lang.s.db();
 	await DBManager.Connect();
 
-	await updateInfo(data);
+	setDataType(data);
 	lang.s.session();
 
 	bot.catch(handlers.bot);
