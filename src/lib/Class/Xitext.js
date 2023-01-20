@@ -1,60 +1,28 @@
-export class Button {
-	/**
-	 * @type {Object}
-	 */
-	#button;
-	/**
-	 *
-	 * @param {string} text
-	 */
-	constructor(text) {
-		this.#button = {};
-		this.#button.text = text;
-	}
-	/**
-	 *
-	 * @param {string} url
-	 * @returns {import("telegraf/types").InlineKeyboardButton.UrlButton}
-	 */
-	url(url) {
-		if (url) this.#button.url = url;
-		return this.#button;
-	}
-	/**
-	 *
-	 * @param {string} data
-	 * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
-	 */
-	data(data) {
-		if (data) this.#button.callback_data = data;
-		return this.#button;
-	}
-	/**
-	 *
-	 * @param {string} e
-	 * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
-	 */
-	switchInline(e) {
-		if (e) this.#button.switch_inline_query_current_chat = e;
-		return this.#button;
-	}
+import { TypedBind } from "leafy-utils";
+
+/**
+ *
+ * @param {StringLike} text
+ * @param {StringLike} data
+ * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+ */
+export function Button(text, data) {
+	text = text + "";
+	data = data + "";
+	return {
+		text,
+		callback_data: data,
+	};
 }
 
 /**
- * @typedef {(text?: string) => Xitext} Xgroup
- */
-
-/**
- * @typedef {(extra?: import("telegraf/types").Convenience.ExtraReplyMessage, move?: number) => [string, import("telegraf/types").Convenience.ExtraReplyMessage]} Xbuild
+ * @typedef {string | number | boolean} StringLike
  */
 
 export class Xitext {
-	/**
-	 * @type {{group: Xgroup; build: Xbuild; text: string; entities: Array<import("telegraf/types").MessageEntity>;}}
-	 */
 	_ = {
-		group: this.#group.bind(this),
-		build: this.#build.bind(this),
+		group: TypedBind(this.group),
+		build: TypedBind(this.build),
 		text: "",
 		entities: [],
 	};
@@ -67,19 +35,15 @@ export class Xitext {
 		 */
 		inlineKeyboard: [],
 	};
-	constructor() {}
 	/**
-	 *
-	 * @param {string} text
-	 * @param {Object} obj
-	 * @returns
+	 * Creates a new entity
+	 * @param {StringLike} text
+	 * @param {Optional<import("telegraf/types").MessageEntity>} obj
+	 * @private
 	 */
-	#entity(text, obj) {
+	entity(text, obj) {
 		let t = !this.__.group ? `${text}` : this.__.previous;
 		if (!t) return this;
-		/**
-		 * @type {import("telegraf/types").MessageEntity}
-		 */
 		const ent = {
 			length: t.length,
 			offset: this.__.offset,
@@ -92,19 +56,12 @@ export class Xitext {
 		}
 		return this;
 	}
-	get endgroup() {
-		if (this.__.group) {
-			this.__.group = false;
-			this.__.offset = this.__.offset + this.__.previous.length ?? 0;
-		}
-		return this;
-	}
 	/**
-	 *
+	 * Enables group fromatting
 	 * @param {string} [text]
-	 * @returns {this}
+	 * @private
 	 */
-	#group(text) {
+	group(text) {
 		if (!text && this.__.group) {
 			this.__.group = false;
 			this.__.offset = this.__.offset + this.__.previous.length ?? 0;
@@ -117,82 +74,114 @@ export class Xitext {
 		}
 		return this;
 	}
+	get endgroup() {
+		if (this.__.group) {
+			this.__.group = false;
+			this.__.offset = this.__.offset + this.__.previous.length ?? 0;
+		}
+		return this;
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} text Text to write
+	 */
 	text(text) {
 		let t = `${text}`;
 		this.__.offset = this.__.offset + t.length;
 		this._.text += t;
 		return this;
 	}
-
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
 	bold(text) {
-		return this.#entity(text, {
+		return this.entity(text, {
 			type: "bold",
 		});
 	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
 	italic(text) {
-		const ent = {
+		return this.entity(text, {
 			type: "italic",
-		};
-
-		return this.#entity(text, ent);
-	}
-	underline(text) {
-		const ent = {
-			type: "underline",
-		};
-
-		return this.#entity(text, ent);
-	}
-	strike(text) {
-		const ent = {
-			type: "strikethrough",
-		};
-
-		return this.#entity(text, ent);
-	}
-	spoiler(text) {
-		const ent = {
-			type: "spoiler",
-		};
-
-		return this.#entity(text, ent);
-	}
-	url(text, url) {
-		if (!url) return this;
-		const ent = {
-			type: "text_link",
-			url: url,
-		};
-
-		return this.#entity(text, ent);
-	}
-	mention(text, User) {
-		if (!User) return this;
-		const ent = {
-			type: "text_mention",
-			user: User,
-		};
-
-		return this.#entity(text, ent);
-	}
-	mono(text) {
-		const ent = {
-			type: "code",
-		};
-
-		return this.#entity(text, ent);
-	}
-	code(text, language = "JavaScript") {
-		if (!language) return this;
-		const ent = {
-			type: "pre",
-			language: language,
-		};
-
-		return this.#entity(text, ent);
+		});
 	}
 	/**
-	 *
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
+	underline(text) {
+		return this.entity(text, {
+			type: "underline",
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
+	strike(text) {
+		return this.entity(text, {
+			type: "strikethrough",
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
+	spoiler(text) {
+		return this.entity(text, {
+			type: "spoiler",
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} text Text to write
+	 * @param {string} url Url
+	 */
+	url(text = null, url) {
+		if (!url) return this;
+		return this.entity(text, {
+			type: "text_link",
+			url: url,
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} text Text to write
+	 * @param {import("telegraf/types").User} User
+	 */
+	mention(text = null, User) {
+		if (!User) return this;
+		return this.entity(text, {
+			type: "text_mention",
+			user: User,
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
+	mono(text) {
+		return this.entity(text, {
+			type: "code",
+		});
+	}
+	/**
+	 * Writes to end of Xitext with given style
+	 * @param {StringLike} [text] Text to write
+	 */
+	code(text, language = "js") {
+		if (!language) return this;
+		return this.entity(text, {
+			type: "pre",
+			language: language,
+		});
+	}
+	/**
+	 * Sets inline keyboard for this Xitext
 	 * @param  {...Array<import("telegraf/types").InlineKeyboardButton>} lines
 	 */
 	inlineKeyboard(...lines) {
@@ -200,21 +189,20 @@ export class Xitext {
 		return this;
 	}
 	/**
-	 *
-	 * @param {import("telegraf/types").Convenience.ExtraReplyMessage} extra
+	 * Builds this Xitext
+	 * @param {import("telegraf/types").Convenience.ExtraReplyMessage} EXTRA
 	 * @returns {[string, import("telegraf/types").Convenience.ExtraReplyMessage]}
+	 * @private
 	 */
-	#build(extra = {}, move = 0) {
-		/**
-		 * @type {import("telegraf/types").Convenience.ExtraReplyMessage}
-		 */
-		const EXTRA = Object.assign(extra);
+	build(EXTRA = {}, move = 0) {
 		if (move !== 0) {
 			this._.entities.forEach((e) => (e.offset += move));
 		}
-		if (!EXTRA.disable_web_page_preview) {
+
+		if (!("disable_web_page_preview" in EXTRA)) {
 			EXTRA.disable_web_page_preview = true;
 		}
+
 		if (this._.entities.length > 0) EXTRA.entities = this._.entities;
 		if (Array.isArray(this.__.inlineKeyboard[0])) {
 			if (typeof EXTRA.reply_markup !== "object")

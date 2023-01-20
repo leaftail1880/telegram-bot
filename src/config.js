@@ -51,13 +51,17 @@ export default {
 
 	middlewares: [
 		/**
+		 * This middleware will protect all listeners from another bots.
+		 */
+		"BotGuard",
+		/**
 		 * Downloading user/group data from db and cancels
-		 * parsing update if user is not logged
+		 * parsing update if user is not logged.
 		 */
 		"DataGuard",
 		/**
 		 * Parsing ctx.data.user.scene and ctx.data.sceneCache
-		 * to ctx.scene object
+		 * to ctx.scene object.
 		 */
 		"Stage",
 	],
@@ -75,9 +79,7 @@ export default {
 	],
 
 	dbkey: {
-		session: "bot_session",
 		version: "bot_latest_version",
-		request: "bot_request",
 		ip: "ip",
 		ip_passcode: "ip_passcode",
 	},

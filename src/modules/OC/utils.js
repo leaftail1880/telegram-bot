@@ -1,7 +1,9 @@
 import { Context } from "telegraf";
-import { database, newlog } from "../../index.js";
+import { database, DBManager, newlog } from "../../index.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
+
+export const OCDB = DBManager.CreateTable("modules/oc.json");
 
 /**
  *
@@ -23,7 +25,7 @@ export function oclog(message) {
  * @returns {Promise<Character[]>}
  */
 export async function getUserOCs(id) {
-	const dbvalue = await database.get(d.pn("oc", id), true);
+	const dbvalue = OCDB.get(id);
 	return Array.isArray(dbvalue) ? dbvalue : [];
 }
 
@@ -33,7 +35,7 @@ export async function getUserOCs(id) {
  * @param {Character[]} ocs
  */
 export async function saveUserOCs(id, ocs) {
-	database.set(d.pn("oc", id), ocs);
+	OCDB.set(id, ocs);
 }
 
 /**

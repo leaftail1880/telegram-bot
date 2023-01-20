@@ -31,9 +31,9 @@ export const lang = {
 		description: () => lang.skip(lang.create.description),
 	},
 	mainKeyboard: [
-		[new Button("Добавить").data(link("reg"))],
-		[new Button("Найти").data(link("find"))],
-		[new Button("Мои персонажи").data(link("my"))],
+		[Button("Добавить", link("reg"))],
+		[Button("Найти", link("find"))],
+		[Button("Мои персонажи", link("my"))],
 	],
 	main: new Xitext().text("Меню ")._.group("OC").bold().url(null, d.guide(6)).text(" (Или гифтменю):"),
 	reg0: new Xitext()

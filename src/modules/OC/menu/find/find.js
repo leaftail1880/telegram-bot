@@ -40,13 +40,13 @@ new Query(
 
 				if (u) {
 					const name = util.capitalizeFirstLetter(u);
-					buttons.push([new Button(name).data(link("uOC", page, id, name))]);
+					buttons.push([Button(name, link("uOC", page, id, name))]);
 				}
 			} catch {}
 		}
 		buttons = m.generatePageSwitcher({
 			buttons: buttons,
-			backButton: new Button(m.config.backButtonSymbol).data(link("back")),
+			backButton: Button(m.config.backButtonSymbol, link("back")),
 			queryName: "find",
 			pageTo: page,
 		});

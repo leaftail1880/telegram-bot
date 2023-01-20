@@ -16,7 +16,7 @@ namespace CommandTypes {
 	type RegistrationInfo = {
 		prefix?: true | string | string[];
 		name: string;
-		description?: string;
+		description: string;
 		aliases?: string[];
 		allowScene?: true;
 		hideFromHelpList?: boolean;
@@ -143,3 +143,5 @@ declare module "hooman" {
 	const got: import("got").Got;
 	export default got;
 }
+
+type Optional<O> = { [E in keyof O]?: O[E] };

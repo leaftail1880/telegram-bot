@@ -1,7 +1,7 @@
 import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
-import { bot, data as Data, newlog } from "../../index.js";
+import { bot, data as Data, newlog, tables } from "../../index.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
 import { EventListener } from "./Events.js";
@@ -40,6 +40,7 @@ export class Command {
 
 		if (typeof info.prefix === "boolean") StoreInfo.info.prefix = ["-"];
 		if (typeof info.prefix === "string") StoreInfo.info.prefix = [info.prefix];
+		if (Array.isArray(info.prefix)) StoreInfo.info.prefix = info.prefix;
 
 		Commands.push(StoreInfo);
 	}
@@ -54,7 +55,7 @@ export class Command {
 		const match = message.match(config.command.get);
 		if (!match) return false;
 
-		const [_, prefix, command] = match;
+		const [, prefix, command] = match;
 
 		return (
 			Commands.find(
@@ -76,7 +77,7 @@ export class Command {
 
 		const permission_all = command.info.permission === "all";
 		const permission_admin = command.info.permission === "group_admins" && (await isAdmin(ctx, ctx.from.id, user));
-		const permission_owner = command.info.permission === "bot_owner" && ctx.from.id === Data.chatID.owner;
+		const permission_owner = command.info.permission === "bot_owner" && ctx.from.id == Data.chatID.owner;
 
 		return !(
 			(location_all || location_group || location_private) &&

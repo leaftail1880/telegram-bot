@@ -157,7 +157,6 @@ const replaces = [
 	["<anonymous>", "</>", 0],
 	[/file:.*src\/(.*)/, "src/$1"],
 	[/.*Telegram\.callApi.*/, "Telegram.callApi()"],
-	[/.*redis.*/, "Redis"],
 	[/.*node.*/],
 ];
 
@@ -180,19 +179,12 @@ function lowlevelStackParse(e) {
 
 export const d = {
 	/**
-	 *
+	 * Creates ```${prefix}::${name}``` string
 	 * @param {StringLike} prefix
 	 * @param {StringLike} name
 	 * @returns
 	 */
 	pn: (prefix, name) => `${prefix}::${name}`,
-	/**
-	 *
-	 * @param {StringLike} name
-	 * @param {StringLike} scene
-	 * @returns
-	 */
-	scene: (name, scene) => `${name}::${scene}`,
 	/**
 	 * Query link
 	 * @param {StringLike} prefix
@@ -205,27 +197,27 @@ export const d = {
 			args ? `${d.separator.linkToData}${d.safeJoin(args, d.separator.data)}` : ""
 		}`,
 	/**
-	 *
+	 * Creates link to guide group
 	 * @param {number} index
 	 * @returns
 	 */
 	guide: (index) => `https://t.me/xillerbotguides/${index}`,
 	/**
-	 *
+	 * Creates ```tg://user?id=id``` like link
 	 * @param {number} id
 	 * @returns
 	 */
 	userLink: (id) => `tg://user?id=${id}`,
-	// Separator
 	separator: {
 		link: ".",
 		linkToData: "/",
 		data: ",",
 	},
 	/**
-	 *
-	 * @param {StringLike[]} arr
-	 * @param {string} separator
+	 * It's a function that joins an array with a separator,
+	 * but it escapes the separator in the array elements.
+	 * @param {StringLike[]} arr - The array to join
+	 * @param {string} separator - Separator to be escaped
 	 */
 	safeJoin(arr, separator) {
 		return arr

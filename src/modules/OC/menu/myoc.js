@@ -20,9 +20,9 @@ new Query(
 
 		ctx.answerCbQuery(OC.name);
 		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[new Button("Изменить").data(link("edit", oc_index, ownerNickname))],
-			[new Button("Удалить").data(link("del", oc_index, refType))],
-			[new Button("↩️").data(link("backdoc", refType))],
+			[Button("Изменить", link("edit", oc_index, ownerNickname))],
+			[Button("Удалить", link("del", oc_index, refType))],
+			[Button("↩️", link("backdoc", refType))],
 		]);
 	}
 );

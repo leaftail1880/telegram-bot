@@ -17,7 +17,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			let buttons = [];
 
 			for (const e of keys.sort()) {
-				buttons.push([new Button(e).data(m.link("manage", e, page))]);
+				buttons.push([Button(e, m.link("manage", e, page))]);
 			}
 			buttons = m.generatePageSwitcher({
 				buttons: buttons,
@@ -27,18 +27,18 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			});
 			return buttons;
 		},
-		page: (page) => new Button(m.config.backButtonSymbol).data(m.link("list", page)),
+		page: (page) => Button(m.config.backButtonSymbol, m.link("list", page)),
 		manage: (key, prevPage) =>
 			new Xitext()
 				.mono(key)
 				.inlineKeyboard(
 					[
-						new Button("Просмотреть").data(m.link("see", key, prevPage)),
+						Button("Просмотреть", m.link("see", key, prevPage)),
 						// new Button("Изменить").data(m.link("edit", key)),
 					],
 					[
 						// new Button("Сменить имя").data(m.link("name", key)),
-						new Button("Удалить").data(m.link("del", key, prevPage)),
+						Button("Удалить", m.link("del", key, prevPage)),
 					],
 					[lang.page(prevPage)]
 				)
@@ -48,7 +48,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 				.mono(key)
 				.text("\n")
 				.text(data)
-				.inlineKeyboard([new Button("Назад").data(m.link("manage", key, page))])
+				.inlineKeyboard([Button("Назад", m.link("manage", key, page))])
 				._.build(),
 	};
 

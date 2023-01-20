@@ -13,7 +13,7 @@ import deepExtend from "deep-extend";
  * @returns {S & D}
  */
 export function setDefaults(sourceObject, defaultObject) {
-	// No another simplier way do delete links
+	//                 No another simplier way do delete links
 	return deepExtend(JSON.parse(JSON.stringify(defaultObject)), sourceObject);
 }
 

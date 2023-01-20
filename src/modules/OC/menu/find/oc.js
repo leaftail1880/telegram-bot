@@ -20,8 +20,8 @@ new Query(
 
 		ctx.answerCbQuery(OC.name);
 		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[new Button("В главное меню").data(link("backdoc", refType))],
-			[new Button("Назад к персонажам").data(link("uOC", page, id, name, refType))],
+			[Button("В главное меню", link("backdoc", refType))],
+			[Button("Назад к персонажам", link("uOC", page, id, name, refType))],
 		]);
 	}
 );

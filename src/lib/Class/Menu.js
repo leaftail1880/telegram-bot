@@ -6,7 +6,7 @@ import { Button } from "./Xitext.js";
 export class MultiMenu {
 	static get config() {
 		return {
-			maxRows: 6,
+			maxRows: 12,
 			maxButtonsPerRow: 6,
 			backButtonSymbol: "↩️",
 			pageBack: "«",
@@ -72,8 +72,8 @@ export class MultiMenu {
 
 		if (backButton) menu.push(backButton);
 
-		if (qBack) menu.unshift(new Button(this.config.pageBack).data(this.link(queryName, page - 1)));
-		if (qNext) menu.push(new Button(this.config.pageNext).data(this.link(queryName, page + 1)));
+		if (qBack) menu.unshift(Button(this.config.pageBack, this.link(queryName, page - 1)));
+		if (qNext) menu.push(Button(this.config.pageNext, this.link(queryName, page + 1)));
 
 		btns.push(menu);
 

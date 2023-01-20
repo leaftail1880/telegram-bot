@@ -12,10 +12,10 @@ new Query(
 		const [page, id, name, delType] = data;
 		const buttons = [];
 		const userOCS = await getUserOCs(id);
-		const menu = [new Button("↩️ Назад к поиску (" + page + ")").data(link("find", page))];
+		const menu = [Button("↩️ Назад к поиску (" + page + ")", link("find", page))];
 
 		for (const [i, e] of userOCS.entries()) {
-			if (e) buttons.push([new Button(e.name).data(link("oc", page, i, id, name))]);
+			if (e) buttons.push([Button(e.name, link("oc", page, i, id, name))]);
 		}
 		buttons.push(menu);
 

@@ -36,7 +36,7 @@ export const lang = {
 		const s = new PersonalSubs(id);
 
 		const B = ([setting, value]) => [
-			new Button(`${value ? "✅" : "🔺"} ${Subs[setting][1]}`).data(menu.link("c", page, setting, value ? 0 : 1)),
+			Button(`${value ? "✅" : "🔺"} ${Subs[setting][1]}`, menu.link("c", page, setting, value ? 0 : 1)),
 		];
 
 		const get = Object.entries(await s.get());

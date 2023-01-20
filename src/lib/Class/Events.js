@@ -27,12 +27,6 @@ export async function EmitEventListeners(type, context) {
 
 EventListener("modules.load", 0, () => {
 	bot.on("message", async (ctx, next) => {
-		if (ctx.from.is_bot) {
-			if (ctx.from.id !== ctx.botInfo.id) return;
-			if (!("text" in ctx.message)) return;
-			if (!ctx.message.text.includes("--emit")) return;
-		}
-
 		const start = performance.now();
 		const Executors = EVENTS.message?.length > 0 ? EVENTS.message : [];
 		if ("text" in ctx.message && EVENTS.text) Executors.push(...EVENTS.text);

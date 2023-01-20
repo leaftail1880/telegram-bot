@@ -28,11 +28,13 @@ export class XTimer {
 	 */
 	isExpired(key) {
 		let time;
-		if (
-			(typeof key === "string" || typeof key === "number" || typeof key === "symbol") &&
-			typeof this.lastUse === "object"
-		) {
+		const keyIsValid = typeof key === "string" || typeof key === "number" || typeof key === "symbol";
+
+		if (keyIsValid && typeof this.lastUse === "object") {
+			// Timer is for key: time type
 			time = this.lastUse[key];
+
+			// Timer is for one time type
 		} else if (typeof this.lastUse === "number") time = this.lastUse;
 
 		if (Date.now() - time <= this.cooldown) return false;

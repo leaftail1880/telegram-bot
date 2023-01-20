@@ -1,5 +1,3 @@
-//@ts-check
-
 import fetch from "node-fetch";
 import http from "http";
 import os from "os";

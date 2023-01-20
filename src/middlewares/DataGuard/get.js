@@ -48,8 +48,8 @@ export async function getUser(ctx) {
 					.text("\nID: ")
 					.mono(ctx.from.id)
 					.inlineKeyboard(
-						[new Button("Принять").data(d.query("N", "accept", ctx.from.id))],
-						[new Button("Игнорировать").data(d.query("all", "delmsg"))]
+						[Button("Принять", d.query("N", "accept", ctx.from.id))],
+						[Button("Игнорировать", d.query("all", "delmsg"))]
 					);
 
 				logReq(XT);
@@ -121,8 +121,8 @@ export async function getGroup(ctx) {
 					.text("\n\nКод: ")
 					.mono(ctx.chat.id.toString(16))
 					.inlineKeyboard(
-						[new Button("Принять").data(d.query("N", "group", ctx.chat.id))],
-						[new Button("Игнорировать").data(d.query("all", "delmsg"))]
+						[Button("Принять", d.query("N", "group", ctx.chat.id))],
+						[Button("Игнорировать", d.query("all", "delmsg"))]
 					);
 
 				newlog({

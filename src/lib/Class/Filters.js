@@ -1,3 +1,5 @@
-import { message, callbackQuery } from "telegraf/filters";
-export const isText = message("text");
-export const isQuery = callbackQuery("data");
+import { message } from "telegraf/filters";
+export const updateTypeMatches = {
+	text: message("text"),
+	document: message("document"),
+};

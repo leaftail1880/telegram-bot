@@ -66,4 +66,4 @@ export const artMenu = new MultiMenu("art");
  * @param  {...string | number} [args]
  * @returns
  */
-export const artButton = (text, method, ...args) => new Button(text).data(artMenu.link(method, ...args));
+export const artButton = (text, method, ...args) => Button(text, artMenu.link(method, ...args));

@@ -51,7 +51,7 @@ export const UpdateServer = {
 		await database._.reconnect();
 		const activeIP = database.get(config.dbkey.ip);
 		const activePASSCODE = database.get(config.dbkey.ip_passcode);
-		if (activeIP !== UpdateServer.ip || activePASSCODE !== UpdateServer.passcode) {
+		if (activeIP !== UpdateServer.ip) {
 			if (data.development)
 				try {
 					await SendMessage(
@@ -93,12 +93,16 @@ export async function freeze() {
 
 	let times = 0;
 	let devTimes = 0;
+	let selfTimes = 0;
 	let timeout;
 
 	async function Check() {
 		await database._.connect();
 		const ip = database.get(config.dbkey.ip);
-		if (ip === UpdateServer.ip) return launch("Запрос самому себе...");
+		if (ip === UpdateServer.ip) {
+			selfTimes++;
+			if (selfTimes < 2) return;
+		}
 		const passcode = database.get(config.dbkey.ip_passcode);
 		let answer;
 

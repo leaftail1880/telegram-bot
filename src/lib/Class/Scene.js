@@ -21,7 +21,7 @@ export class Scene {
 	async enter(id, scene = 0, cache, newCache = false) {
 		const user = tables.users.get(id);
 		if (!user || typeof user !== "object") return;
-		user.cache.scene = d.scene(this.name, scene);
+		user.cache.scene = d.pn(this.name, scene);
 		if (cache) newCache ? (user.cache.sceneCache = cache) : user.cache.sceneCache.push(cache);
 		tables.users.set(id, user);
 	}
