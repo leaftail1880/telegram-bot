@@ -56,7 +56,7 @@ export function SendMessage(url, message) {
 			reject(e);
 		}
 
-		if (!response.ok) return reject(response);
+		if (!response?.ok) return reject(response);
 		if (!response.body) return reject("Got null body");
 		response.body.on("data", (chunk) => {
 			resolve(chunk.toString());

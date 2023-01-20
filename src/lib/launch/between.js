@@ -80,7 +80,7 @@ export async function freeze() {
 	async function Check() {
 		await database._.connect();
 		const ip = database.get(config.dbkey.ip);
-		if (ip === UpdateServer.ip) return launch("Сам себя убил");
+		if (ip === UpdateServer.ip) return launch("Двойной запрос...");
 		const passcode = database.get(config.dbkey.ip_passcode);
 		let answer;
 
@@ -132,6 +132,12 @@ export async function freeze() {
 	async function launch(info, prefix) {
 		if (timeout) clearInterval(timeout);
 		if (data.isStopped === false) return;
+
+		const message = lang.launch(info);
+		newlog({
+			fileMessage: message,
+			consoleMessage: message,
+		});
 		data.start_time = Date.now();
 
 		/**
@@ -147,11 +153,6 @@ export async function freeze() {
 
 		Service.safeBotLauch();
 
-		const message = lang.launch(info);
-		newlog({
-			fileMessage: message,
-			consoleMessage: message,
-		});
 		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
 
 		UpdateServer.open();
