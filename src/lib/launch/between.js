@@ -13,7 +13,7 @@ export const UpdateServer = {
 	ip: OpenServer(~~(Math.random() * 10000), (message) => {
 		if (UpdateServer.isClosed) return "closed";
 
-		/** @type {{passcode: string; version: [number, number, number]}} */
+		/** @type {{passcode: string; version?: [number, number, number]; message?: string}} */
 		let request;
 		try {
 			request = JSON.parse(message);
@@ -23,6 +23,11 @@ export const UpdateServer = {
 		}
 
 		if (request.passcode !== UpdateServer.passcode) return "Bad passcode";
+
+		if (request.message === Service.message.development) {
+			freeze();
+			return "true";
+		}
 
 		/**
 		 * @type {typeof data.type}
