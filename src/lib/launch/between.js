@@ -46,7 +46,7 @@ export const UpdateServer = {
 		await database._.reconnect();
 		const activeIP = database.get(config.dbkey.ip);
 		const activePASSCODE = database.get(config.dbkey.ip_passcode);
-		if (activeIP !== UpdateServer.ip && activePASSCODE !== UpdateServer.passcode) {
+		if (activeIP !== UpdateServer.ip || activePASSCODE !== UpdateServer.passcode) {
 			if (data.development)
 				try {
 					await SendMessage(
