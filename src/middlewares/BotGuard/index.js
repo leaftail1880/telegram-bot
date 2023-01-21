@@ -1,5 +1,5 @@
-console.log("Loaded BotGuard");
 import { bot } from "../../index.js";
+
 bot.drop((ctx) => {
 	if (ctx.from?.is_bot) {
 		if (ctx.from.id !== ctx.botInfo.id) return true;

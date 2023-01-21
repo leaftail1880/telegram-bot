@@ -1,7 +1,8 @@
 import { Context } from "telegraf";
+import { fmt } from "telegraf/format";
 import { Service } from "../../index.js";
-import { ssn } from "../../lib/Class/Scene.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
+import { OC } from "./index.js";
 
 export const ERRCODES = {
 	num: {
@@ -27,7 +28,7 @@ export const ERRCODES = {
  * @param {Context & {message?: {text?: string; caption?: string}}} ctx
  */
 export function err(code, ctx) {
-	ssn.OC.exit(ctx.from.id);
+	OC.exit(ctx.from.id);
 	const ErrText = ERRCODES[code].user ?? ERRCODES[800].user;
 	if (ctx)
 		ctx.reply(...new Xitext()._.group(`Ошибка ${code}`).bold().mono()._.group().text(" ").text(ErrText)._.build());

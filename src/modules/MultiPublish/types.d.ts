@@ -19,7 +19,7 @@ export interface ArtIntegrations {
 		groups: number[];
 	};
 }
-export type Language = keyof typeof import("../index.js").ART["languages"];
+export type Language = keyof typeof import("./index.js").ART["languages"];
 
 export type ArtService = {
 	default_tags: string[];

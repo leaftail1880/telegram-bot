@@ -4,7 +4,7 @@ import { d } from "../../lib/Class/Utils.js";
 import { Button } from "../../lib/Class/Xitext.js";
 import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
 
-/** @type {import("./types/Integrations.js").ArtIntegrations} */
+/** @type {import("./types.js").ArtIntegrations} */
 const defaultUserArtInfo = {
 	preferences: {
 		groups: [],
@@ -40,10 +40,10 @@ const gen_key = (/** @type {string | number} */ id) => d.pn("Art", id);
 /**
  *
  * @param {string | number} id
- * @returns {Promise<import("./types/Integrations.js").ArtIntegrations>}
+ * @returns {Promise<import("./types.js").ArtIntegrations>}
  */
-export async function getUserArtInfo(id) {
-	const data = await database.get(gen_key(id), true);
+export function getUserArtInfo(id) {
+	const data = database.get(gen_key(id));
 
 	return setDefaults(data, defaultUserArtInfo);
 }
@@ -51,7 +51,7 @@ export async function getUserArtInfo(id) {
 /**
  *
  * @param {string | number} id
- * @param {import("./types/Integrations.js").ArtIntegrations} info
+ * @param {import("./types.js").ArtIntegrations} info
  */
 export function setUserArtInfo(id, info) {
 	return database.set(gen_key(id), removeDefaults(info, defaultUserArtInfo));

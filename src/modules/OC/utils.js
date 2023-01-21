@@ -1,9 +1,17 @@
+import { DatabaseWrapper } from "leafy-db";
 import { Context } from "telegraf";
-import { database, DBManager, newlog } from "../../index.js";
-import { d } from "../../lib/Class/Utils.js";
+import { DBManager, newlog } from "../../index.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
 
-export const OCDB = DBManager.CreateTable("modules/oc.json");
+/** @typedef {{ name: string; fileid: string; description: string }} Character */
+
+/**
+ * @type {DatabaseWrapper<Character[]>}
+ */
+export const OC_DB = DBManager.CreateTable("modules/oc.json");
+
+OC_DB._.beforeGet = (key, value) => (Array.isArray(value) ? value : []);
+OC_DB._.beforeSet = (key, value) => (value.length > 0 ? value : "");
 
 /**
  *
@@ -13,29 +21,8 @@ export function oclog(message) {
 	newlog({
 		fileMessage: message,
 		consoleMessage: message,
-		xitext: new Xitext().text(message),
+		text: new Xitext().text(message),
 	});
-}
-
-/** @typedef {{ name: string; fileid: string; description: string }} Character */
-
-/**
- *
- * @param {number | string} id
- * @returns {Promise<Character[]>}
- */
-export async function getUserOCs(id) {
-	const dbvalue = OCDB.get(id);
-	return Array.isArray(dbvalue) ? dbvalue : [];
-}
-
-/**
- *
- * @param {number | string} id
- * @param {Character[]} ocs
- */
-export async function saveUserOCs(id, ocs) {
-	OCDB.set(id, ocs);
 }
 
 /**
@@ -45,10 +32,11 @@ export async function saveUserOCs(id, ocs) {
  * @param {number} [index]
  */
 export async function saveOC(id, oc, index) {
-	oclog(`> OC. ${index ? "Изменен" : "Создан новый"} ОС. Имя: ${oc.name}`);
-	const OCs = await getUserOCs(id);
+	const { data: OCs, save } = OC_DB.work(id);
 	index ? (OCs[index] = oc) : OCs.push(oc);
-	saveUserOCs(id, OCs);
+	save();
+
+	oclog(`> OC. ${index ? "Изменен" : "Создан новый"} ОС. Имя: ${oc.name}`);
 }
 
 /**
@@ -56,11 +44,12 @@ export async function saveOC(id, oc, index) {
  * @param {number} id
  * @param {number} index
  */
-export async function delOC(id, index) {
-	const OCs = await getUserOCs(id);
+export function deleteOC(id, index) {
+	const { data: OCs, save } = OC_DB.work(id);
+	OCs.splice(index, 1);
+	save();
+
 	oclog(`> OC. Удален ОС. Имя: ${OCs[index]?.name}`);
-	delete OCs[index];
-	saveUserOCs(id, OCs);
 }
 
 /**

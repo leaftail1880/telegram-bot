@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
 import { Query } from "./Query.js";
 import { d } from "./Utils.js";
-import { Button } from "./Xitext.js";
+import { Button, CreateNamespacedButton } from "./Xitext.js";
 
 export class MultiMenu {
 	static get config() {
@@ -89,6 +89,9 @@ export class MultiMenu {
 	 */
 	query(info, callback) {
 		return new Query({ prefix: this.prefix, ...info }, callback);
+	}
+	createButtonMaker() {
+		return CreateNamespacedButton(this.prefix);
 	}
 }
 

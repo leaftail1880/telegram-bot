@@ -15,7 +15,7 @@ const attach_url = `https://oauth.vk.com/authorize?client_id=${
 
 const scene = new Scene("vk");
 
-/** @type {import("../../types/Integrations.js").AttachFunction} */
+/** @type {import("../../types.js").AttachFunction} */
 export async function attach(ctx) {
 	const xt = new Xitext();
 
@@ -90,7 +90,7 @@ bot.on("message", async (ctx, next) => {
 	scene.exit(ctx.from.id);
 });
 
-/** @type {import("../../types/Integrations.js").PostFunction} */
+/** @type {import("../../types.js").PostFunction} */
 export async function post(ctx) {
 	const state = await getUserArtInfo(ctx.from.id);
 	const service = state.services.vk;

@@ -21,7 +21,7 @@ const active_attaches = {};
  */
 const genCode = (id) => `КобольдяConnect::${id.toString(32)}`;
 
-/** @type {import("../../types/Integrations.js").AttachFunction} */
+/** @type {import("../../types.js").AttachFunction} */
 export async function attach(ctx) {
 	const xt = new Xitext();
 
@@ -66,7 +66,7 @@ bot.on("channel_post", async (ctx) => {
 	});
 });
 
-/** @type {import("../../types/Integrations.js").PostFunction} */
+/** @type {import("../../types.js").PostFunction} */
 export function post(ctx) {
 	ctx;
 }

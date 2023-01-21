@@ -1,7 +1,6 @@
 import { Query } from "../../../../lib/Class/Query.js";
-import { Button } from "../../../../lib/Class/Xitext.js";
-import { lang, link } from "../../index.js";
-import { getRefType, getUserOCs, noOC, sendRef } from "../../utils.js";
+import { lang, ocbutton } from "../../index.js";
+import { getRefType, noOC, OC_DB, sendRef } from "../../utils.js";
 
 new Query(
 	{
@@ -11,7 +10,7 @@ new Query(
 	async (ctx, data) => {
 		const [page, oc_index_unparsed, id, name] = data;
 		const oc_index = parseInt(oc_index_unparsed);
-		const OCs = await getUserOCs(id);
+		const OCs = OC_DB.get(id);
 		if (!oc_index_unparsed || !OCs || !OCs[oc_index]) return noOC(ctx);
 
 		const OC = OCs[oc_index];
@@ -20,8 +19,8 @@ new Query(
 
 		ctx.answerCbQuery(OC.name);
 		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[Button("В главное меню", link("backdoc", refType))],
-			[Button("Назад к персонажам", link("uOC", page, id, name, refType))],
+			[ocbutton("В главное меню", "backdoc", refType)],
+			[ocbutton("Назад к персонажам", "uOC", page, id, name, refType)],
 		]);
 	}
 );

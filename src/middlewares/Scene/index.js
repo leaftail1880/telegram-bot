@@ -1,5 +1,3 @@
-console.log("Loaded Stage");
-
 import { bot } from "../../index.js";
 
 bot.use(async (ctx, next) => {
@@ -12,9 +10,8 @@ bot.use(async (ctx, next) => {
 
 	if (!match) return next();
 
-	const [_, name, state] = match;
-	const int_state = Number(state);
-	data.scene = { name, state, int_state };
+	const [, name, state] = match;
+	data.scene = { name, state };
 
 	next();
 });

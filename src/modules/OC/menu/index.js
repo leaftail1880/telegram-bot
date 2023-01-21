@@ -1,3 +1,4 @@
+import { Markup } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { editMsg, lang } from "../index.js";
@@ -11,7 +12,7 @@ new Command(
 		target: "private",
 	},
 	(ctx) => {
-		ctx.reply(...lang.main.inlineKeyboard(...lang.mainKeyboard)._.build());
+		ctx.reply(lang.main2, Markup.inlineKeyboard(lang.mainKeyboard));
 	}
 );
 

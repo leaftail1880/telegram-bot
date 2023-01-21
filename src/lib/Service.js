@@ -11,7 +11,7 @@ import "./Class/Query.js";
 
 import { emit } from "./Class/Events.js";
 import { util } from "./Class/Utils.js";
-import { Xitext } from "./Class/Xitext.js";
+import { fmt, FmtString, Xitext } from "./Class/Xitext.js";
 import { XTimer } from "./Class/XTimer.js";
 
 import { freeze, UpdateServer } from "./launch/between.js";
@@ -19,6 +19,7 @@ import { setDataType } from "./launch/dataType.js";
 import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
 import { setupDB } from "./launch/setupDB.js";
+import { safeLoad } from "./utils/safe.js";
 
 export const data = {
 	v: config.version.join("."),
@@ -73,7 +74,7 @@ export const Service = {
  */
 export function log(msg) {
 	return newlog({
-		xitext: new Xitext().text(msg),
+		text: fmt(msg),
 		fileMessage: msg,
 		consoleMessage: msg,
 	});
@@ -81,16 +82,21 @@ export function log(msg) {
 
 /**
  *
- * @param {{xitext?: Xitext; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
+ * @param {{text?: Xitext | FmtString; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
  */
-export function newlog({ xitext, consoleMessage, fileMessage, fileName }) {
+export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 	if (consoleMessage) console.log(consoleMessage);
 
 	// Array with async jobs
 	const jobs = [];
 
 	// Start job and push it to array
-	if (xitext) jobs.push(bot.telegram.sendMessage(data.chatID.log, ...xitext._.build()));
+
+	if (text) {
+		const doneText = "_" in text ? text._.build() : [text];
+		// @ts-expect-error Will be removed after xitext delete
+		jobs.push(bot.telegram.sendMessage(data.chatID.log, ...doneText));
+	}
 
 	// fs.appendFile doesnt waiting for telegram to send message
 	if (fileMessage)
@@ -126,26 +132,6 @@ function safeBotStop(freeze = false) {
 }
 
 /**
- * It loads all the files in a folder and logs the time it took to load each file
- * @param {string[]} folderArray - An array of folders to load.
- * @param  {string}dirFolder - The folder that the files are in.
- */
-async function LoadFromArray(folderArray, dirFolder) {
-	for (const folder of folderArray) {
-		try {
-			const start = performance.now();
-
-			await import(`../${dirFolder}/${folder}/index.js`);
-
-			console.log(`${styles.load}${folder} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
-		} catch (e) {
-			console.log(`${styles.loadError}${folder}`);
-			Service.error(e);
-		}
-	}
-}
-
-/**
  * Запуск бота
  * @returns {Promise<void>}
  */
@@ -178,13 +164,13 @@ async function start() {
 	 * Middlewares
 	 */
 	print("Loading middlewares...");
-	await LoadFromArray(config.middlewares, "middlewares");
+	await safeLoad(config.middlewares, (s) => import(`../middlewares/${s}/index.js`));
 
 	/**
 	 * Modules
 	 */
 	print("Loading modules...");
-	await LoadFromArray(config.modules, "modules");
+	await safeLoad(config.modules, (s) => import(`../modules/${s}/index.js`));
 
 	/**
 	 * Connecting to module tables if they exists

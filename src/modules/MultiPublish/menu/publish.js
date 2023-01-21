@@ -1,9 +1,7 @@
 import { bot, tables } from "../../../index.js";
-import { ssn } from "../../../lib/Class/Scene.js";
 import { d } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
-import { ART } from "../index.js";
-import { artButton, artMenu, getUserArtInfo } from "../utils.js";
+import { ART, artButton, artMenu, getUserArtInfo } from "../index.js";
 
 const platformNames = {
 	telegram: "Телеграм канала",
@@ -17,7 +15,7 @@ const publish = {
 	addOrNext: new Xitext().text("Файл прикреплен. Отправь еще один, либо отправь следующий."),
 	/**
 	 * @param {string[]} platforms
-	 * @param {import("../types/Integrations.js").Language} lang_code
+	 * @param {import("../types.js").Language} lang_code
 	 */
 	description: (platforms, lang_code) =>
 		new Xitext().text(
@@ -48,7 +46,7 @@ const publish = {
 };
 
 /**
- * @typedef {import("../types/Integrations.js").ArtSceneCache} ArtSceneCache
+ * @typedef {import("../types.js").ArtSceneCache} ArtSceneCache
  */
 
 artMenu.query(
@@ -76,7 +74,7 @@ bot.on("message", async (ctx, next) => {
 	if (!("document" in ctx.message)) return next();
 	const data = ctx.data;
 	if (ctx.chat.type !== "private") return;
-	if (ssn.Art.state(data, "string") !== "photo") return next();
+	if (ART.scene.state(data) !== "photo") return next();
 
 	data.user.cache.scene = "art::description";
 	/** @type {ArtSceneCache} */
@@ -86,7 +84,7 @@ bot.on("message", async (ctx, next) => {
 
 	const userData = await getUserArtInfo(ctx.from.id);
 
-	/** @type {import("../types/Integrations.js").Language} */
+	/** @type {import("../types.js").Language} */
 	let firstLang;
 	const firstLangServices = Object.entries(userData.services)
 		.filter((e) => e[1].enabled)
@@ -111,7 +109,7 @@ bot.on("message", async (ctx, next) => {
 	const data = ctx.data;
 
 	if (ctx.chat.type !== "private") return next();
-	if (ssn.Art.state(data, "string") !== "description") return next();
+	if (ART.scene.state(data) !== "description") return next();
 
 	/** @type {ArtSceneCache} */
 	// @ts-expect-error
@@ -121,7 +119,7 @@ bot.on("message", async (ctx, next) => {
 	const userData = await getUserArtInfo(ctx.from.id);
 	const enabledServices = Object.entries(userData.services).filter((e) => e[1].enabled);
 
-	/** @type {import("../types/Integrations.js").Language} */
+	/** @type {import("../types.js").Language} */
 	let nextLang;
 	const nextLangServices = enabledServices
 		.filter((e) => {
@@ -169,7 +167,7 @@ artMenu.query(
 		const user = tables.users.get(ctx.from.id);
 		const userArtInfo = await getUserArtInfo(ctx.from.id);
 
-		/** @type {import("../types/Integrations.js").ArtService} */
+		/** @type {import("../types.js").ArtService} */
 		const service = userArtInfo.services[platform];
 
 		/** @type {ArtSceneCache} */

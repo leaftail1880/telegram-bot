@@ -9,7 +9,7 @@ import { CreateGroup, CreateUser } from "./create.js";
  */
 function logReq(XT) {
 	newlog({
-		xitext: XT,
+		text: XT,
 		consoleMessage: XT._.text,
 		fileMessage: XT._.text,
 		fileName: "addReq.txt",
@@ -126,7 +126,7 @@ export async function getGroup(ctx) {
 					);
 
 				newlog({
-					xitext: XT,
+					text: XT,
 					consoleMessage: XT._.text,
 					fileMessage: XT._.text,
 					fileName: "addReq.txt",

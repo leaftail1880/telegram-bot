@@ -1,7 +1,10 @@
+import { TypedBind } from "leafy-utils";
 import { MultiMenu } from "../../lib/Class/Menu.js";
+import { Scene } from "../../lib/Class/Scene.js";
 import { d } from "../../lib/Class/Utils.js";
-import { Button, Xitext } from "../../lib/Class/Xitext.js";
-console.log("Loaded oc module");
+import { bold, fmt, link, Xitext } from "../../lib/Class/Xitext.js";
+import { safeLoad } from "../../lib/utils/safe.js";
+
 /**
  * @typedef {Object} UserOC
  * @property {string} name
@@ -9,9 +12,13 @@ console.log("Loaded oc module");
  * @property {string} fileid
  */
 
-export const m = new MultiMenu("OC"),
-	link = TypedBind(m.link, m),
-	editMsg = TypedBind(m.editMsgFromQuery, m);
+export const OC = new Scene("OC");
+
+export const m = new MultiMenu("OC");
+
+export const editMsg = TypedBind(m.editMsgFromQuery, m);
+
+export const ocbutton = m.createButtonMaker();
 
 export const lang = {
 	create: {
@@ -30,19 +37,10 @@ export const lang = {
 		name: () => lang.skip(lang.create.name),
 		description: () => lang.skip(lang.create.description),
 	},
-	mainKeyboard: [
-		[Button("Добавить", link("reg"))],
-		[Button("Найти", link("find"))],
-		[Button("Мои персонажи", link("my"))],
-	],
+	mainKeyboard: [[ocbutton("Найти", "find")], [ocbutton("Добавить", "reg")], [ocbutton("Мои персонажи", "my")]],
 	main: new Xitext().text("Меню ")._.group("OC").bold().url(null, d.guide(6)).text(" (Или гифтменю):"),
-	reg0: new Xitext()
-		.text("Что бы прикрепить своего ОС к этому боту, отправь референс ОС ввиде ")
-		._.group("файла")
-		.bold()
-		.url(null, d.guide(5))
-		._.group()
-		.text("\n Что бы выйти из этого пошагового меню используй команду /cancel"),
+	main2: fmt`Меню персонажей (${link("OC", d.guide(6))})`,
+
 	edit0: new Xitext()
 		.text("Отправь новый референс персонажа ввиде ")
 		._.group("файла")
@@ -52,14 +50,14 @@ export const lang = {
 		.text(
 			"\n\n Если хочешь оставить прошлый референс, используй /next\n Что бы выйти из этого пошагового меню используй команду /cancel"
 		),
-	maxLength: (type, length) =>
-		new Xitext()
-			.text(`${type} должно быть `)
-			._.group("НЕ")
-			.bold()
-			._.group()
-			.text(` больше ${length} символов в длину`)
-			._.build(),
+	maxLngth: (type, length) =>
+		new Xitext().text(`${type} должно быть `).bold("не").text(` больше ${length} символов в длину.`)._.build(),
+	/**
+	 * @param {string} type
+	 * @param {number | string} length
+	 */
+	maxLength: (type, length, end = "о") =>
+		fmt`${type} должн${end} быть ${bold("не")} больше ${length} символов в длину.`,
 	find: "Список владельцев ОС",
 	userOCS: (name) => `Персонажи ${name}`,
 	myOCS: "Ваши персонажи",
@@ -88,16 +86,15 @@ export const lang = {
 			.bold(`Это Ваш персонаж`),
 };
 
-import "./menu/find/find.js";
-import "./menu/find/oc.js";
-import "./menu/find/uOC.js";
+const modules = {
+	menu: ["index", "del", "edit", "my", "myoc", "reg"],
+	"menu/find": ["find", "oc", "uOC"],
+};
 
-import "./menu/index.js";
+const mds = [];
 
-import "./menu/del.js";
-import "./menu/edit.js";
-import "./menu/my.js";
-import "./menu/myoc.js";
+for (const [folder, files] of Object.entries(modules)) {
+	for (const file of files) mds.push(`./${folder}/${file}.js`);
+}
 
-import { TypedBind } from "leafy-utils";
-import "./menu/reg.js";
+safeLoad(mds, (path) => import(path), false);

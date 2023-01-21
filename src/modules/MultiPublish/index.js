@@ -1,7 +1,9 @@
 import { Command } from "../../lib/Class/Command.js";
+import { Scene } from "../../lib/Class/Scene.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
-import { safeRun } from "../../lib/utils/safeRun.js";
+import { safeRun } from "../../lib/utils/safe.js";
 import { artButton, artMenu } from "./utils.js";
+export * from "./utils.js";
 
 new Command(
 	{
@@ -20,7 +22,7 @@ artMenu.query({ name: "back" }, (ctx, path, edit) => {
 
 export const ART = {
 	platfroms: ["telegram", "twitter", "vk"],
-	/** @type {Record<string, {attach: import("./types/Integrations.js").AttachFunction; post: import("./types/Integrations.js").PostFunction}>} */
+	/** @type {Record<string, {attach: import("./types.js").AttachFunction; post: import("./types.js").PostFunction}>} */
 	platformActions: {},
 	lang: {
 		main: new Xitext()
@@ -35,6 +37,7 @@ export const ART = {
 		ru: ["русский", "русском"],
 		en: ["английский", "английском"],
 	},
+	scene: new Scene("Art"),
 };
 
 for (const service of ART.platfroms)

@@ -1,6 +1,5 @@
 import { Xitext } from "../../../lib/Class/Xitext.js";
-import { ART } from "../index.js";
-import { artButton, artMenu, getUserArtInfo, setUserArtInfo } from "../utils.js";
+import { ART, artButton, artMenu, getUserArtInfo, setUserArtInfo } from "../index.js";
 
 const names = {
 	telegram: "Телеграм канал",
@@ -49,7 +48,7 @@ async function genPlatformsMenu(id) {
 	const xt = new Xitext().text("Доступные платформы (Соц-сети):");
 
 	for (const platform of ART.platfroms) {
-		/** @type {import("../types/Integrations.js").ArtService & {token: string; id: string }} */
+		/** @type {import("../types.js").ArtService & {token: string; id: string }} */
 		const state = userData.services[platform];
 
 		const { enabled, disabled, not_connected } = StatusesEnum;

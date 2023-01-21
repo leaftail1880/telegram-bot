@@ -1,5 +1,3 @@
-console.log("Loaded DataGuard");
-
 import { newlog } from "../../index.js";
 import { emit } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
@@ -24,7 +22,7 @@ export function CreateUser(ctx) {
 	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`;
 	newlog({
 		consoleMessage: text,
-		xitext: new Xitext().text(text),
+		text: new Xitext().text(text),
 		fileMessage: text,
 		fileName: "groups.txt",
 	});
@@ -56,7 +54,7 @@ export function CreateGroup(id, title, members = []) {
 	const text = `Новая группа!\n Название: ${title}\n ID: ${id}`;
 	newlog({
 		consoleMessage: text,
-		xitext: new Xitext().text(text),
+		text: new Xitext().text(text),
 		fileMessage: text,
 		fileName: "groups.txt",
 	});

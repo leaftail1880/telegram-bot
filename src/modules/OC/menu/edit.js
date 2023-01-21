@@ -1,10 +1,10 @@
 import { bot } from "../../../index.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { ssn } from "../../../lib/Class/Scene.js";
+import { Scene } from "../../../lib/Class/Scene.js";
 import { util } from "../../../lib/Class/Utils.js";
 import { err } from "../err.js";
-import { lang } from "../index.js";
-import { getUserOCs, noCache, oclog, saveOC } from "../utils.js";
+import { lang, OC } from "../index.js";
+import { noCache, oclog, OC_DB, saveOC } from "../utils.js";
 
 new Query(
 	{
@@ -13,7 +13,7 @@ new Query(
 		message: "Редактирование",
 	},
 	(ctx, data) => {
-		ssn.OC.enter(ctx.callbackQuery.from.id, 10, [data[0]], true);
+		OC.enter(ctx.callbackQuery.from.id, "edit-photo", [data[0]], true);
 		ctx.reply(...lang.edit0._.build());
 	}
 );
@@ -24,19 +24,19 @@ new Query(
 bot.on("message", async (ctx, next) => {
 	if (!("document" in ctx.message)) return next();
 	const data = ctx.data;
-	if (ssn.OC.state(data) !== 10) return next();
+	if (OC.state(data) !== "edit-photo") return next();
 
-	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
+	OC.enter(ctx.from.id, "edit-name", ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) реф`);
 });
 
-ssn.OC.next(10, async (ctx, user) => {
-	const uOC = await getUserOCs(ctx.from.id);
+OC.next("edit-photo", async (ctx, user) => {
+	const uOC = OC_DB.get(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
 	const oc = uOC[user.cache.sceneCache[0]];
-	ssn.OC.enter(ctx.from.id, 11, oc.fileid);
+	OC.enter(ctx.from.id, "edit-name", oc.fileid);
 	ctx.reply(lang.edit.name());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежний реф`);
 });
@@ -49,21 +49,21 @@ ssn.OC.next(10, async (ctx, user) => {
 bot.on("message", async (ctx, next) => {
 	if (!("text" in ctx.message)) return next();
 	const data = ctx.data;
-	if (ssn.OC.state(data) !== 11) return next();
+	if (OC.state(data) !== "edit-description") return next();
 
-	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
+	if (ctx.message.text.length > 32) return ctx.reply(lang.maxLength("Имя", 32));
 
-	ssn.OC.enter(ctx.from.id, 12, ctx.message.text);
+	OC.enter(ctx.from.id, "edit-description", ctx.message.text);
 	ctx.reply(lang.edit.description());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) имя`);
 });
 
-ssn.OC.next(11, async (ctx, user) => {
-	const uOC = await getUserOCs(ctx.from.id);
+OC.next("edit-name", async (ctx, user) => {
+	const uOC = OC_DB.get(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
 	const oc = uOC[user?.cache?.sceneCache[0]];
-	ssn.OC.enter(ctx.from.id, 12, oc.name);
+	OC.enter(ctx.from.id, "edit-description", oc.name);
 	ctx.reply(lang.edit.description());
 	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
 });
@@ -76,9 +76,9 @@ ssn.OC.next(11, async (ctx, user) => {
 bot.on("message", async (ctx, next) => {
 	if (!("text" in ctx.message)) return next();
 	const data = ctx.data;
-	if (ssn.OC.state(data) !== 12) return next();
+	if (OC.state(data) !== "edit-description") return next();
 
-	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
+	if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
 
 	saveOC(
 		ctx.from.id,
@@ -89,12 +89,12 @@ bot.on("message", async (ctx, next) => {
 		},
 		parseInt(data.user.cache.sceneCache[0])
 	);
-	ssn.OC.exit(ctx.from.id);
+	OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);
 });
 
-ssn.OC.next(12, async (ctx, user) => {
-	const uOC = await getUserOCs(ctx.from.id);
+OC.next("edit-description", async (ctx, user) => {
+	const uOC = OC_DB.get(ctx.from.id);
 	if (noCache(user, uOC)) return err(421, ctx);
 
 	const oc = uOC[user?.cache?.sceneCache[0]];
@@ -108,6 +108,6 @@ ssn.OC.next(12, async (ctx, user) => {
 		},
 		Number(user.cache.sceneCache[0])
 	);
-	ssn.OC.exit(ctx.from.id);
+	OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);
 });

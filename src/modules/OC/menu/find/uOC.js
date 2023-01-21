@@ -1,7 +1,6 @@
 import { Query } from "../../../../lib/Class/Query.js";
-import { Button } from "../../../../lib/Class/Xitext.js";
-import { editMsg, lang, link } from "../../index.js";
-import { getUserOCs, sendMessagDeleteRef } from "../../utils.js";
+import { editMsg, lang, ocbutton } from "../../index.js";
+import { OC_DB, sendMessagDeleteRef } from "../../utils.js";
 
 new Query(
 	{
@@ -11,11 +10,11 @@ new Query(
 	async (ctx, data) => {
 		const [page, id, name, delType] = data;
 		const buttons = [];
-		const userOCS = await getUserOCs(id);
-		const menu = [Button("↩️ Назад к поиску (" + page + ")", link("find", page))];
+		const userOCS = OC_DB.get(id);
+		const menu = [ocbutton("↩️ Назад к поиску (" + page + ")", "find", page)];
 
 		for (const [i, e] of userOCS.entries()) {
-			if (e) buttons.push([Button(e.name, link("oc", page, i, id, name))]);
+			if (e) buttons.push([ocbutton(e.name, "oc", page, i, id, name)]);
 		}
 		buttons.push(menu);
 

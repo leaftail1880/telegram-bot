@@ -89,7 +89,7 @@ export async function freeze() {
 	if (data.isLaunched) {
 		const l = lang.stop.freeze();
 		newlog({
-			xitext: l,
+			text: l,
 			consoleMessage: clc.bgCyanBright.black(l._.text),
 			fileMessage: l._.text,
 		});

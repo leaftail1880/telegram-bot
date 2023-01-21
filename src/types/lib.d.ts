@@ -1,11 +1,13 @@
 type Context = import("telegraf").Context;
+type DataContext = Context & { data: State };
+type State = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
 
 type TextMessageContext = Context & { message: import("telegraf/types").Message.TextMessage };
 
 namespace CommandTypes {
 	type Callback = (
 		ctx: TextMessageContext,
-		args: string[],
+		input: string,
 		data: IEvent.Data & { user_rigths: import("telegraf/types").ChatMember },
 		self: Stored
 	) => void;
@@ -40,7 +42,6 @@ namespace IEvent {
 		group?: DB.Group;
 		scene?: {
 			name: string;
-			int_state: number;
 			state: string;
 		};
 	};
@@ -58,8 +59,6 @@ namespace IEvent {
 		"new.member": any;
 	}
 }
-
-type State = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
 
 namespace DB {
 	type User = {

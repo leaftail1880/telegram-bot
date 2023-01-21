@@ -11,11 +11,6 @@ export default {
 		 * Use this with replace() to clear any command from message
 		 */
 		clear: /^\S*(?:@\S)?\s?/,
-		/**
-		 * Use it to parse command args
-		 * @deprecated No one use args with tg bots
-		 */
-		parseArgs: /"[^"]+"|\S+/g,
 	},
 
 	update: {
@@ -53,7 +48,7 @@ export default {
 		/**
 		 * This middleware will protect all listeners from another bots.
 		 */
-		// "BotGuard",
+		"BotGuard",
 		/**
 		 * Downloading user/group data from db and cancels
 		 * parsing update if user is not logged.
@@ -63,12 +58,12 @@ export default {
 		 * Parsing ctx.data.user.scene and ctx.data.sceneCache
 		 * to ctx.scene object.
 		 */
-		"Stage",
+		"Scene",
 	],
 
 	modules: [
 		"Command",
-		"OC",
+		// "OC",
 		"ManageDB",
 		"Timers",
 		"MultiPublish",

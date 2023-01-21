@@ -1,10 +1,14 @@
 import { TypedBind } from "leafy-utils";
+import { d } from "./Utils.js";
+export * from "telegraf/format";
+export { Markup } from "telegraf";
 
 /**
  *
  * @param {StringLike} text
  * @param {StringLike} data
  * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+ * @deprecated Use btn, CreateNamespacedButton or Markup button instead.
  */
 export function Button(text, data) {
 	text = text + "";
@@ -16,9 +20,46 @@ export function Button(text, data) {
 }
 
 /**
- * @typedef {string | number | boolean} StringLike
+ *
+ * @param {StringLike} text
+ * @param {StringLike} namespace
+ * @param {StringLike} method
+ * @param {...StringLike} args
+ * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+ */
+export function btn(text, namespace, method, ...args) {
+	return {
+		text: text.toString(),
+		callback_data: d.query(namespace ?? this.namespace, method, ...args),
+	};
+}
+
+/**
+ * ALias to btn function
+ * @param {StringLike} namespace
+ * @returns
+ */
+export function CreateNamespacedButton(namespace) {
+	return (
+		/**
+		 * @type {StringLike}
+		 */ text,
+		/**
+		 * @type {StringLike}
+		 */ method,
+		/**
+		 * @type {StringLike[]}
+		 */ ...args
+	) => btn(text, namespace, method, ...args);
+}
+
+/**
+ * @typedef {string | number} StringLike
  */
 
+/**
+ * @deprecated Use telegraf fmt instead. You can import it directly from this file.
+ */
 export class Xitext {
 	_ = {
 		group: TypedBind(this.group, this),

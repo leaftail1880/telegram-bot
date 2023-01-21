@@ -1,11 +1,11 @@
 import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
-import { bot, data as Data, newlog, tables } from "../../index.js";
+import { bot, data as Data, newlog } from "../../index.js";
 import { isAdmin } from "../utils/isAdmin.js";
-import { safeRun } from "../utils/safeRun.js";
+import { safeRun } from "../utils/safe.js";
 import { on } from "./Events.js";
-import { ssn } from "./Scene.js";
+import { hasText } from "./Filters.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
@@ -104,7 +104,7 @@ export class Command {
 
 		if (ctx.chat.id !== Data.chatID.log)
 			newlog({
-				xitext: xt,
+				text: xt,
 				consoleMessage: clc.blackBright("C> ") + text,
 				fileMessage: text,
 			});
@@ -153,19 +153,8 @@ on("modules.load", 0, (_, next) => {
 
 	next();
 
-	/**
-	 *
-	 * @template {Context} ctx
-	 * @param {ctx} ctx
-	 * @returns {ctx is Context & { message: import("telegraf/types").Message.TextMessage; data: IEvent.Data}}
-	 */
-	function hasText(ctx) {
-		return "text" in ctx.message;
-	}
-
 	bot.on("message", async (ctx, next) => {
 		if (!hasText(ctx)) return next();
-		const data = ctx.data;
 		const text = ctx.message.text;
 		function reply(/** @type {string} */ text) {
 			ctx.reply(text, {
@@ -177,31 +166,29 @@ on("modules.load", 0, (_, next) => {
 		const command = Command.getCmd(text);
 
 		if (command === "not_found" && ctx.chat.type === "private") {
-			reply("Неизвестная команда. /help");
-			Command.Log(ctx, data.user, "Неизвестная команда");
+			if (ctx.data.scene) return next();
+
+			reply("Я не знаю, что тебе ответить. /help");
+			Command.Log(ctx, ctx.data.user, "Текст");
 			return;
 		}
 		if (typeof command !== "object") return next();
 
-		if (data.scene && !command.info.allowScene)
+		if (ctx.data.scene && !command.info.allowScene)
 			return reply(
-				`В сессии ${data.scene.name} ${data.scene.state} вам доступны только ${d.langJoin(
+				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${d.langJoin(
 					Commands.filter((e) => e.info.allowScene).map((e) => e.info.prefix[0] + e.info.name)
 				)}`
 			);
 
 		const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		if (await Command.cantUse(command, ctx, user_rigths)) return reply("В этом чате эта команда недоступна. /help");
+		if (await Command.cantUse(command, ctx, user_rigths)) return reply("Не здесь. /help");
 
-		const args =
-			text
-				.replace(config.command.clear, "")
-				?.match(config.command.parseArgs)
-				?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
-
-		Command.Log(ctx, data.user);
-		await safeRun(`Command`, () => command.callback(ctx, args, { ...data, user_rigths }, command));
+		Command.Log(ctx, ctx.data.user);
+		await safeRun(`Command`, () =>
+			command.callback(ctx, text.replace(config.command.clear, ""), { ...ctx.data, user_rigths }, command)
+		);
 	});
 });
 
@@ -248,49 +235,5 @@ new Command(
 
 		if (!a._.text) return ctx.reply("Команды недоступны");
 		ctx.reply(...a._.build());
-	}
-);
-
-new Command(
-	{
-		name: "cancel",
-		description: "Выход из пошагового меню",
-		hideFromHelpList: true,
-		allowScene: true,
-		permission: "all",
-		target: "private",
-	},
-	async (ctx, _args, data) => {
-		const user = data.user;
-		if (user?.cache?.scene || user?.cache?.sceneCache) {
-			await ctx.reply(`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`);
-			delete user.cache.scene;
-			delete user.cache.sceneCache;
-			tables.users.set(ctx.from.id, user);
-		} else ctx.reply("Вы не находитесь в меню!");
-	}
-);
-
-new Command(
-	{
-		name: "next",
-		description: "Переходит на следующий шаг меню",
-		hideFromHelpList: true,
-		allowScene: true,
-		permission: "all",
-		target: "private",
-	},
-	async (ctx, _a, data) => {
-		const no_menu = () => ctx.reply("Вы не находитесь в меню!");
-		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
-
-		if (!data.scene) return no_menu();
-
-		const scene = ssn[data.scene.name];
-		if (!scene) return no_menu();
-
-		if (typeof scene.executors[data.scene.state] !== "function") return no_skip();
-
-		scene.executors[data.scene.state](ctx, data.user);
 	}
 );

@@ -1,6 +1,6 @@
 import clc from "cli-color";
 import { bot, newlog } from "../../index.js";
-import { safeRun } from "../utils/safeRun.js";
+import { safeRun } from "../utils/safe.js";
 import { on } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";

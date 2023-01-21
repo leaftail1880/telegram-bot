@@ -12,7 +12,7 @@ new Command(
 		permission: "all",
 		target: "group",
 	},
-	async (ctx, _args, data) => {
+	async (ctx, _, data) => {
 		const g = data.group;
 
 		if (!("cache" in g)) throw new TypeError("Pin cannot be called in non-group chats");

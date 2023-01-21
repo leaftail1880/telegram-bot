@@ -1,16 +1,5 @@
 import { Command } from "../../../lib/Class/Command.js";
-import { Xitext } from "../../../lib/Class/Xitext.js";
-
-/**
- *
- * @param {string} search
- * @returns
- */
-function getLink(search) {
-	const p = new URLSearchParams();
-	p.append("q", search);
-	return "https://google.com/search?" + p.toString();
-}
+import { fmt, link } from "../../../lib/Class/Xitext.js";
 
 new Command(
 	{
@@ -18,26 +7,23 @@ new Command(
 		description: "Гуглит",
 		target: "all",
 	},
-	(ctx) => {
-		/**
-		 * @type {{text?: string; caption?: string; message_id?: number}}
-		 */
-		const msg = ctx?.message?.reply_to_message;
-		const text = msg?.text ?? ctx.message.text.match(/^\/google(?:@[^\s]+)?\s(.+)/m)?.[1];
-
-		if (!text)
-			return ctx.reply("И что я по твоему загуглить должен?", {
-				reply_to_message_id: ctx.message.message_id,
-				allow_sending_without_reply: true,
-			});
-
-		const x = new Xitext().url("Поиск в google", getLink(text));
-		ctx.reply(
-			...x._.build({
+	(ctx, input) => {
+		const repl = (t) =>
+			ctx.reply(t, {
 				reply_to_message_id: ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
 				allow_sending_without_reply: true,
 				disable_web_page_preview: false,
-			})
-		);
+			});
+
+		const text = "text" in ctx.message.reply_to_message ? ctx.message.reply_to_message.text : input;
+
+		if (!text)
+			return repl(`Либо ответь на сообщение, которое хочешь загуглить, либо отправь "/google Текст для поиска"`);
+
+		const params = new URLSearchParams();
+		params.append("q", text);
+		const text_link = "https://google.com/search?" + params.toString();
+
+		repl(fmt`${link("Ссылка на запрос", text_link)} ${text} в гугле.`);
 	}
 );

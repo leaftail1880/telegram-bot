@@ -1,9 +1,8 @@
-import { database, tables } from "../../../../index.js";
+import { tables } from "../../../../index.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { util } from "../../../../lib/Class/Utils.js";
-import { Button } from "../../../../lib/Class/Xitext.js";
-import { editMsg, lang, link, m } from "../../index.js";
-import { noOC } from "../../utils.js";
+import { editMsg, lang, m, ocbutton } from "../../index.js";
+import { noOC, OC_DB } from "../../utils.js";
 
 new Query(
 	{
@@ -13,13 +12,11 @@ new Query(
 	},
 	async (ctx, data) => {
 		// editMsg(ctx, "Загрузка...");
-		const keys = database
-			.keys()
-			.filter((e) => e.startsWith("oc::"))
-			.map((e) => e.split("::")[1]);
+		const keys = OC_DB.keys();
+
 		if (!keys[0]) {
-			editMsg(ctx, lang.main._.text, {
-				entities: lang.main._.entities,
+			editMsg(ctx, lang.main2.text, {
+				entities: lang.main2.entities,
 				reply_markup: {
 					inline_keyboard: lang.mainKeyboard,
 				},
@@ -40,13 +37,13 @@ new Query(
 
 				if (u) {
 					const name = util.capitalizeFirstLetter(u);
-					buttons.push([Button(name, link("uOC", page, id, name))]);
+					buttons.push([ocbutton(name, "uOC", page, id, name)]);
 				}
 			} catch {}
 		}
 		buttons = m.generatePageSwitcher({
 			buttons: buttons,
-			backButton: Button(m.config.backButtonSymbol, link("back")),
+			backButton: ocbutton(m.config.backButtonSymbol, "back"),
 			queryName: "find",
 			pageTo: page,
 		});

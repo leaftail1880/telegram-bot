@@ -1,7 +1,6 @@
 import { Query } from "../../../lib/Class/Query.js";
-import { Button } from "../../../lib/Class/Xitext.js";
-import { lang, link } from "../index.js";
-import { getRefType, getUserOCs, noOC, sendRef } from "../utils.js";
+import { lang, ocbutton } from "../index.js";
+import { getRefType, noOC, OC_DB, sendRef } from "../utils.js";
 
 // Главное меню > Мои персонажи > |Персонаж|
 new Query(
@@ -9,9 +8,9 @@ new Query(
 		name: "myoc",
 		prefix: "OC",
 	},
-	async (ctx, data) => {
+	(ctx, data) => {
 		const [id, oc_index, ownerNickname] = data;
-		const OCs = await getUserOCs(id);
+		const OCs = OC_DB.get(id);
 		if (!oc_index || !OCs || !OCs[oc_index]) return noOC(ctx);
 
 		const OC = OCs[oc_index];
@@ -20,9 +19,9 @@ new Query(
 
 		ctx.answerCbQuery(OC.name);
 		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[Button("Изменить", link("edit", oc_index, ownerNickname))],
-			[Button("Удалить", link("del", oc_index, refType))],
-			[Button("↩️", link("backdoc", refType))],
+			[ocbutton("Изменить", "edit", oc_index, ownerNickname)],
+			[ocbutton("Удалить", "del", oc_index, refType)],
+			[ocbutton("↩️", "backdoc", refType)],
 		]);
 	}
 );
