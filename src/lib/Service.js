@@ -1,19 +1,31 @@
 import clc from "cli-color";
 import fs from "fs/promises";
+import path from "path";
 import config from "../config.js";
+import styles from "./styles.js";
+
 import { bot, DBManager, env } from "../index.js";
+
 import "./Class/Command.js";
-import { EmitEventListeners } from "./Class/Events.js";
 import "./Class/Query.js";
+
+import { emit } from "./Class/Events.js";
 import { util } from "./Class/Utils.js";
 import { Xitext } from "./Class/Xitext.js";
-import { setDataType } from "./launch/update.js";
+import { XTimer } from "./Class/XTimer.js";
+
+import { freeze, UpdateServer } from "./launch/between.js";
+import { setDataType } from "./launch/dataType.js";
+import { handleBotError, handleError } from "./launch/handlers.js";
+import { service_lang as lang } from "./launch/lang.js";
+import { setupDB } from "./launch/setupDB.js";
 
 export const data = {
 	v: config.version.join("."),
 
 	readableVersion: `v${config.version.join(".")}`,
 	logVersion: `v${config.version.join(".")} I`,
+
 	/** @type {'work' | 'realese' | 'old'} */
 	type: "realese",
 
@@ -28,24 +40,14 @@ export const data = {
 	private: true,
 
 	chatID: {
-		// Айди чата, куда будут поступать сообщения
 		owner: Number(env.ownerID),
 		log: Number(env.logID),
 	},
 	/** @type {Record<number, 'accepted' | 'waiting'>} */
 	joinCodes: {},
 	errorLog: {},
-	updateTimer: null,
 	relaunchTimer: null,
 };
-
-import path from "path";
-import { XTimer } from "./Class/XTimer.js";
-import { freeze, UpdateServer } from "./launch/between.js";
-import { handleBotError, handleError } from "./launch/handlers.js";
-import { service_lang as lang } from "./launch/lang.js";
-import { setupDB } from "./launch/setupDB.js";
-import styles from "./styles.js";
 
 export const Service = {
 	freeze,
@@ -59,11 +61,10 @@ export const Service = {
 	},
 	safeBotLauch,
 	safeBotStop,
-};
-
-export const handlers = {
-	processError: handleError,
-	bot: handleBotError,
+	handlers: {
+		processError: handleError,
+		bot: handleBotError,
+	},
 };
 
 /**
@@ -149,64 +150,69 @@ async function LoadFromArray(folderArray, dirFolder) {
  * @returns {Promise<void>}
  */
 async function start() {
-	lang.s.start();
+	const print = lang.state(9);
+
+	print(`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`);
 	try {
 		await fs.mkdir("logs");
 	} catch {}
 
 	/**
-	 * Seting default get/set values and progress renderer
+	 * Seting default get/set values and progress renderers
 	 */
 	setupDB();
 
 	/**
 	 * Connecting to main tables like db.json, users.json and groups.json
 	 */
-	lang.s.db();
+	print("Fetching global db data...");
 	await DBManager.Connect();
 
 	setDataType(data);
-	lang.s.session();
+	print(`Type: ${styles.highlight(data.type)}`);
 
-	bot.catch(handlers.bot);
-
+	bot.catch(Service.handlers.bot);
 	bot.telegram.sendMessage(data.chatID.log, ...lang.start());
 
 	/**
 	 * Middlewares
 	 */
-	lang.s.middlewares();
+	print("Loading middlewares...");
 	await LoadFromArray(config.middlewares, "middlewares");
 
 	/**
 	 * Modules
 	 */
-	lang.s.modules();
+	print("Loading modules...");
 	await LoadFromArray(config.modules, "modules");
 
 	/**
 	 * Connecting to module tables if they exists
 	 */
+	print("Fetching modules db data...");
 	await DBManager.Connect();
 
 	/**
 	 * Tells another active sessions that they need to be freezed until development
 	 */
+	print("Opening sync server...");
 	await UpdateServer.open();
 
 	/**
 	 * Command and lists initalization
 	 */
-	await EmitEventListeners("modules.load", "");
+	print("Setting up enviroment...");
+	await emit("modules.load", "");
 
 	/**
 	 * Bot launch
 	 */
+	print("Launching bot...");
 	const me = await bot.telegram.getMe();
 	bot.botInfo = me;
 	safeBotLauch();
 
-	lang.s.end();
+	print(`Ready to work in ${styles.highlight(((Date.now() - data.start_time) / 1000).toFixed(2))}s`);
 }
 
 /**

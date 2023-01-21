@@ -1,8 +1,9 @@
 import { SingleBar } from "cli-progress";
 import { clearLines, TypedBind } from "leafy-utils";
+import { DBManager, tables } from "../../index.js";
 import styles from "../styles.js";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
-import { tables, DBManager } from "../../index.js";
+import { UpdateServer } from "./between.js";
 
 export function setupDB() {
 	tables.users._.beforeGet = (key, value) => {
@@ -52,6 +53,23 @@ export function setupDB() {
 	DBManager.renderer = (postfix, total) => {
 		const bar = new SingleBar({
 			format: `[${styles.progressBar(`{bar}`)}] {percentage}% - {value}/{total} ${postfix}`,
+			barCompleteChar: "#",
+			barIncompleteChar: "..",
+			hideCursor: true,
+		});
+
+		bar.start(total, 0);
+		const originalStop = TypedBind(bar.stop, bar);
+		bar.stop = () => {
+			originalStop();
+			clearLines(-1);
+		};
+		return bar;
+	};
+
+	UpdateServer.renderer = (total) => {
+		const bar = new SingleBar({
+			format: `[${styles.progressBar(`{bar}`)}] {percentage}% - {value}/{total}`,
 			barCompleteChar: "#",
 			barIncompleteChar: "..",
 			hideCursor: true,

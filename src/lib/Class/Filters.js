@@ -1,5 +1,9 @@
-import { message } from "telegraf/filters";
-export const updateTypeMatches = {
-	text: message("text"),
-	document: message("document"),
-};
+/**
+ * Checks if Context has message.text
+ * @template {Context} ctx
+ * @param {ctx} ctx
+ * @returns {ctx is Context & { message: import("telegraf/types").Message.TextMessage; data: IEvent.Data}}
+ */
+export function hasText(ctx) {
+	return "message" in ctx && "text" in ctx.message;
+}

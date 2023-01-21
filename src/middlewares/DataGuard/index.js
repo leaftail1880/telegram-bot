@@ -2,7 +2,8 @@ import { bot, tables } from "../../index.js";
 import { getGroup, getUser } from "./get.js";
 import "./queries.js";
 
-bot.on("message", async (ctx, next) => {
+bot.use(async (ctx, next) => {
+	if (!("message" in ctx)) return next();
 	ctx.data ??= {};
 
 	if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {

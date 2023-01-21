@@ -1,3 +1,3 @@
-export { PersonalSubs, Subscriptions } from "../../lib/Class/Subscriptions.js";
-import "./menu.js";
+export { PersonalSubs, Subscriptions } from "./Subscriptions.js";
 import "./cmds.js";
+import "./menu.js";

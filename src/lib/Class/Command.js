@@ -4,7 +4,7 @@ import config from "../../config.js";
 import { bot, data as Data, newlog, tables } from "../../index.js";
 import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safeRun.js";
-import { EventListener } from "./Events.js";
+import { on } from "./Events.js";
 import { ssn } from "./Scene.js";
 import { d, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
@@ -117,7 +117,7 @@ const V = {
 	supergroup: "Группа",
 };
 
-EventListener("modules.load", 0, (_, next) => {
+on("modules.load", 0, (_, next) => {
 	const groupCommands = [];
 	const groupAdminCommands = [];
 	const privateCommands = [];
@@ -152,50 +152,57 @@ EventListener("modules.load", 0, (_, next) => {
 	addIfExists(botAdminCommands.concat(privateCommands), { type: "chat", chat_id: Data.chatID.owner });
 
 	next();
-});
 
-// import { message } from "telegraf/filters";
-// bot.use((ctx, next) => {
-// 	if (!message("text")) return;
-// });
-
-EventListener("text", 9, async (ctx, next, data) => {
-	const text = ctx.message.text;
-	function reply(/** @type {string} */ text) {
-		ctx.reply(text, {
-			reply_to_message_id: ctx.message.message_id,
-			allow_sending_without_reply: true,
-		});
+	/**
+	 *
+	 * @template {Context} ctx
+	 * @param {ctx} ctx
+	 * @returns {ctx is Context & { message: import("telegraf/types").Message.TextMessage; data: IEvent.Data}}
+	 */
+	function hasText(ctx) {
+		return "text" in ctx.message;
 	}
 
-	const command = Command.getCmd(text);
+	bot.on("message", async (ctx, next) => {
+		if (!hasText(ctx)) return next();
+		const data = ctx.data;
+		const text = ctx.message.text;
+		function reply(/** @type {string} */ text) {
+			ctx.reply(text, {
+				reply_to_message_id: ctx.message.message_id,
+				allow_sending_without_reply: true,
+			});
+		}
 
-	if (command === "not_found" && ctx.chat.type === "private") {
-		reply("Неизвестная команда. /help");
-		Command.Log(ctx, data.user, "Неизвестная команда");
-		return;
-	}
-	if (typeof command !== "object") return next();
+		const command = Command.getCmd(text);
 
-	if (data.scene && !command.info.allowScene)
-		return reply(
-			`В сессии ${data.scene.name} ${data.scene.state} вам доступны только ${d.langJoin(
-				Commands.filter((e) => e.info.allowScene).map((e) => e.info.prefix[0] + e.info.name)
-			)}`
-		);
+		if (command === "not_found" && ctx.chat.type === "private") {
+			reply("Неизвестная команда. /help");
+			Command.Log(ctx, data.user, "Неизвестная команда");
+			return;
+		}
+		if (typeof command !== "object") return next();
 
-	const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+		if (data.scene && !command.info.allowScene)
+			return reply(
+				`В сессии ${data.scene.name} ${data.scene.state} вам доступны только ${d.langJoin(
+					Commands.filter((e) => e.info.allowScene).map((e) => e.info.prefix[0] + e.info.name)
+				)}`
+			);
 
-	if (await Command.cantUse(command, ctx, user_rigths)) return reply("В этом чате эта команда недоступна. /help");
+		const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-	const args =
-		text
-			.replace(config.command.clear, "")
-			?.match(config.command.parseArgs)
-			?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
+		if (await Command.cantUse(command, ctx, user_rigths)) return reply("В этом чате эта команда недоступна. /help");
 
-	Command.Log(ctx, data.user);
-	await safeRun(`Command`, () => command.callback(ctx, args, { ...data, user_rigths }, command));
+		const args =
+			text
+				.replace(config.command.clear, "")
+				?.match(config.command.parseArgs)
+				?.map((e) => e.replace(/"(.+)"/, "$1").toString()) ?? [];
+
+		Command.Log(ctx, data.user);
+		await safeRun(`Command`, () => command.callback(ctx, args, { ...data, user_rigths }, command));
+	});
 });
 
 /**======================ss

@@ -1,5 +1,4 @@
-import { tables } from "../../../index.js";
-import { EventListener } from "../../../lib/Class/Events.js";
+import { bot, tables } from "../../../index.js";
 import { ssn } from "../../../lib/Class/Scene.js";
 import { d } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
@@ -73,7 +72,9 @@ artMenu.query(
 /*---------------------------------------------------
 //                  1 этап, фото
 ----------------------------------------------------*/
-EventListener("document", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("document" in ctx.message)) return next();
+	const data = ctx.data;
 	if (ctx.chat.type !== "private") return;
 	if (ssn.Art.state(data, "string") !== "photo") return next();
 
@@ -105,7 +106,10 @@ EventListener("document", 0, async (ctx, next, data) => {
 /*---------------------------------------------------
 //                  1 этап, описание
 ----------------------------------------------------*/
-EventListener("text", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
+
 	if (ctx.chat.type !== "private") return next();
 	if (ssn.Art.state(data, "string") !== "description") return next();
 

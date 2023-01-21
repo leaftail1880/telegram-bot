@@ -1,7 +1,10 @@
+console.log("Loaded Stage");
+
 import { bot } from "../../index.js";
 
-bot.on("message", async (ctx, next) => {
+bot.use(async (ctx, next) => {
 	const data = ctx.data;
+	if (!data) return next();
 
 	if (typeof data.user.cache.scene !== "string") return next();
 

@@ -53,7 +53,7 @@ export default {
 		/**
 		 * This middleware will protect all listeners from another bots.
 		 */
-		"BotGuard",
+		// "BotGuard",
 		/**
 		 * Downloading user/group data from db and cancels
 		 * parsing update if user is not logged.

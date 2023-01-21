@@ -1,4 +1,3 @@
-import clc from "cli-color";
 import { bot, data, Service } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import styles from "../styles.js";

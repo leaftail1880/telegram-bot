@@ -18,7 +18,7 @@ export class Scene {
 	 * @param {boolean} newCache
 	 * @returns {Promise<void>}
 	 */
-	async enter(id, scene = 0, cache, newCache = false) {
+	enter(id, scene = 0, cache, newCache = false) {
 		const user = tables.users.get(id);
 		if (!user || typeof user !== "object") return;
 		user.cache.scene = d.pn(this.name, scene);
@@ -30,7 +30,7 @@ export class Scene {
 	 * @param {string | number} id Id of user
 	 * @returns {Promise<void>}
 	 */
-	async exit(id) {
+	exit(id) {
 		const user = tables.users.get(id);
 		if (!user || typeof user != "object") return;
 		delete user.cache.scene;
@@ -40,7 +40,7 @@ export class Scene {
 	/**
 	 *
 	 * @template {keyof typeof types} S
-	 * @param {IEvent.Data} data
+	 * @param {State} data
 	 * @param {S} [type]
 	 * @returns {typeof types[S] | false}
 	 */

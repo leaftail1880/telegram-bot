@@ -38,7 +38,8 @@ export async function noConnection(type) {
 		Connect.Promise = new Promise((resolve) => {
 			Connect.Resolve = resolve;
 		});
-	} else return Connect.Promise;
+	}
+	return Connect.Promise;
 }
 
 async function timer() {
@@ -55,6 +56,7 @@ async function timer() {
 		delete Connect.Interval;
 
 		Connect.Resolve();
+		Connect.Promise;
 		delete Connect.Promise;
 		delete Connect.Resolve;
 	} catch (e) {}

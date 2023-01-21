@@ -1,8 +1,8 @@
-import { EventListener } from "../../../lib/Class/Events.js";
+import { bot } from "../../../index.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Scene.js";
 import { util } from "../../../lib/Class/Utils.js";
-import { err } from "../../../lib/utils/err.js";
+import { err } from "../err.js";
 import { lang } from "../index.js";
 import { getUserOCs, noCache, oclog, saveOC } from "../utils.js";
 
@@ -21,8 +21,10 @@ new Query(
 /*---------------------------------------------------
 //                  1 этап, фото
 ----------------------------------------------------*/
-EventListener("document", 0, async (ctx, next, ow) => {
-	if (ssn.OC.state(ow) !== 10) return next();
+bot.on("message", async (ctx, next) => {
+	if (!("document" in ctx.message)) return next();
+	const data = ctx.data;
+	if (ssn.OC.state(data) !== 10) return next();
 
 	ssn.OC.enter(ctx.from.id, 11, ctx.message.document.file_id);
 	ctx.reply(lang.edit.name());
@@ -44,8 +46,10 @@ ssn.OC.next(10, async (ctx, user) => {
 ---------------------------------------------------
 //                  2 этап, имя
 ----------------------------------------------------*/
-EventListener("text", 0, async (ctx, next, ow) => {
-	if (ssn.OC.state(ow) !== 11) return next();
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
+	if (ssn.OC.state(data) !== 11) return next();
 
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
@@ -69,19 +73,21 @@ ssn.OC.next(11, async (ctx, user) => {
 ---------------------------------------------------
 //                  3 этап, описание
 ----------------------------------------------------*/
-EventListener("text", 0, async (ctx, next, ow) => {
-	if (ssn.OC.state(ow) !== 12) return next();
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
+	if (ssn.OC.state(data) !== 12) return next();
 
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 
 	saveOC(
 		ctx.from.id,
 		{
-			name: ow.user.cache.sceneCache[2],
-			fileid: ow.user.cache.sceneCache[1],
+			name: data.user.cache.sceneCache[2],
+			fileid: data.user.cache.sceneCache[1],
 			description: ctx.message.text,
 		},
-		parseInt(ow.user.cache.sceneCache[0])
+		parseInt(data.user.cache.sceneCache[0])
 	);
 	ssn.OC.exit(ctx.from.id);
 	ctx.reply(lang.create.done);

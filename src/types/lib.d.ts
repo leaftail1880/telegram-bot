@@ -54,10 +54,8 @@ namespace IEvent {
 	type Trigger = <T extends keyof IEvent.Events>(type: T, context?: IEvent.Events[T]) => Promise<void>;
 
 	interface Events {
-		message: Context & import("telegraf/types").Message;
-		text: Context & { message: import("telegraf/types").Message.TextMessage };
-		document: Context & { message: import("telegraf/types").Message.DocumentMessage };
 		"modules.load": any;
+		"new.member": any;
 	}
 }
 

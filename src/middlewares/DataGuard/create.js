@@ -1,5 +1,7 @@
+console.log("Loaded DataGuard");
+
 import { newlog } from "../../index.js";
-import { EmitEventListeners } from "../../lib/Class/Events.js";
+import { emit } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { Xitext } from "../../lib/Class/Xitext.js";
 
@@ -27,7 +29,7 @@ export function CreateUser(ctx) {
 		fileName: "groups.txt",
 	});
 
-	EmitEventListeners("new.member", ctx);
+	emit("new.member", ctx);
 
 	const user = {
 		static: {

@@ -4,8 +4,8 @@ import clc from "cli-color";
 import config from "../../config.js";
 import { bot, data, database, DBManager, log, newlog, Service } from "../../index.js";
 import { OpenServer, SendMessage } from "../utils/net.js";
+import { bigger, setDataType } from "./dataType.js";
 import { service_lang as lang } from "./lang.js";
-import { bigger, setDataType } from "./update.js";
 
 export const UpdateServer = {
 	passcode: "test",
@@ -32,11 +32,7 @@ export const UpdateServer = {
 		/**
 		 * @type {typeof data.type}
 		 */
-		const q = bigger([config.version[0], config.version[1], config.version[2]], request.version, [
-			"realese",
-			"old",
-			"work",
-		]);
+		const q = bigger(config.version, request.version, ["realese", "old", "work"]);
 
 		if (data.development) return Service.message.development;
 
@@ -47,8 +43,18 @@ export const UpdateServer = {
 			return Service.message.terminate_me;
 		}
 	}),
+	renderer(c = 1) {
+		return {
+			increment(n = 1) {},
+			stop() {},
+		};
+	},
 	async open() {
+		const bar = this.renderer(5);
+
 		await database._.reconnect();
+		bar.increment();
+
 		const activeIP = database.get(config.dbkey.ip);
 		const activePASSCODE = database.get(config.dbkey.ip_passcode);
 		if (activeIP !== UpdateServer.ip) {
@@ -59,12 +65,15 @@ export const UpdateServer = {
 						JSON.stringify({ passcode: activePASSCODE, message: Service.message.development })
 					);
 				} catch {}
+			bar.increment(3);
 
 			database.set(config.dbkey.ip, UpdateServer.ip);
 			database.set(config.dbkey.ip_passcode, UpdateServer.passcode);
 			await database._.commit();
+			bar.increment();
 		}
 
+		bar.stop();
 		this.isClosed = false;
 	},
 	close() {
@@ -173,7 +182,7 @@ export async function freeze() {
 		/**
 		 * Updates data.v, data.versionMSG, data.isLatest, version и session
 		 */
-		await setDataType(data);
+		setDataType(data);
 
 		/**
 		 * Updates local cache to actual data

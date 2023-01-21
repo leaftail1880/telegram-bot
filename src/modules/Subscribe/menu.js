@@ -1,11 +1,6 @@
 import { MultiMenu } from "../../lib/Class/Menu.js";
-import { PersonalSubs } from "../../lib/Class/Subscriptions.js";
-import { d } from "../../lib/Class/Utils.js";
-import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
-export const $PREFIX = "SB";
-
-export const menu = new MultiMenu($PREFIX);
+export const SubMenu = new MultiMenu("SB");
 
 export const Subs = {
 	newMembers: [true, "Новый участник чата"],
@@ -26,24 +21,3 @@ for (const key in Subs) {
  * @type {Record<keyof typeof Subs, boolean>}
  */
 export const DefaultSubs = defining;
-
-export const lang = {
-	main: async (id, page = 1) => {
-		const c = new Xitext();
-
-		c.text("Список ваших ").url("подписок", d.guide(9)).text(":");
-
-		const s = new PersonalSubs(id);
-
-		const B = ([setting, value]) => [
-			Button(`${value ? "✅" : "🔺"} ${Subs[setting][1]}`, menu.link("c", page, setting, value ? 0 : 1)),
-		];
-
-		const get = Object.entries(await s.get());
-		const buttons = get.map(B);
-
-		c.inlineKeyboard(...menu.generatePageSwitcher(buttons, undefined, "page", page));
-
-		return c._.build();
-	},
-};

@@ -1,7 +1,7 @@
 import { MultiMenu } from "../../lib/Class/Menu.js";
 import { d } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
-
+console.log("Loaded oc module");
 /**
  * @typedef {Object} UserOC
  * @property {string} name

@@ -1,6 +1,5 @@
 import { API, Upload } from "vk-io";
-import { env } from "../../../../index.js";
-import { EventListener } from "../../../../lib/Class/Events.js";
+import { bot, env } from "../../../../index.js";
 import { Scene } from "../../../../lib/Class/Scene.js";
 import { Xitext } from "../../../../lib/Class/Xitext.js";
 import { ART } from "../../index.js";
@@ -35,7 +34,9 @@ export async function attach(ctx) {
 	scene.enter(ctx.from.id, "connect token", {}, true);
 }
 
-EventListener("text", 0, (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
 	if (scene.state(data, "string") !== "connect token") return next();
 
 	const match = ctx.message.text.match(
@@ -62,7 +63,9 @@ EventListener("text", 0, (ctx, next, data) => {
 	scene.enter(ctx.from.id, "connect group id", [match[1]], true);
 });
 
-EventListener("text", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
 	if (scene.state(data, "string") !== "connect group id") return next();
 
 	const id = parseInt(ctx.message.text);

@@ -1,4 +1,4 @@
-import { EventListener } from "../../../lib/Class/Events.js";
+import { bot } from "../../../index.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { ssn } from "../../../lib/Class/Scene.js";
 import { util } from "../../../lib/Class/Utils.js";
@@ -13,12 +13,14 @@ new Query(
 	},
 	(ctx) => {
 		ssn.OC.enter(ctx.callbackQuery.from.id, 0);
-		ctx.reply(...lang.reg0._.build({ disable_web_page_preview: true }));
+		ctx.reply(...lang.reg0._.build());
 	}
 );
 
 // 1 этап, фото
-EventListener("document", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("document" in ctx.message)) return next();
+	const data = ctx.data;
 	if (ssn.OC.state(data) !== 0) return next();
 
 	ssn.OC.enter(ctx.from.id, 1, [ctx.message.document.file_id], true);
@@ -27,7 +29,10 @@ EventListener("document", 0, async (ctx, next, data) => {
 });
 
 // 2 этап, имя
-EventListener("text", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
+
 	if (ssn.OC.state(data) !== 1) return next();
 	if (ctx.message.text.length > 32) return ctx.reply(...lang.maxLength("Имя", 32));
 
@@ -37,7 +42,10 @@ EventListener("text", 0, async (ctx, next, data) => {
 });
 
 // 3 этап - описание
-EventListener("text", 0, async (ctx, next, data) => {
+bot.on("message", async (ctx, next) => {
+	if (!("text" in ctx.message)) return next();
+	const data = ctx.data;
+
 	if (ssn.OC.state(data) !== 2) return next();
 	if (ctx.message.text.length > 4000) return ctx.reply(...lang.maxLength("Описание", 4000));
 

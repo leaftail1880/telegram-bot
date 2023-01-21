@@ -1,6 +1,7 @@
 import clc from "cli-color";
 import { bot, newlog } from "../../index.js";
 import { safeRun } from "../utils/safeRun.js";
+import { on } from "./Events.js";
 import { editMsg } from "./Menu.js";
 import { d, util } from "./Utils.js";
 import { XTimer } from "./XTimer.js";
@@ -65,26 +66,28 @@ function parseQueryData(data) {
 }
 
 const Qtimer = new XTimer(0.3, true);
-bot.on("callback_query", async (ctx, next) => {
-	if (!("data" in ctx.callbackQuery)) return;
-	const data = ctx.callbackQuery.data;
-	if (!Qtimer.isExpired(data)) return;
+on("modules.load", 0, () => {
+	bot.on("callback_query", async (ctx, next) => {
+		if (!("data" in ctx.callbackQuery)) return;
+		const data = ctx.callbackQuery.data;
+		if (!Qtimer.isExpired(data)) return;
 
-	const { Qname, args } = parseQueryData(data);
-	const q = ques[Qname];
-	if (!q) {
-		ctx.answerCbQuery("Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
-			show_alert: true,
-		});
-		Query.Log(ctx, "No button parser for: " + data);
-		return next();
-	}
+		const { Qname, args } = parseQueryData(data);
+		const q = ques[Qname];
+		if (!q) {
+			ctx.answerCbQuery("Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
+				show_alert: true,
+			});
+			Query.Log(ctx, "No button parser for: " + data);
+			return next();
+		}
 
-	Query.Log(ctx, `${Qname} ${args.join("  ")}`);
-	await safeRun("Q", () =>
-		q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra))
-	);
-	if (q.info.msg) ctx.answerCbQuery(q.info.msg);
+		Query.Log(ctx, `${Qname} ${args.join("  ")}`);
+		await safeRun("Q", () =>
+			q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra))
+		);
+		if (q.info.msg) ctx.answerCbQuery(q.info.msg);
+	});
 });
 
 new Query(

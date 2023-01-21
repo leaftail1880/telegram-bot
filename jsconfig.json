@@ -8,7 +8,9 @@
 		"paths": {
 			"vk-io": ["./node_modules/vk-io/lib/index.d.ts"]
 		},
-		"maxNodeModuleJsDepth": -1
+		"maxNodeModuleJsDepth": 0,
+		// "types": ["./node_modules/telegraf/lib/index.js"],
+		"typeRoots": ["./node_modules/telegraf/typings/markup.d.ts"]
 	},
 	"include": ["./src/"]
 }

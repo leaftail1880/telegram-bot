@@ -1,8 +1,6 @@
 import clc from "cli-color";
-import config from "../../config.js";
 import { data } from "../../index.js";
 import { Xitext } from "../Class/Xitext.js";
-import styles from "../styles.js";
 
 export const service_lang = {
 	launch: (/** @type {string} */ reason) => `⌬ ${data.logVersion} ${reason}`,
@@ -12,33 +10,18 @@ export const service_lang = {
 		freeze: () => new Xitext().text(`${data.readableVersion} ждет ответа...`),
 	},
 
-	s: {
-		start: () =>
-			console.log(
-				service_lang.state(0, 5, `${data.development ? `${clc.yellow("DEV")} ` : ""}v${config.version.join(".")}`)
-			),
-		db: () => console.log(service_lang.state(1, 5, "Fetching db data...")),
-		session: () => console.log(service_lang.state(2, 5, `Type: ${styles.highlight(data.type)}`)),
-		middlewares: () => console.log(service_lang.state(3, 5, "Loading middlewares")),
-		modules: () => console.log(service_lang.state(4, 5, "Loading modules")),
-		end: () =>
-			console.log(
-				service_lang.state(
-					5,
-					5,
-					`Ready to work in ${styles.highlight(((Date.now() - data.start_time) / 1000).toFixed(2))}s`
-				)
-			),
-	},
-
 	/**
 	 *
-	 * @param {number} s1
-	 * @param {number} s2
-	 * @param {string} m
+	 * @param {number} total
 	 * @returns
 	 */
-	state: (s1, s2, m) => clc.blackBright(`[${s1}/${s2}] `) + clc.white(m),
+	state(total) {
+		let c = 0;
+		return (/** @type {string} */ m) => {
+			console.log(clc.blackBright(`[${c}/${total}] `) + clc.white(m));
+			c++;
+		};
+	},
 
 	/**
 	 *

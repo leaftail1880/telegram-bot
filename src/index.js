@@ -1,10 +1,10 @@
 import { DatabaseManager, DatabaseWrapper } from "leafy-db";
 
-export * from "./lib/launch/tg.js";
+export * from "./lib/launch/telegraf.js";
 export * from "./lib/Service.js";
 
-import { env } from "./lib/launch/tg.js";
-import { handlers, Service } from "./lib/Service.js";
+import { env } from "./lib/launch/telegraf.js";
+import { Service } from "./lib/Service.js";
 
 export const DBManager = new DatabaseManager({
 	repositoryURL: env.DB_REPO,
@@ -22,8 +22,8 @@ export const tables = {
 };
 
 // Global error handlers
-process.on("unhandledRejection", handlers.processError);
-process.on("uncaughtException", handlers.processError);
+process.on("unhandledRejection", Service.handlers.processError);
+process.on("uncaughtException", Service.handlers.processError);
 
 // Gracefull stop
 process.once("SIGINT", () => Service.stop("SIGINT", "ALL"));
