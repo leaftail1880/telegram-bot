@@ -1,5 +1,5 @@
 import config from "../../config.js";
-import { database } from "../../index.js";
+import { tables } from "../../index.js";
 
 /**
  * @template F, S, E
@@ -23,13 +23,13 @@ export function bigger(array, array2, [first, second, equal]) {
  * @param {ServiceData} data
  */
 export function setDataType(data) {
-	const raw_version = database.get(config.dbkey.version);
+	const raw_version = tables.main.get(config.dbkey.version);
 	const version = Array.isArray(raw_version) ? raw_version : [0, 0, 0];
 	version.splice(3, 10);
 
 	data.type = bigger(config.version, version, ["realese", "old", "work"]);
 
-	if (data.type === "realese" && !data.development) database.set(config.dbkey.version, config.version);
+	if (data.type === "realese" && !data.development) tables.main.set(config.dbkey.version, config.version);
 
 	const ReadableType = types[data.type];
 

@@ -1,5 +1,5 @@
 import { data, newlog, tables } from "../../index.js";
-import { d, util } from "../../lib/Class/Utils.js";
+import { u, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
@@ -23,7 +23,10 @@ function logReq(XT) {
 function logNotAccepted(ctx) {
 	const XT = new Xitext()
 		.text("Лс (NoReg) ")
-		.url(util.getName(ctx.from), ctx.from.username ? `https://t.me/${ctx.from.username}` : d.userLink(ctx.from.id));
+		.url(
+			util.getTelegramName(ctx.from),
+			ctx.from.username ? `https://t.me/${ctx.from.username}` : u.userLink(ctx.from.id)
+		);
 
 	if ("text" in ctx.message) XT.text(`: ${ctx.message.text}`);
 	logReq(XT);
@@ -44,12 +47,12 @@ export async function getUser(ctx) {
 
 				const XT = new Xitext()
 					.text("Запрос на использование бота в лс от ")
-					.url(util.getName(ctx.from), d.userLink(ctx.from.id))
+					.url(util.getTelegramName(ctx.from), u.userLink(ctx.from.id))
 					.text("\nID: ")
 					.mono(ctx.from.id)
 					.inlineKeyboard(
-						[Button("Принять", d.query("N", "accept", ctx.from.id))],
-						[Button("Игнорировать", d.query("all", "delmsg"))]
+						[Button("Принять", u.query("N", "accept", ctx.from.id))],
+						[Button("Игнорировать", u.query("all", "delmsg"))]
 					);
 
 				logReq(XT);
@@ -87,7 +90,7 @@ export async function getUser(ctx) {
 	}
 
 	if (ctx.chat.type === "private") detectUpdate("cache", "dm", 1);
-	detectUpdate("static", "name", util.getName(ctx.from));
+	detectUpdate("static", "name", util.getTelegramName(ctx.from));
 	detectUpdate("static", "nickname", ctx.from.username);
 
 	return user;
@@ -121,8 +124,8 @@ export async function getGroup(ctx) {
 					.text("\n\nКод: ")
 					.mono(ctx.chat.id.toString(16))
 					.inlineKeyboard(
-						[Button("Принять", d.query("N", "group", ctx.chat.id))],
-						[Button("Игнорировать", d.query("all", "delmsg"))]
+						[Button("Принять", u.query("N", "group", ctx.chat.id))],
+						[Button("Игнорировать", u.query("all", "delmsg"))]
 					);
 
 				newlog({

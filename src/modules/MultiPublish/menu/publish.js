@@ -1,5 +1,5 @@
 import { bot, tables } from "../../../index.js";
-import { d } from "../../../lib/Class/Utils.js";
+import { u } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
 import { ART, artButton, artMenu, getUserArtInfo } from "../index.js";
 
@@ -11,7 +11,7 @@ const platformNames = {
 };
 
 const publish = {
-	start: new Xitext().text("Отправь арт ввиде ")._.group("файла").bold().url(null, d.guide(5))._.group(),
+	start: new Xitext().text("Отправь арт ввиде ")._.group("файла").bold().url(null, u.guide(5))._.group(),
 	addOrNext: new Xitext().text("Файл прикреплен. Отправь еще один, либо отправь следующий."),
 	/**
 	 * @param {string[]} platforms
@@ -22,7 +22,7 @@ const publish = {
 			"Теперь отправь мне описание арта на " +
 				ART.languages[lang_code][1] +
 				"\n(Для " +
-				d.langJoin(platforms.map((e) => platformNames[e])) +
+				u.langJoin(platforms.map((e) => platformNames[e])) +
 				")"
 		),
 	tagAddedSymbol: "✅",
@@ -74,7 +74,7 @@ bot.on("message", async (ctx, next) => {
 	if (!("document" in ctx.message)) return next();
 	const data = ctx.data;
 	if (ctx.chat.type !== "private") return;
-	if (ART.scene.state(data) !== "photo") return next();
+	if (ART.scene.step(data) !== "photo") return next();
 
 	data.user.cache.scene = "art::description";
 	/** @type {ArtSceneCache} */
@@ -109,7 +109,7 @@ bot.on("message", async (ctx, next) => {
 	const data = ctx.data;
 
 	if (ctx.chat.type !== "private") return next();
-	if (ART.scene.state(data) !== "description") return next();
+	if (ART.scene.step(data) !== "description") return next();
 
 	/** @type {ArtSceneCache} */
 	// @ts-expect-error

@@ -2,11 +2,10 @@ import clc from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
 import { bot, data as Data, newlog } from "../../index.js";
-import { isAdmin } from "../utils/isAdmin.js";
 import { safeRun } from "../utils/safe.js";
 import { on } from "./Events.js";
 import { hasText } from "./Filters.js";
-import { d, util } from "./Utils.js";
+import { u, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
 /** @type {CommandTypes.Stored[]} */
@@ -28,7 +27,7 @@ export class Command {
 			info: {
 				name: info.name,
 				description: info.description ?? "Пусто",
-				target: info.target,
+				target: info.target ?? "all",
 				permission: info.permission ?? "all",
 				hideFromHelpList: info.hideFromHelpList,
 				prefix: ["/"],
@@ -51,12 +50,10 @@ export class Command {
 	 */
 	static getCmd(message) {
 		if (!message) return false;
-
 		const match = message.match(config.command.get);
 		if (!match) return false;
 
 		const [, prefix, command] = match;
-
 		return (
 			Commands.find(
 				(с) => с.info.prefix.includes(prefix) && (с.info.name === command || с.info.aliases?.includes(command))
@@ -67,16 +64,18 @@ export class Command {
 	 *
 	 * @param {CommandTypes.Stored} command
 	 * @param {Context} ctx
+	 * @param {import("telegraf/types").ChatMember} chatMember
 	 * @returns
 	 */
-	static async cantUse(command, ctx, user = null) {
+	static cantUse(command, ctx, chatMember = null) {
 		const location_group =
 			command.info.target === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup");
 		const location_private = command.info.target === "private" && ctx.chat.type === "private";
 		const location_all = command.info.target === "all";
 
 		const permission_all = command.info.permission === "all";
-		const permission_admin = command.info.permission === "group_admins" && (await isAdmin(ctx, ctx.from.id, user));
+		const permission_admin =
+			command.info.permission === "group_admins" && ["administrator", "creator"].includes(chatMember.status);
 		const permission_owner = command.info.permission === "bot_owner" && ctx.from.id == Data.chatID.owner;
 
 		return !(
@@ -91,12 +90,12 @@ export class Command {
 	 * @param {string} message
 	 */
 	static Log(ctx, dbuser, message = null) {
-		const name = util.getFullName(dbuser, ctx.from);
+		const name = util.getName(dbuser, ctx.from);
 
 		const xt = new Xitext()
 			.text(`${V[ctx.chat.type]} `)
 			._.group(name)
-			.url(null, ctx.from.id !== Data.chatID.owner ? d.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
+			.url(null, ctx.from.id !== Data.chatID.owner ? u.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
 			.bold()
 			._.group()
 			.text(`${message ? ` ${message}` : ""}: ${ctx.message.text}`);
@@ -115,9 +114,10 @@ const V = {
 	private: "Лc",
 	group: "Группа",
 	supergroup: "Группа",
+	channel: "КАНАЛ БЛИН",
 };
 
-on("modules.load", 0, (_, next) => {
+on("modules.load", () => {
 	const groupCommands = [];
 	const groupAdminCommands = [];
 	const privateCommands = [];
@@ -151,8 +151,6 @@ on("modules.load", 0, (_, next) => {
 	addIfExists(privateCommands, { type: "all_private_chats" });
 	addIfExists(botAdminCommands.concat(privateCommands), { type: "chat", chat_id: Data.chatID.owner });
 
-	next();
-
 	bot.on("message", async (ctx, next) => {
 		if (!hasText(ctx)) return next();
 		const text = ctx.message.text;
@@ -174,16 +172,18 @@ on("modules.load", 0, (_, next) => {
 		}
 		if (typeof command !== "object") return next();
 
-		if (ctx.data.scene && !command.info.allowScene)
+		if (ctx.data.scene && !command.info.allowScene && command.info.permission !== "bot_owner")
 			return reply(
-				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${d.langJoin(
-					Commands.filter((e) => e.info.allowScene).map((e) => e.info.prefix[0] + e.info.name)
+				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${u.langJoin(
+					Commands.filter((e) => e.info.allowScene && e.info.permission !== "bot_owner").map(
+						(e) => e.info.prefix[0] + e.info.name
+					)
 				)}`
 			);
 
 		const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		if (await Command.cantUse(command, ctx, user_rigths)) return reply("Не здесь. /help");
+		if (Command.cantUse(command, ctx, user_rigths)) return reply("Не здесь. /help");
 
 		Command.Log(ctx, ctx.data.user);
 		await safeRun(`Command`, () =>
@@ -220,14 +220,14 @@ new Command(
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
 		for (const e of Commands.filter((e) => e.info.prefix.includes("/"))) {
-			if ((await Command.cantUse(e, ctx, rigths)) || e.info.hideFromHelpList) continue;
+			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
 			if (!c) a.text(`Команды:\n`), (c = true);
 			a.text(`  /${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
 
 		for (const e of Commands.filter((e) => !e.info.prefix.includes("/"))) {
-			if (await Command.cantUse(e, ctx, rigths)) continue;
+			if (Command.cantUse(e, ctx, rigths)) continue;
 			a.text(`  `);
 			a.mono(`${e.info.prefix.length > 1 ? `[${e.info.prefix.join(", ")}]` : e.info.prefix[0]}${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);

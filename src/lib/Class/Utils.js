@@ -1,5 +1,5 @@
+import node_utils from "util";
 import { tables } from "../../index.js";
-import u from "util";
 
 export const util = {
 	/**
@@ -7,82 +7,38 @@ export const util = {
 	 * @returns {string}
 	 */
 	inspect(obj) {
-		return u.inspect(obj);
-	},
-	/**
-	 *
-	 * @param {{name?: string; stack?: string; message: string; on?: object;}} err
-	 * @param {boolean} [returnArr]
-	 * @returns {string | [string, string, string, string]}
-	 */
-	errParse(err, returnArr) {
-		let message = err.message,
-			stack = err.stack.replace(err.message, "").split("\n"),
-			type = err.name ?? stack[0].match(/\s+at\s/g) ? stack.shift() : "Error";
-
-		if (message.match(/\d{3}:\s/g)) {
-			type = `${type.replace(": ", "")} ${message.split(": ")[0]}: `;
-			message = message.split(": ").slice(1).join(": ");
-		}
-
-		const stringStack = [
-			...new Set(
-				stack
-					.map((e) => e.replace(/\s+at\s/g, ""))
-					.map(lowlevelStackParse)
-					.filter((e) => e)
-					.map((e) => `\n ${e}`)
-			).values(),
-		].join("");
-
-		return returnArr
-			? [type, message, stringStack, err.on ? util.inspect(err.on) : undefined]
-			: `${type.includes(":") ? type : `${type}: `}${message}${stringStack}`;
+		return node_utils.inspect(obj, { depth: 10 });
 	},
 
 	/**
 	 * Only user first_name, username, id and last_name if string is less then 10 characters length
 	 * @param {import("telegraf/types").User} user
 	 */
-	getName(user) {
-		let res = String(user?.first_name ?? user?.username ?? user?.id ?? "WTF");
+	getTelegramName(user) {
+		let name = String(user.first_name ?? user.username ?? user.id);
 
-		if (user?.last_name && res.length + user.last_name.length < 10) res += user.last_name;
+		if (user.last_name && name.length + user.last_name.length < 10) name += user.last_name;
 
-		return res;
-	},
-	/**
-	 * Gets name from db or from user if no db name found
-	 * @param {DB.User | null} [dbuser]
-	 * @param {import("telegraf/types").User | null} [user]
-	 */
-	getFullName(dbuser, user) {
-		let name = dbuser?.cache?.nickname || dbuser?.static?.name || dbuser?.static?.nickname;
-
-		if (!name && user) name = util.getName(user);
 		return name;
 	},
 
 	/**
-	 * Gets user from cache and then uses getFullName (db user name ?? tg user name)
-	 * @param {import("telegraf/types").User} user
-	 * @returns
+	 * Gets name from db or from user if no db name found
+	 * @param {DB.User | null} [dbuser]
+	 * @param {import("telegraf/types").User | null} [user]
+	 * @param {number | string} [id]
 	 */
-	getNameFromCache(user) {
-		return util.getFullName(tables.users.get(user.id), user);
-	},
-	/**
-	 *
-	 * @param {string} string
-	 * @returns
-	 */
-	capitalizeFirstLetter(string) {
-		return string.charAt(0).toUpperCase() + string.slice(1);
+	getName(dbuser, user, id) {
+		if (!dbuser) dbuser = tables.users.get(user?.id ?? id);
+		let name = dbuser?.cache?.nickname ?? dbuser?.static?.name ?? dbuser?.static?.nickname;
+
+		if (!name && user) name = util.getTelegramName(user);
+		return name;
 	},
 	/**
 	 *
 	 * @param {string} msg
-	 * @param {(s: string) => Promise | void} method
+	 * @param {(s: string) => Promise<unknown> | unknown} method
 	 */
 	async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
 		if (msg.length < limit) return method(msg);
@@ -93,126 +49,79 @@ export const util = {
 	},
 	/**
 	 *
-	 * @param {number | string} hours
-	 * @param {string} left1 остался
-	 * @param {string} left2 осталось
-	 * @param {string} left3 осталось
-	 * @returns {string}
+	 * @param {string} digit
+	 * @param {[string, string, string]} _ 1 секунда 2 секунды 5 секунд
+	 * @returns
 	 */
-	toHrsString(hours, left1, left2, left3) {
-		const hrs = `${hours}`;
-		let o;
-		if (hrs.endsWith("1") && hrs != "11") {
-			o = `час${left1 ? ` ${left1}` : ""}`;
-		} else if (hrs.endsWith("2") || hrs.endsWith("3") || hrs.endsWith("4")) {
-			o = `часa${left2 ? ` ${left2}` : ""}`;
-		} else {
-			o = `часов${left3 ? ` ${left3}` : ""}`;
+	toTimeLocale(digit, [one = "секунда", few = "секунды", more = "секунд"]) {
+		const lastDigit = digit[digit.length - 1];
+
+		let o = more;
+		if (lastDigit === "1" && !digit.endsWith("11")) {
+			o = one;
+		} else if (["1", "2", "3", "4"].includes(lastDigit)) {
+			o = few;
 		}
-		return `${hrs} ${o}`;
+		return o;
 	},
 	/**
 	 *
-	 * @param {number | string} seconds
-	 * @param {string} left1 осталось
-	 * @param {string} left2 осталась
-	 * @param {string} left3 осталось
-	 * @returns {string}
+	 * @param {number} ms Milliseconds to parse
 	 */
-	toSecString(seconds, left1, left2, left3) {
-		let s = `секунд${left1 ? ` ${left1}` : ""}`,
-			sec = `${seconds}`;
-		if (sec.endsWith("1") && sec != "11") {
-			s = `секунда${left2 ? ` ${left2}` : ""}`;
-		} else if (sec.endsWith("2") || sec.endsWith("3") || sec.endsWith("4")) {
-			s = `секунды${left3 ? ` ${left3}` : ""}`;
-		}
-		return `${sec} ${s}`;
-	},
-	/**
-	 *
-	 * @param {number | string} minutes
-	 * @param {string} left1 осталось
-	 * @param {string} left2 осталась
-	 * @param {string} left3 осталось
-	 * @returns {string}
-	 */
-	toMinString(minutes, left1, left2, left3) {
-		let m = `минут${left1 ? ` ${left1}` : ""}`,
-			min = `${minutes}`;
-		if (min.endsWith("1") && min != "11") {
-			m = `минута${left2 ? ` ${left2}` : ""}`;
-		} else if (min.endsWith("2") || min.endsWith("3") || min.endsWith("4")) {
-			m = `минуты${left3 ? ` ${left3}` : ""}`;
-		}
-		return `${min} ${m}`;
+	toRemainingTime(ms) {
+		let parsedTime = "0";
+		let type = "ошибок";
+
+		/**
+		 * @param {number} value
+		 * @param {[string, string, string]} valueType 1 секунда 2 секунды 5 секунд
+		 */
+		const set = (value, valueType, fiction = 0) => {
+			if (parsedTime === "0" && ~~value > 1 && value < 100) {
+				// Replace all 234.0 values to 234
+				parsedTime = value
+					.toFixed(fiction)
+					.replace(/(\.[1-9]*)0+$/m, "$1")
+					.replace(/\.$/m, "");
+
+				type = this.toTimeLocale(parsedTime, valueType);
+			}
+		};
+
+		set(ms / (1000 * 60 * 60 * 60 * 24), ["день", "дня", "дней"], 2);
+		set(ms / (1000 * 60 * 60), ["час", "часа", "часов"], 1);
+		set(ms / (1000 * 60), ["минуту", "минуты", "минут"], 1);
+		set(ms / 1000, ["секунда", "секунды", "секунд"]);
+
+		return { parsedTime, type };
 	},
 };
 
-/**
- * @type {[RegExp | string, string?, number?][]}
- */
-const replaces = [
-	[/\\/g, "/"],
-	["<anonymous>", "</>", 0],
-	[/file:.*src\/(.*)/, "src/$1"],
-	[/.*Telegram\.callApi.*/, "Telegram.callApi()"],
-	[/.*node.*/],
-];
+// type StringLike = number | string
 
-/**
- *
- * @param {string} e
- * @returns
- */
-function lowlevelStackParse(e) {
-	for (const [r, p, count] of replaces) {
-		if (typeof e === "string")
-			e = count === 0 && typeof e.replaceAll === "function" ? e.replaceAll(r, p ?? "") : e.replace(r, p ?? "");
-	}
-	return e;
-}
-
-/**
- * @typedef {string | number} StringLike
- */
-
-export const d = {
+export const u = {
 	/**
 	 * Creates ```${prefix}::${name}``` string
 	 * @param {StringLike} prefix
 	 * @param {StringLike} name
-	 * @returns
 	 */
 	pn: (prefix, name) => `${prefix}::${name}`,
 	/**
-	 * Query link
-	 * @param {StringLike} prefix
-	 * @param {StringLike} name
-	 * @param  {...StringLike} args
-	 * @returns
-	 */
-	query: (prefix, name, ...args) =>
-		`${prefix}${d.separator.link}${name}${
-			args ? `${d.separator.linkToData}${d.safeJoin(args, d.separator.data)}` : ""
-		}`,
-	/**
 	 * Creates link to guide group
 	 * @param {number} index
-	 * @returns
 	 */
 	guide: (index) => `https://t.me/xillerbotguides/${index}`,
 	/**
 	 * Creates ```tg://user?id=id``` like link
 	 * @param {number} id
-	 * @returns
 	 */
 	userLink: (id) => `tg://user?id=${id}`,
-	separator: {
-		link: ".",
-		linkToData: "/",
-		data: ",",
-	},
+	/**
+	 * Creates ```https://t.me/nickname``` like link
+	 * @param {string} nickname
+	 */
+	httpsUserLink: (nickname) => `https://t.me/${nickname}`,
+
 	/**
 	 * It's a function that joins an array with a separator,
 	 * but it escapes the separator in the array elements.
@@ -237,5 +146,22 @@ export const d = {
 				return `${i === a.length - 1 ? " и " : ", "}${v}`;
 			})
 			.join("");
+	},
+
+	/**
+	 * Query link
+	 * @param {StringLike} prefix
+	 * @param {StringLike} name
+	 * @param  {...StringLike} args
+	 */
+	query: (prefix, name, ...args) =>
+		`${prefix}${u.separator.link}${name}${
+			args ? `${u.separator.linkToData}${u.safeJoin(args, u.separator.data)}` : ""
+		}`,
+
+	separator: {
+		link: ".",
+		linkToData: "/",
+		data: ",",
 	},
 };

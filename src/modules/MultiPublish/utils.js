@@ -1,6 +1,6 @@
-import { database } from "../../index.js";
+import { tables } from "../../index.js";
 import { MultiMenu } from "../../lib/Class/Menu.js";
-import { d } from "../../lib/Class/Utils.js";
+import { u } from "../../lib/Class/Utils.js";
 import { Button } from "../../lib/Class/Xitext.js";
 import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
 
@@ -35,7 +35,7 @@ const defaultUserArtInfo = {
 	},
 };
 
-const gen_key = (/** @type {string | number} */ id) => d.pn("Art", id);
+const gen_key = (/** @type {string | number} */ id) => u.pn("Art", id);
 
 /**
  *
@@ -43,7 +43,7 @@ const gen_key = (/** @type {string | number} */ id) => d.pn("Art", id);
  * @returns {Promise<import("./types.js").ArtIntegrations>}
  */
 export function getUserArtInfo(id) {
-	const data = database.get(gen_key(id));
+	const data = tables.main.get(gen_key(id));
 
 	return setDefaults(data, defaultUserArtInfo);
 }
@@ -54,7 +54,7 @@ export function getUserArtInfo(id) {
  * @param {import("./types.js").ArtIntegrations} info
  */
 export function setUserArtInfo(id, info) {
-	return database.set(gen_key(id), removeDefaults(info, defaultUserArtInfo));
+	return tables.main.set(gen_key(id), removeDefaults(info, defaultUserArtInfo));
 }
 
 export const artMenu = new MultiMenu("art");

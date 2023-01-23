@@ -63,12 +63,10 @@ export default {
 
 	modules: [
 		"Command",
-		// "OC",
+		"OC",
 		"ManageDB",
-		"Timers",
 		"MultiPublish",
 		// "Subscribe",
-		// "Updates",
 		// "Migrate",
 		// "Animation"
 	],

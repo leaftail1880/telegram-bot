@@ -18,7 +18,7 @@ new Command(
 		let res = new Xitext().text(callText);
 		for (const admin of admins) {
 			i++;
-			res.text("\n").mention(util.getNameFromCache(admin.user), admin.user);
+			res.text("\n").mention(util.getName(null, admin.user), admin.user);
 			if (i === perMessage) {
 				await ctx.reply(res._.text, {
 					reply_to_message_id: ctx.message.message_id,

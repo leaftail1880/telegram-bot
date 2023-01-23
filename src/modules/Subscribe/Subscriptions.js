@@ -1,20 +1,20 @@
 import { DatabaseWrapper } from "leafy-db";
-import { DBManager } from "../../index.js";
+import { database } from "../../index.js";
 import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
 import { DefaultSubs } from "./menu.js";
 
 /**
  * @type {DatabaseWrapper<Settings>}
  */
-const SubDB = DBManager.CreateTable("modules/subs.json");
+const SubDB = database.CreateTable("modules/subs.json");
 
-SubDB._.beforeGet = (key, value) => {
+SubDB._.on("beforeGet", (key, value) => {
 	return setDefaults(value, DefaultSubs);
-};
+});
 
-SubDB._.beforeSet = (key, value) => {
+SubDB._.on("beforeSet", (key, value) => {
 	return removeDefaults(value, DefaultSubs);
-};
+});
 
 /**
  * @typedef {typeof import("./menu.js").DefaultSubs} Settings

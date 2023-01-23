@@ -1,6 +1,6 @@
 import { data, tables } from "../../index.js";
 import { Query } from "../../lib/Class/Query.js";
-import { d } from "../../lib/Class/Utils.js";
+import { u } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 new Query(
@@ -14,7 +14,7 @@ new Query(
 			...new Xitext()
 				.text(`Запрос на лс принят`)
 				.mono(path[0])
-				.inlineKeyboard([Button("Удалить", d.query("N", "del", "u", path[0]))])
+				.inlineKeyboard([Button("Удалить", u.query("N", "del", "u", path[0]))])
 				._.build()
 		);
 	}
@@ -31,7 +31,7 @@ new Query(
 			...new Xitext()
 				.text(`Запрос группы принят`)
 				.mono(path[0])
-				.inlineKeyboard([Button("Удалить", d.query("N", "del", "g", path[0]))])
+				.inlineKeyboard([Button("Удалить", u.query("N", "del", "g", path[0]))])
 				._.build()
 		);
 	}

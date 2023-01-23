@@ -1,11 +1,49 @@
 import { bot, tables } from "../../index.js";
 import { Command } from "./Command.js";
 import { on } from "./Events.js";
-import { d } from "./Utils.js";
+import { u } from "./Utils.js";
+
+/**
+ * @param {DataContext & {scene?: {leave(): any; next(): any; data: any}}} ctx
+ * @param {Scene} scene
+ */
+function MakeScene(ctx, scene, i = 0) {
+	ctx.scene = {
+		next() {
+			const step = i + 1;
+			if (!(step in scene.mappedHandlers)) throw new Error("No next function specified");
+
+			return scene.enter(ctx.from.id, step.toString());
+		},
+		leave() {
+			return scene.exit(ctx.from.id);
+		},
+		data: new Proxy((ctx.data.user.cache.sceneCache ??= {}), {
+			set(t, p, r) {
+				const status = Reflect.set(t, p, r);
+				tables.users.set(ctx.from.id, ctx.data.user);
+				return status;
+			},
+			deleteProperty(t, p) {
+				const status = Reflect.deleteProperty(t, p);
+				tables.users.set(ctx.from.id, ctx.data.user);
+				return status;
+			},
+		}),
+	};
+}
 
 /**
  * @template {Record<string, any>} SceneData
- * @template {(ctx: any, next: any) => any} [MiddlewareFn = ((ctx: DataContext & {scene: {leave(): any; next(): any; data: SceneData}}, next: () => Promise<void>) => any)]
+ * @typedef {(
+ *   ctx: DataContext & {scene: {leave(): void; next(): void; data: SceneData}},
+ *   next: () => Promise<void>
+ * ) => any} MiddlewareFunction
+ */
+
+/**
+ * @template {Record<string, any>} SceneData
+ * @template {(ctx: any, next?: any) => any} [MiddlewareFn = MiddlewareFunction<SceneData>]
  */
 export class Scene {
 	/** @type {Record<string, Scene>} */
@@ -24,66 +62,49 @@ export class Scene {
 		if (handlers.length > 1) {
 			this.isWizardScene = true;
 			const mappedHandlers = handlers.map((fn) => (typeof fn === "function" ? { middleware: fn } : fn));
+			this.mappedHandlers = mappedHandlers;
 
-			const T = this;
+			on("modules.load", () => {
+				/**
+				 * @type {Record<string, {
+				 *   middleware: MiddlewareFn;
+				 *   next?: MiddlewareFn;
+				 * }>}
+				 */
+				const scenes = {};
 
-			/**
-			 * @param {DataContext & {scene?: {leave(): any; next(): any; data: any}}} ctx
-			 */
-			function MakeScene(ctx, i = 0) {
-				ctx.scene = {
-					next() {
-						if (i + 1 in mappedHandlers) return T.enter(ctx.from.id, (i + 1).toString());
-						throw new Error("No next function specified");
-					},
-					leave() {
-						return T.exit(ctx.from.id);
-					},
-					data: new Proxy(ctx.data.user.cache.sceneCache, {
-						set(t, p, r) {
-							const status = Reflect.set(t, p, r);
-							tables.users.set(ctx.from.id, ctx.data.user);
-							return status;
-						},
-						deleteProperty(t, p) {
-							const status = Reflect.deleteProperty(t, p);
-							tables.users.set(ctx.from.id, ctx.data.user);
-							return status;
-						},
-					}),
-				};
-			}
-
-			on("modules.load", 0, () => {
 				for (let [i, fn] of mappedHandlers.entries()) {
 					const sceneName = i.toString();
 					if ("next" in fn) this.nextHandlers[sceneName] = fn.next;
-
-					bot.use((ctx, next) => {
-						if (this.state(ctx.data) !== sceneName) return next();
-						MakeScene(ctx, i);
-						fn.middleware(ctx, next);
-					});
+					scenes[sceneName] = fn;
 				}
+
+				bot.use((ctx, next) => {
+					const step = this.step(ctx.data);
+					if (step === false || !(step in scenes)) return next();
+
+					const fn = scenes[step];
+					MakeScene(ctx, this, parseInt(step));
+					fn.middleware(ctx, next);
+				});
 			});
 		}
 	}
 	/**
 	 * Entering an user to specified scene
-	 * @param {string | number} id
+	 * @param {string | number | DB.User} user
 	 * @param {string} [scene]
-	 * @param {any} [cache]
-	 * @param {boolean} [newCache]
+	 * @param {Optional<SceneData>} [cache]
 	 * @returns {Promise<void>}
 	 */
-	enter(id, scene = "0", cache, newCache = false) {
-		const user = tables.users.get(id);
+	enter(user, scene = "0", cache) {
+		if (typeof user === "number") user = tables.users.get(user);
 
 		if (!user || typeof user !== "object") return;
-		user.cache.scene = d.pn(this.name, scene);
+		user.cache.scene = u.pn(this.name, scene);
+		if (cache) user.cache.sceneCache = cache;
 
-		if (cache) newCache ? (user.cache.sceneCache = cache) : user.cache.sceneCache.push(cache);
-		tables.users.set(id, user);
+		tables.users.set(user.static.id, user);
 	}
 	/**
 	 * Deletes all cache and scene info from user with specified id
@@ -92,7 +113,8 @@ export class Scene {
 	 */
 	exit(id) {
 		const user = tables.users.get(id);
-		if (!user || typeof user != "object") return;
+		if (!user || typeof user !== "object") return;
+
 		delete user.cache.scene;
 		delete user.cache.sceneCache;
 		tables.users.set(id, user);
@@ -102,7 +124,7 @@ export class Scene {
 	 * @param {State} data
 	 * @returns {string | false}
 	 */
-	state(data) {
+	step(data) {
 		if (!("scene" in data) || data.scene.name !== this.name || "group" in data) return false;
 
 		return data.scene.state;
@@ -160,6 +182,7 @@ new Command(
 
 		if (typeof scene.nextHandlers[data.scene.state] !== "function") return no_skip();
 
+		MakeScene(ctx, scene, parseInt(data.scene.state));
 		scene.nextHandlers[data.scene.state](ctx, data.user);
 	}
 );

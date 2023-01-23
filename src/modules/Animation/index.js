@@ -1,5 +1,5 @@
 import { message } from "telegraf/filters";
-import { bot, data, database } from "../../index.js";
+import { bot, data, tables } from "../../index.js";
 
 const filter = message("new_chat_title");
 
@@ -9,21 +9,6 @@ bot.use((ctx, next) => {
 	}
 	next();
 });
-
-/**
- *
- * @returns {Promise<Array<DB.Group>>}
- */
-async function getRegisteredGroups() {
-	const groups = [];
-
-	const keys = await database.keysAsync(`Group::*`);
-
-	for (const key of keys) groups.push(await database.get(key, true));
-
-	return groups;
-}
-
 const active = {};
 
 /**
@@ -37,7 +22,7 @@ function Animate(group) {
 		delete active[id];
 	}
 	const timer = setInterval(() => {
-		if (data.isStopped || !database.client) return;
+		if (data.isStopped || tables.main.isClosed) return;
 		active[id].stage++;
 		if (!group.cache.titleAnimation[active[id].stage]) active[id].stage = 0;
 		bot.telegram.setChatTitle(id, group.cache.titleAnimation[active[id].stage]);
@@ -51,8 +36,8 @@ function Animate(group) {
 }
 
 export async function SetAnimations() {
-	const grp = await getRegisteredGroups();
-	for (const group of grp) {
+	const groups = Object.values(tables.groups.collection());
+	for (const group of groups) {
 		if (
 			group?.cache?.titleAnimation[0] &&
 			group.cache?.titleAnimationSpeed?.toFixed &&

@@ -25,14 +25,15 @@ export async function safeRun(runnerName, callback) {
 /**
  * It loads all the files in a folder and logs the time it took to load each file
  * @param {string[]} folderArray - An array of folders to load.
- * @param {(file: string) => Promise<void>} importFN - The folder that the files are in.
+ * @param {(file: string) => Promise<void | {wait: Promise<void>}>} importFN - The folder that the files are in.
  */
 export async function safeLoad(folderArray, importFN, log = true) {
 	for (const file of folderArray) {
 		try {
 			const start = performance.now();
 
-			await importFN(file);
+			const module = await importFN(file);
+			if (module && "wait" in module) await module.wait;
 
 			if (log)
 				console.log(`${styles.load}${file} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);

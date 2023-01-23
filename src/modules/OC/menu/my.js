@@ -1,5 +1,6 @@
+import { Markup } from "../../../index.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { editMsg, lang, ocbutton } from "../index.js";
+import { lang, ocbutton } from "../index.js";
 import { noOC, OC_DB } from "../utils.js";
 
 // Главное меню > Мои персонажи
@@ -8,24 +9,18 @@ new Query(
 		name: "my",
 		prefix: "OC",
 	},
-	(ctx) => {
-		const {
-			from: { id, username },
-		} = ctx.callbackQuery;
-
-		const OCs = OC_DB.get(id);
+	(ctx, _, edit) => {
+		const OCs = OC_DB.get(ctx.from.id);
 		if (OCs.length < 1) return noOC(ctx);
 
-		const btns = [];
+		const buttons = [];
 		const menu = [ocbutton("↩️ Назад", "back")];
-		for (const [i, e] of OCs.entries()) {
-			if (e) btns.push([ocbutton(e.name, "myoc", id, i, username)]);
+		for (const [i, oc] of OCs.entries()) {
+			if (oc && oc.name) buttons.push([ocbutton(oc.name, "myoc", i)]);
 		}
-		btns.push(menu);
+		buttons.push(menu);
 
 		ctx.answerCbQuery("Ваши персонажи");
-		editMsg(ctx, lang.myOCS, {
-			reply_markup: { inline_keyboard: btns },
-		});
+		edit(lang.myOCS, Markup.inlineKeyboard(buttons));
 	}
 );

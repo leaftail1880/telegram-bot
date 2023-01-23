@@ -1,8 +1,6 @@
-import { Markup } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { editMsg, lang } from "../index.js";
-import { sendMessagDeleteRef } from "../utils.js";
+import { lang } from "../index.js";
 
 new Command(
 	{
@@ -12,7 +10,7 @@ new Command(
 		target: "private",
 	},
 	(ctx) => {
-		ctx.reply(lang.main2, Markup.inlineKeyboard(lang.mainKeyboard));
+		ctx.reply(lang.main, { reply_markup: { inline_keyboard: lang.mainKeyboard }, disable_web_page_preview: true });
 	}
 );
 
@@ -22,24 +20,13 @@ new Query(
 		prefix: "OC",
 		message: "Назад",
 	},
-	async (ctx) => {
-		editMsg(ctx, lang.main._.text, {
-			entities: lang.main._.entities,
+	async (ctx, path, edit) => {
+		edit(lang.main.text, {
+			entities: lang.main.entities,
 			reply_markup: {
 				inline_keyboard: lang.mainKeyboard,
 			},
 			disable_web_page_preview: true,
 		});
-	}
-);
-
-new Query(
-	{
-		name: "backdoc",
-		prefix: "OC",
-		message: "Назад",
-	},
-	(ctx, data) => {
-		sendMessagDeleteRef(ctx, lang.main._.text, lang.main._.entities, lang.mainKeyboard, data[0]);
 	}
 );

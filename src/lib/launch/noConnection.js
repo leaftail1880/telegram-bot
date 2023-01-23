@@ -5,10 +5,10 @@ import styles from "../styles.js";
 
 const Connect = {
 	/** @type {NodeJS.Timer} */
-	Intervall: null,
+	Interval: null,
 	/** @type {Function} */
 	Resolve: null,
-	/** @type {Promise} */
+	/** @type {Promise<void>} */
 	Promise: null,
 };
 
@@ -24,7 +24,7 @@ export async function noConnection(type) {
 		data.isStopped = true;
 		bot.stop("NOCONNECTION");
 	}
-	if (!database.isClosed) database._.close();
+	if (!database.isClosed) database.Close();
 
 	if (ErrorLog.isExpired()) {
 		console.log(styles.noConnection(`Нет подключения к интернету ${type ? `${type}` : ""}`));
@@ -47,7 +47,7 @@ async function timer() {
 		if (!data.isStopped) return;
 		await bot.telegram.getMe();
 
-		await database._.reconnect();
+		await database.Reconnect();
 		Service.safeBotLauch();
 
 		console.log(styles.connectionResolved("Подключение восстановлено!"));

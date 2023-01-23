@@ -3,7 +3,7 @@ import { bot, newlog } from "../../index.js";
 import { safeRun } from "../utils/safe.js";
 import { on } from "./Events.js";
 import { editMsg } from "./Menu.js";
-import { d, util } from "./Utils.js";
+import { u, util } from "./Utils.js";
 import { XTimer } from "./XTimer.js";
 
 /**
@@ -31,7 +31,7 @@ export class Query {
 		};
 		this.callback = callback;
 
-		ques[`${info.prefix}${d.separator.link}${info.name}`] = this;
+		ques[`${info.prefix}${u.separator.link}${info.name}`] = this;
 	}
 	/**
 	 *
@@ -39,7 +39,7 @@ export class Query {
 	 * @param {string} message
 	 */
 	static Log(ctx, message = null) {
-		const name = util.getNameFromCache(ctx.from);
+		const name = util.getName(null, ctx.from);
 		const text = `${name}: ${message}`;
 		newlog({
 			consoleMessage: clc.blackBright("Q> ") + text,
@@ -54,19 +54,19 @@ export class Query {
  * @returns {{Qname: string; args: string[]}}
  */
 function parseQueryData(data) {
-	const unparsed = data.split(d.separator.linkToData);
+	const unparsed = data.split(u.separator.linkToData);
 	const escaper = Date.now().toString(16);
 	const args = unparsed[1]
 		? unparsed[1]
-				.replaceAll("\\" + d.separator.link, escaper)
-				.split(d.separator.data)
-				.map((e) => e.replace(escaper, d.separator.link))
+				.replaceAll("\\" + u.separator.link, escaper)
+				.split(u.separator.data)
+				.map((e) => e.replace(escaper, u.separator.link))
 		: [];
 	return { Qname: unparsed[0], args };
 }
 
 const Qtimer = new XTimer(0.3, true);
-on("modules.load", 0, () => {
+on("modules.load", () => {
 	bot.on("callback_query", async (ctx, next) => {
 		if (!("data" in ctx.callbackQuery)) return;
 		const data = ctx.callbackQuery.data;

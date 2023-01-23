@@ -33,7 +33,7 @@ export const service_lang = {
 		new Xitext()
 			.text(`${prefix} Кобольдя `)
 			._.group(data.readableVersion.split(" ")[0])
-			.url(null, `https://t.me/${data.me}`)
+			.url(null, `https://t.me/`)
 			.bold()
 			._.group()
 			.text(" ")

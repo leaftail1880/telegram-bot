@@ -2,7 +2,7 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { bot, data, database, DBManager, log, newlog, Service } from "../../index.js";
+import { bot, data, database, log, newlog, Service, tables } from "../../index.js";
 import { OpenServer, SendMessage } from "../utils/net.js";
 import { bigger, setDataType } from "./dataType.js";
 import { service_lang as lang } from "./lang.js";
@@ -52,11 +52,11 @@ export const UpdateServer = {
 	async open() {
 		const bar = this.renderer(5);
 
-		await database._.reconnect();
+		await database.Reconnect();
 		bar.increment();
 
-		const activeIP = database.get(config.dbkey.ip);
-		const activePASSCODE = database.get(config.dbkey.ip_passcode);
+		const activeIP = tables.main.get(config.dbkey.ip);
+		const activePASSCODE = tables.main.get(config.dbkey.ip_passcode);
 		if (activeIP !== UpdateServer.ip) {
 			if (data.development)
 				try {
@@ -67,9 +67,9 @@ export const UpdateServer = {
 				} catch {}
 			bar.increment(3);
 
-			database.set(config.dbkey.ip, UpdateServer.ip);
-			database.set(config.dbkey.ip_passcode, UpdateServer.passcode);
-			await database._.commit();
+			tables.main.set(config.dbkey.ip, UpdateServer.ip);
+			tables.main.set(config.dbkey.ip_passcode, UpdateServer.passcode);
+			await tables.main._.commit();
 			bar.increment();
 		}
 
@@ -85,7 +85,7 @@ export async function freeze() {
 	if (data.isFreezed) return;
 	data.isFreezed = true;
 	UpdateServer.close();
-	database._.close();
+	database.Close();
 	if (data.isLaunched) {
 		const l = lang.stop.freeze();
 		newlog({
@@ -103,16 +103,17 @@ export async function freeze() {
 	let times = 0;
 	let devTimes = 0;
 	let selfTimes = 0;
+	/** @type {NodeJS.Timer} */
 	let timeout;
 
 	async function Check() {
-		await database._.connect();
-		const ip = database.get(config.dbkey.ip);
+		await tables.main._.connect();
+		const ip = tables.main.get(config.dbkey.ip);
 		if (ip === UpdateServer.ip) {
 			selfTimes++;
 			if (selfTimes < 2) return;
 		}
-		const passcode = database.get(config.dbkey.ip_passcode);
+		const passcode = tables.main.get(config.dbkey.ip_passcode);
 		let answer;
 
 		try {
@@ -187,8 +188,8 @@ export async function freeze() {
 		/**
 		 * Updates local cache to actual data
 		 */
-		for (const table in DBManager.tables) DBManager.tables[table]._.isConnected = false;
-		await DBManager.Connect();
+		for (const table in database.tables) database.tables[table]._.isConnected = false;
+		await database.Connect();
 
 		await UpdateServer.open();
 		Service.safeBotLauch();

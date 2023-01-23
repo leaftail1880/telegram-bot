@@ -6,19 +6,20 @@ export * from "./lib/Service.js";
 import { env } from "./lib/launch/telegraf.js";
 import { Service } from "./lib/Service.js";
 
-export const DBManager = new DatabaseManager({
+export const database = new DatabaseManager({
 	repositoryURL: env.DB_REPO,
 	token: env.DB_TOKEN,
-	username: "leaftail1880",
+	username: env.DB_USERNAME,
 });
-export const database = DBManager.Database;
 
 export const tables = {
 	/** @type {DatabaseWrapper<DB.User>} */
-	users: DBManager.CreateTable("users.json"),
+	users: database.CreateTable("users.json"),
 
 	/** @type {DatabaseWrapper<DB.Group>} */
-	groups: DBManager.CreateTable("groups.json"),
+	groups: database.CreateTable("groups.json"),
+
+	main: database.Database,
 };
 
 // Global error handlers

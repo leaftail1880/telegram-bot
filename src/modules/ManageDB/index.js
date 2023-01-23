@@ -1,8 +1,8 @@
-import { bot, database } from "../../index.js";
+import { bot, tables } from "../../index.js";
 import { Command } from "../../lib/Class/Command.js";
 import { MultiMenu } from "../../lib/Class/Menu.js";
 import { Query } from "../../lib/Class/Query.js";
-import { d, util } from "../../lib/Class/Utils.js";
+import { u, util } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 
 (async () => {
@@ -11,9 +11,9 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 	const me = await bot.telegram.getMe();
 
 	const lang = {
-		main: (page) => new Xitext().text(`[${page}] База данных `).url(util.getName(me), d.userLink(me.id)),
+		main: (page) => new Xitext().text(`[${page}] База данных `).url(util.getTelegramName(me), u.userLink(me.id)),
 		generateMenu: (page = 1) => {
-			let keys = database.keys();
+			let keys = tables.main.keys();
 			let buttons = [];
 
 			for (const e of keys.sort()) {
@@ -74,7 +74,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			prefix: m.prefix,
 		},
 		async (_ctx, data, edit) => {
-			const dat = util.inspect(await database.get(data[0]));
+			const dat = util.inspect(await tables.main.get(data[0]));
 			edit(...lang.see(data[0], dat, data[1]));
 		}
 	);
@@ -85,7 +85,7 @@ import { Button, Xitext } from "../../lib/Class/Xitext.js";
 			prefix: m.prefix,
 		},
 		async (_ctx, data, edit) => {
-			database.delete(data[0]);
+			tables.main.delete(data[0]);
 			edit("Успешно удалено.", {
 				reply_markup: {
 					inline_keyboard: lang.generateMenu(Number(data[1])),

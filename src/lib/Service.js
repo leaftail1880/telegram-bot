@@ -4,14 +4,14 @@ import path from "path";
 import config from "../config.js";
 import styles from "./styles.js";
 
-import { bot, DBManager, env } from "../index.js";
+import { bot, database, env } from "../index.js";
 
 import "./Class/Command.js";
 import "./Class/Query.js";
 
 import { emit } from "./Class/Events.js";
 import { util } from "./Class/Utils.js";
-import { fmt, FmtString, Xitext } from "./Class/Xitext.js";
+import { bold, fmt, FmtString, link, Xitext } from "./Class/Xitext.js";
 import { XTimer } from "./Class/XTimer.js";
 
 import { freeze, UpdateServer } from "./launch/between.js";
@@ -20,6 +20,7 @@ import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
 import { setupDB } from "./launch/setupDB.js";
 import { safeLoad } from "./utils/safe.js";
+import { parseError } from "./utils/error.js";
 
 export const data = {
 	v: config.version.join("."),
@@ -46,7 +47,9 @@ export const data = {
 	},
 	/** @type {Record<number, 'accepted' | 'waiting'>} */
 	joinCodes: {},
+	/** @type {Record<string, any>} */
 	errorLog: {},
+	/** @type {NodeJS.Timer} */
 	relaunchTimer: null,
 };
 
@@ -152,7 +155,7 @@ async function start() {
 	 * Connecting to main tables like db.json, users.json and groups.json
 	 */
 	print("Fetching global db data...");
-	await DBManager.Connect();
+	await database.Connect();
 
 	setDataType(data);
 	print(`Type: ${styles.highlight(data.type)}`);
@@ -176,7 +179,7 @@ async function start() {
 	 * Connecting to module tables if they exists
 	 */
 	print("Fetching modules db data...");
-	await DBManager.Connect();
+	await database.Connect();
 
 	/**
 	 * Tells another active sessions that they need to be freezed until development
@@ -188,7 +191,7 @@ async function start() {
 	 * Command and lists initalization
 	 */
 	print("Setting up enviroment...");
-	await emit("modules.load", "");
+	await emit("modules.load");
 
 	/**
 	 * Bot launch
@@ -233,7 +236,7 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 	}
 
 	if (type === "ALL") {
-		await DBManager.commitAll();
+		await database.commitAll();
 		process.exit(0);
 	}
 }
@@ -250,16 +253,16 @@ async function error(error, options = { sendMessage: "ifNotStopped" }) {
 	if (errTimer.isExpired())
 		try {
 			if (!error.stack) error.stack = Error().stack;
-			const [type, message, stack, extra] = util.errParse(error, true);
+			const [type, message, stack, extra] = parseError(error);
 
 			console.warn(" ");
-			console.warn(clc.red(type).trim() + " " + clc.white(message));
-			console.warn(" " + stack);
+			console.warn(clc.red(type).trim() + clc.white(message));
+			console.warn(stack);
 			console.warn(" ");
 
-			const text = new Xitext().url(type, "https://t.me")._.group(message).bold()._.group().text(` ${stack}`);
+			const text = fmt`${link(type, "https://t.me/")}${bold(message)}\n${stack}`;
 
-			await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+			await bot.telegram.sendMessage(data.chatID.log, text, { disable_web_page_preview: true });
 
 			if (extra) {
 				await util.sendSeparatedMessage(

@@ -31,13 +31,13 @@ export async function attach(ctx) {
 
 	ctx.reply(...xt._.build());
 
-	scene.enter(ctx.from.id, "connect token", {}, true);
+	//scene.enter(ctx.from.id, "connect token", {}, true);
 }
 
 bot.on("message", async (ctx, next) => {
 	if (!("text" in ctx.message)) return next();
 	const data = ctx.data;
-	if (scene.state(data, "string") !== "connect token") return next();
+	if (scene.step(data) !== "connect token") return next();
 
 	const match = ctx.message.text.match(
 		new RegExp(`^${blank_uri.replace("/", "\\/")}#access_token=(.+)&expires_in=0&user_id=\\d+`)
@@ -60,18 +60,19 @@ bot.on("message", async (ctx, next) => {
 			._.build()
 	);
 
-	scene.enter(ctx.from.id, "connect group id", [match[1]], true);
+	//scene.enter(ctx.from.id, "connect group id", [match[1]], true);
 });
 
 bot.on("message", async (ctx, next) => {
 	if (!("text" in ctx.message)) return next();
 	const data = ctx.data;
-	if (scene.state(data, "string") !== "connect group id") return next();
+	if (scene.step(data) !== "connect group id") return next();
 
 	const id = parseInt(ctx.message.text);
 
 	if (isNaN(id)) return ctx.reply("Не удалось распознать ID. Пришли ID ввиде числа.");
 
+  // @ts-expect-error
 	const token = data.user.cache.sceneCache[0];
 
 	const userData = await getUserArtInfo(ctx.from.id);

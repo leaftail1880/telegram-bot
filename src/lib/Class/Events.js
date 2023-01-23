@@ -1,23 +1,23 @@
-/**
- * @type {Record<string, Array<IEvent.Stored>>}
- */
-const EVENTS = {};
+/** @type {Record<string, Function[]>}*/
+const Events = {};
 
-/** @type {IEvent.Creator} */
-export function on(type, position, callback) {
-	const TypedEvents = (EVENTS[type] ??= []);
-	const InternalEvent = {
-		position,
-		callback,
-	};
-	TypedEvents.push(InternalEvent);
-	EVENTS[type] = TypedEvents.sort((a, b) => b.position - a.position);
+/**
+ * Subscribes to event
+ * @param {keyof typeof IEvent.Events} type
+ * @param {Function} callback
+ */
+export function on(type, callback) {
+	const TypedEvents = (Events[type] ??= []);
+	TypedEvents.push(callback);
 }
 
-/** @type {IEvent.Trigger} */
-export async function emit(type, context) {
-	if (EVENTS[type])
-		for (const { callback } of EVENTS[type]) {
-			await callback({}, () => void 0, context);
+/**
+ * Triggers event listeners
+ * @param {keyof typeof IEvent.Events} type
+ */
+export async function emit(type) {
+	if (Events[type])
+		for (const callback of Events[type]) {
+			await callback();
 		}
 }

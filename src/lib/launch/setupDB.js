@@ -1,12 +1,12 @@
 import { SingleBar } from "cli-progress";
 import { clearLines, TypedBind } from "leafy-utils";
-import { DBManager, tables } from "../../index.js";
+import { database, tables } from "../../index.js";
 import styles from "../styles.js";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
 import { UpdateServer } from "./between.js";
 
 export function setupDB() {
-	tables.users._.beforeGet = (key, value) => {
+	tables.users._.on("beforeGet", (key, value) => {
 		/** @type {DB.User} */
 		const defaultUser = {
 			// @ts-expect-error
@@ -16,8 +16,8 @@ export function setupDB() {
 			cache: {},
 		};
 		return setDefaults(value, defaultUser);
-	};
-	tables.users._.beforeSet = (key, value) => {
+	});
+	tables.users._.on("beforeSet", (key, value) => {
 		/** @type {DB.User} */
 		const defaultUser = {
 			// @ts-expect-error
@@ -27,9 +27,9 @@ export function setupDB() {
 			cache: {},
 		};
 		return removeDefaults(value, defaultUser);
-	};
+	});
 
-	tables.groups._.beforeGet = (key, value) => {
+	tables.groups._.on("beforeGet", (key, value) => {
 		/** @type {DB.Group} */
 		const defaultGroup = {
 			// @ts-expect-error
@@ -38,8 +38,8 @@ export function setupDB() {
 			},
 		};
 		return setDefaults(value, defaultGroup);
-	};
-	tables.groups._.beforeSet = (key, value) => {
+	});
+	tables.groups._.on("beforeSet", (key, value) => {
 		/** @type {DB.Group} */
 		const defaultGroup = {
 			// @ts-expect-error
@@ -48,9 +48,9 @@ export function setupDB() {
 			},
 		};
 		return removeDefaults(value, defaultGroup);
-	};
+	});
 
-	DBManager.renderer = (postfix, total) => {
+	database.renderer = (postfix, total) => {
 		const bar = new SingleBar({
 			format: `[${styles.progressBar(`{bar}`)}] {percentage}% - {value}/{total} ${postfix}`,
 			barCompleteChar: "#",

@@ -14,7 +14,7 @@ const newGroups = {};
  */
 export function CreateUser(ctx) {
 	const id = ctx.from.id;
-	const name = util.getName(ctx.from);
+	const name = util.getTelegramName(ctx.from);
 	const nickname = ctx.from.username;
 
 	if (newUsers[id]) return newUsers[id];

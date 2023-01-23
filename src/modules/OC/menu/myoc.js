@@ -1,6 +1,7 @@
 import { Query } from "../../../lib/Class/Query.js";
+import { util } from "../../../lib/Class/Utils.js";
 import { lang, ocbutton } from "../index.js";
-import { getRefType, noOC, OC_DB, sendRef } from "../utils.js";
+import { noOC, OC_DB } from "../utils.js";
 
 // Главное меню > Мои персонажи > |Персонаж|
 new Query(
@@ -8,20 +9,28 @@ new Query(
 		name: "myoc",
 		prefix: "OC",
 	},
-	(ctx, data) => {
-		const [id, oc_index, ownerNickname] = data;
-		const OCs = OC_DB.get(id);
-		if (!oc_index || !OCs || !OCs[oc_index]) return noOC(ctx);
+	(ctx, data, edit) => {
+		const [raw_oc_index] = data;
+		const oc_index = parseInt(raw_oc_index);
+		const OCs = OC_DB.get(ctx.from.id);
+		const ownerNickname = util.getName(null, ctx.from);
+		if (!OCs || !OCs[oc_index]) return noOC(ctx);
 
+		/** @type {import("../utils.js").Character} */
 		const OC = OCs[oc_index];
-		const capt = lang.OC(OC.name, OC.description, ownerNickname, Number(id));
-		const refType = getRefType(OC.fileid, capt._.text);
+		const capt = lang.mOC(OC.name, OC.path);
 
 		ctx.answerCbQuery(OC.name);
-		sendRef(ctx, OC.fileid, capt._.text, capt._.entities, [
-			[ocbutton("Изменить", "edit", oc_index, ownerNickname)],
-			[ocbutton("Удалить", "del", oc_index, refType)],
-			[ocbutton("↩️", "backdoc", refType)],
-		]);
+		edit(capt.text, {
+			entities: capt.entities,
+			disable_web_page_preview: true,
+			reply_markup: {
+				inline_keyboard: [
+					[ocbutton("Редактировать", "edit", oc_index, ownerNickname)],
+					[ocbutton("Удалить", "del", oc_index)],
+					[ocbutton("↩️", "my")],
+				],
+			},
+		});
 	}
 );

@@ -1,5 +1,5 @@
 import { bot } from "../../../../index.js";
-import { d } from "../../../../lib/Class/Utils.js";
+import { u } from "../../../../lib/Class/Utils.js";
 import { Xitext } from "../../../../lib/Class/Xitext.js";
 import { ART } from "../../index.js";
 import { getUserArtInfo, setUserArtInfo } from "../../utils.js";
@@ -37,7 +37,7 @@ export async function attach(ctx) {
 		.mono(code)
 
 		.text("\n3) Сделай ")
-		.url("беззвучный пост", d.guide(20))
+		.url("беззвучный пост", u.guide(20))
 		.text(
 			" со скопированным кодом в арт канале, куда был добавлен бот. Если все сделано верно, бот тут же удалит пост и привяжет канал."
 		);

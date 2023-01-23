@@ -16,14 +16,15 @@ export function setDefaults(sourceObject, defaultObject) {
 	//                 No another simplier way do delete links
 	return deepExtend(JSON.parse(JSON.stringify(defaultObject)), sourceObject);
 }
-
 /**
  *
- * @param {object} sourceObject
- * @param {object} defaultObject
- * @returns {object}
+ * @template {JSON_OBJECT} S
+ * @param {S} sourceObject
+ * @param {JSON_OBJECT} defaultObject
+ * @returns {S}
  */
 export function removeDefaults(sourceObject, defaultObject, visited = new WeakSet()) {
+	/** @type {JSON_OBJECT} */
 	const composed = {};
 
 	for (const key in sourceObject) {

@@ -1,10 +1,24 @@
-import { bot } from "../../../index.js";
+import { hasDocument, hasText } from "../../../lib/Class/Filters.js";
 import { Query } from "../../../lib/Class/Query.js";
 import { Scene } from "../../../lib/Class/Scene.js";
-import { util } from "../../../lib/Class/Utils.js";
-import { err } from "../err.js";
-import { lang, OC } from "../index.js";
-import { noCache, oclog, OC_DB, saveOC } from "../utils.js";
+import { u } from "../../../lib/Class/Utils.js";
+import { bold, fmt, link } from "../../../lib/Class/Xitext.js";
+import { lang } from "../index.js";
+import { oclog, OC_DB, saveOC } from "../utils.js";
+
+const create = {
+	file: fmt`Отправь мне референс персонажа ввиде ${bold(
+		"",
+		link("файла", u.guide(5))
+	)}\nВыйти: /cancel.\nОставить прежний референс: /next`,
+
+	name: "Теперь отправь мне имя персонажа.\nОставить прошлое: /next",
+
+	description:
+		"Отправь мне описание персонажа. Лучше всего то, что поможет придумать окружение на будущем гифте.\nОставить прежнее: /next",
+
+	saving: "Сохраняю...",
+};
 
 new Query(
 	{
@@ -13,101 +27,109 @@ new Query(
 		message: "Редактирование",
 	},
 	(ctx, data) => {
-		OC.enter(ctx.callbackQuery.from.id, "edit-photo", [data[0]], true);
-		ctx.reply(...lang.edit0._.build());
+		scene.enter(ctx.from.id, "0", { i: parseInt(data[0]) });
+		ctx.reply(create.file, { disable_web_page_preview: true });
 	}
 );
 
-/*---------------------------------------------------
-//                  1 этап, фото
-----------------------------------------------------*/
-bot.on("message", async (ctx, next) => {
-	if (!("document" in ctx.message)) return next();
-	const data = ctx.data;
-	if (OC.state(data) !== "edit-photo") return next();
+/**
+ * @type {Scene<{fileid: string; i: number; description: string; name: string;}>}
+ */
+const scene = new Scene(
+	"редактирование персонажа",
+	/**
+	 * Reference
+	 */
+	{
+		async middleware(ctx, next) {
+			if (!hasDocument(ctx)) return next();
 
-	OC.enter(ctx.from.id, "edit-name", ctx.message.document.file_id);
-	ctx.reply(lang.edit.name());
-	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) реф`);
-});
+			ctx.scene.data.fileid = ctx.message.document.file_id;
+			ctx.reply(create.name);
+			oclog(ctx.from, `изменил(а) реф`);
 
-OC.next("edit-photo", async (ctx, user) => {
-	const uOC = OC_DB.get(ctx.from.id);
-	if (noCache(user, uOC)) return err(421, ctx);
-
-	const oc = uOC[user.cache.sceneCache[0]];
-	OC.enter(ctx.from.id, "edit-name", oc.fileid);
-	ctx.reply(lang.edit.name());
-	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежний реф`);
-});
-/*---------------------------------------------------
-
-
----------------------------------------------------
-//                  2 этап, имя
-----------------------------------------------------*/
-bot.on("message", async (ctx, next) => {
-	if (!("text" in ctx.message)) return next();
-	const data = ctx.data;
-	if (OC.state(data) !== "edit-description") return next();
-
-	if (ctx.message.text.length > 32) return ctx.reply(lang.maxLength("Имя", 32));
-
-	OC.enter(ctx.from.id, "edit-description", ctx.message.text);
-	ctx.reply(lang.edit.description());
-	oclog(`> OC. ${util.getNameFromCache(ctx.from)} изменил(а) имя`);
-});
-
-OC.next("edit-name", async (ctx, user) => {
-	const uOC = OC_DB.get(ctx.from.id);
-	if (noCache(user, uOC)) return err(421, ctx);
-
-	const oc = uOC[user?.cache?.sceneCache[0]];
-	OC.enter(ctx.from.id, "edit-description", oc.name);
-	ctx.reply(lang.edit.description());
-	oclog(`> OC. ${util.getNameFromCache(ctx.from)} оставил(а) прежнее имя`);
-});
-/*---------------------------------------------------
-
-
----------------------------------------------------
-//                  3 этап, описание
-----------------------------------------------------*/
-bot.on("message", async (ctx, next) => {
-	if (!("text" in ctx.message)) return next();
-	const data = ctx.data;
-	if (OC.state(data) !== "edit-description") return next();
-
-	if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
-
-	saveOC(
-		ctx.from.id,
-		{
-			name: data.user.cache.sceneCache[2],
-			fileid: data.user.cache.sceneCache[1],
-			description: ctx.message.text,
+			ctx.scene.next();
 		},
-		parseInt(data.user.cache.sceneCache[0])
-	);
-	OC.exit(ctx.from.id);
-	ctx.reply(lang.create.done);
-});
+		next(ctx, _) {
+			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
+			ctx.scene.data.fileid = oldoc.fileid;
 
-OC.next("edit-description", async (ctx, user) => {
-	const uOC = OC_DB.get(ctx.from.id);
-	if (noCache(user, uOC)) return err(421, ctx);
+			ctx.reply(create.description);
+			oclog(ctx.from, `оставил(а) прежний реф`);
 
-	const oc = uOC[user?.cache?.sceneCache[0]];
-
-	saveOC(
-		ctx.from.id,
-		{
-			name: user.cache.sceneCache[2],
-			fileid: user.cache.sceneCache[1],
-			description: oc.description,
+			ctx.scene.next();
 		},
-		Number(user.cache.sceneCache[0])
-	);
-	OC.exit(ctx.from.id);
-	ctx.reply(lang.create.done);
-});
+	},
+	/**
+	 * Name
+	 */
+	{
+		async middleware(ctx, next) {
+			if (!hasText(ctx)) return next();
+
+			if (ctx.message.text.length > 32) return ctx.reply(lang.maxLength("Имя", 32));
+
+			ctx.reply(create.description);
+			oclog(ctx.from, `изменил(а) имя`);
+
+			ctx.scene.data.name = ctx.message.text;
+			ctx.scene.next();
+		},
+		next(ctx, _) {
+			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
+
+			ctx.reply(create.description);
+			oclog(ctx.from, `оставил(а) прежнее имя`);
+
+			ctx.scene.data.name = oldoc.name;
+			ctx.scene.next();
+		},
+	},
+	/**
+	 * Description
+	 */
+	{
+		async middleware(ctx, next) {
+			if (!hasText(ctx)) return next();
+			if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
+
+			const d = ctx.scene.data;
+			const message = await ctx.reply("Сохраняю...");
+			const progress = (/** @type {string} */ m) =>
+				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
+
+			saveOC(
+				ctx.from,
+				{
+					name: d.name,
+					fileid: d.fileid,
+					description: ctx.message.text,
+				},
+				progress,
+				d.i
+			);
+			ctx.scene.leave();
+			progress(create.saving);
+		},
+		async next(ctx) {
+			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
+			const d = ctx.scene.data;
+			const message = await ctx.reply("Сохраняю...");
+			const progress = (/** @type {string} */ m) =>
+				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
+
+			saveOC(
+				ctx.from,
+				{
+					name: d.name,
+					fileid: d.fileid,
+					description: oldoc.description,
+				},
+				progress,
+				d.i
+			);
+			ctx.scene.leave();
+			progress(create.saving);
+		},
+	}
+);

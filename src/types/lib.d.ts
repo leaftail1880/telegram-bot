@@ -4,9 +4,9 @@ type State = { [K in keyof IEvent.Data]?: IEvent.Data[K] };
 
 type TextMessageContext = Context & { message: import("telegraf/types").Message.TextMessage };
 
-namespace CommandTypes {
+declare namespace CommandTypes {
 	type Callback = (
-		ctx: TextMessageContext,
+		ctx: TextMessageContext & { data: State },
 		input: string,
 		data: IEvent.Data & { user_rigths: import("telegraf/types").ChatMember },
 		self: Stored
@@ -32,11 +32,7 @@ namespace CommandTypes {
 	};
 }
 
-namespace IEvent {
-	type Stored = {
-		position: number;
-		callback: Function;
-	};
+declare namespace IEvent {
 	type Data = {
 		user: DB.User;
 		group?: DB.Group;
@@ -46,21 +42,13 @@ namespace IEvent {
 		};
 	};
 
-	type Creator = <T extends keyof IEvent.Events>(
-		type: T,
-		position: number,
-		callback: (ctx: IEvent.Events[T], next: () => void, data: IEvent.Data, extraData?: Object) => any
-	) => void;
-
-	type Trigger = <T extends keyof IEvent.Events>(type: T, context?: IEvent.Events[T]) => Promise<void>;
-
-	interface Events {
-		"modules.load": any;
-		"new.member": any;
+	enum Events {
+		"modules.load",
+		"new.member",
 	}
 }
 
-namespace DB {
+declare namespace DB {
 	type User = {
 		static: {
 			id: number;
@@ -95,7 +83,7 @@ namespace DB {
 }
 
 type QueryCallback = (
-	ctx: Context & { callbackQuery },
+	ctx: Context & { callbackQuery: import("telegraf/types").CallbackQuery.DataQuery },
 	path: string[],
 	edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraReplyMessage) => Promise<void>
 ) => void;
@@ -122,6 +110,8 @@ type IEnv = {
 	TOKEN?: string;
 	DB_TOKEN?: string;
 	DB_REPO?: string;
+	DB_USERNAME?: string;
+	E?: string;
 	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;
@@ -140,3 +130,6 @@ declare module "hooman" {
 }
 
 type Optional<O> = { [E in keyof O]?: O[E] };
+type NotOptional<O> = { [E in keyof O]-?: O[E] };
+
+type StringLike = number | string;

@@ -9,8 +9,10 @@
 			"vk-io": ["./node_modules/vk-io/lib/index.d.ts"]
 		},
 		"maxNodeModuleJsDepth": 0,
-		// "types": ["./node_modules/telegraf/lib/index.js"],
-		"typeRoots": ["./node_modules/telegraf/typings/markup.d.ts"]
+		"allowSyntheticDefaultImports": true,
+		"noImplicitAny": true,
+		"declaration": true,
+		"emitDeclarationOnly": true
 	},
 	"include": ["./src/"]
 }

@@ -1,5 +1,5 @@
 import { Command } from "../../lib/Class/Command.js";
-import { d } from "../../lib/Class/Utils.js";
+import { u } from "../../lib/Class/Utils.js";
 import { Button, Xitext } from "../../lib/Class/Xitext.js";
 import { DefaultSubs, SubMenu, Subs } from "./menu.js";
 import { PersonalSubs } from "./Subscriptions.js";
@@ -20,7 +20,7 @@ new Command(
 function SubMenuLang(id, page = 1) {
 	const c = new Xitext();
 
-	c.text("Список ваших ").url("подписок", d.guide(9)).text(":");
+	c.text("Список ваших ").url("подписок", u.guide(9)).text(":");
 
 	const s = new PersonalSubs(id);
 

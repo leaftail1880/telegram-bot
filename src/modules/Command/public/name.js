@@ -23,7 +23,7 @@ new Command(
 
 			repl_user.cache.nickname = input;
 			tables.users.set(repl_user.static.id, repl_user);
-			repl(`Хиля назвал тебя ${input}. Ты можешь сменить ник в любой момент.`);
+			return repl(`Хиля назвал тебя ${input}. Ты можешь сменить ник в любой момент.`);
 		}
 
 		if (!input) return repl(name ?? default_name);
