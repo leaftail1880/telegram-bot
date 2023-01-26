@@ -1,7 +1,6 @@
-import { line } from "cli-color/erase.js";
 import { data, newlog, tables } from "../../index.js";
 import { u, util } from "../../lib/Class/Utils.js";
-import { Button, code, fmt, FmtString, link, Xitext } from "../../lib/Class/Xitext.js";
+import { Button, FmtString, Xitext } from "../../lib/Class/Xitext.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
 /**
