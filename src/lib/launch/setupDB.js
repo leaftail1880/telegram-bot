@@ -7,6 +7,8 @@ import { UpdateServer } from "./between.js";
 
 export function setupDB() {
 	tables.users._.on("beforeGet", (key, value) => {
+		if (!value) return void 0;
+
 		/** @type {DB.User} */
 		const defaultUser = {
 			// @ts-expect-error

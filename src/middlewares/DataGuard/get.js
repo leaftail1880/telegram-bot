@@ -1,17 +1,19 @@
+import { line } from "cli-color/erase.js";
 import { data, newlog, tables } from "../../index.js";
 import { u, util } from "../../lib/Class/Utils.js";
-import { Button, Xitext } from "../../lib/Class/Xitext.js";
+import { Button, code, fmt, FmtString, link, Xitext } from "../../lib/Class/Xitext.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
 /**
  *
- * @param {Xitext} XT
+ * @param {FmtString | { _: { build(): [string, any]; text: string }; }} XT
  */
 function logReq(XT) {
+	const text = "text" in XT ? XT.text : XT._.text;
 	newlog({
 		text: XT,
-		consoleMessage: XT._.text,
-		fileMessage: XT._.text,
+		consoleMessage: text,
+		fileMessage: text,
 		fileName: "addReq.txt",
 	});
 }
@@ -33,7 +35,6 @@ function logNotAccepted(ctx) {
 }
 
 /**
- *
  * @param {Context} ctx
  * @returns {Promise<DB.User | false>}
  */
@@ -46,7 +47,7 @@ export async function getUser(ctx) {
 				data.joinCodes[ctx.from.id] = "waiting";
 
 				const XT = new Xitext()
-					.text("Запрос на использование бота в лс от ")
+					.text("Запрос на лс от ")
 					.url(util.getTelegramName(ctx.from), u.userLink(ctx.from.id))
 					.text("\nID: ")
 					.mono(ctx.from.id)

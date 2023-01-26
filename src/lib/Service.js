@@ -85,25 +85,23 @@ export function log(msg) {
 
 /**
  *
- * @param {{text?: Xitext | FmtString; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
+ * @param {{text?: {_ :{build(): [string, any]}} | FmtString; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
  */
 export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 	if (consoleMessage) console.log(consoleMessage);
 
-	// Array with async jobs
-	const jobs = [];
-
-	// Start job and push it to array
+	// Array with async tasks
+	const tasks = [];
 
 	if (text) {
+		/** @type {[string, any] | [FmtString]} */
 		const doneText = "_" in text ? text._.build() : [text];
-		// @ts-expect-error Will be removed after xitext delete
-		jobs.push(bot.telegram.sendMessage(data.chatID.log, ...doneText));
+
+		tasks.push(bot.telegram.sendMessage(data.chatID.log, doneText[0], doneText[1]));
 	}
 
-	// fs.appendFile doesnt waiting for telegram to send message
 	if (fileMessage)
-		jobs.push(async () => {
+		tasks.push(async () => {
 			const p = path.join("logs", fileName ?? "logs.txt");
 			await fs.writeFile(
 				p,
@@ -111,8 +109,7 @@ export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 			);
 		});
 
-	// Resolves when all jobs are done
-	return Promise.all(jobs);
+	return Promise.all(tasks);
 }
 
 function safeBotLauch() {

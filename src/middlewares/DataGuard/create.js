@@ -1,14 +1,15 @@
 import { newlog } from "../../index.js";
 import { emit } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
-import { Xitext } from "../../lib/Class/Xitext.js";
+import { fmt } from "../../lib/Class/Xitext.js";
 
+/** @type {Record<number, DB.User>} */
 const newUsers = {};
 
+/** @type {Record<number, DB.Group>} */
 const newGroups = {};
 
 /**
- *
  * @param {Context} ctx
  * @returns {DB.User}
  */
@@ -22,12 +23,12 @@ export function CreateUser(ctx) {
 	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`;
 	newlog({
 		consoleMessage: text,
-		text: new Xitext().text(text),
+		text: fmt(text),
 		fileMessage: text,
 		fileName: "groups.txt",
 	});
 
-	emit("new.member", ctx);
+	emit("new.member");
 
 	const user = {
 		static: {
@@ -54,7 +55,7 @@ export function CreateGroup(id, title, members = []) {
 	const text = `Новая группа!\n Название: ${title}\n ID: ${id}`;
 	newlog({
 		consoleMessage: text,
-		text: new Xitext().text(text),
+		text: fmt(text),
 		fileMessage: text,
 		fileName: "groups.txt",
 	});
