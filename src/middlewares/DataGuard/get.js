@@ -1,6 +1,6 @@
 import { data, newlog, tables } from "../../index.js";
 import { u, util } from "../../lib/Class/Utils.js";
-import { Button, FmtString, Xitext } from "../../lib/Class/Xitext.js";
+import { btn, FmtString, Xitext } from "../../lib/Class/Xitext.js";
 import { CreateGroup, CreateUser } from "./create.js";
 
 /**
@@ -38,7 +38,7 @@ function logNotAccepted(ctx) {
  * @returns {Promise<DB.User | false>}
  */
 export async function getUser(ctx) {
-	let user = tables.users.get(ctx.from.id);
+	let user = tables.users.get(ctx.from?.id);
 
 	if (!user) {
 		if (ctx.chat.type === "private" && data.private) {
@@ -50,17 +50,14 @@ export async function getUser(ctx) {
 					.url(util.getTelegramName(ctx.from), u.userLink(ctx.from.id))
 					.text("\nID: ")
 					.mono(ctx.from.id)
-					.inlineKeyboard(
-						[Button("Принять", u.query("N", "accept", ctx.from.id))],
-						[Button("Игнорировать", u.query("all", "delmsg"))]
-					);
+					.inlineKeyboard([btn("Принять", "N", "accept", ctx.from.id)], [btn("Игнорировать", "all", "delmsg")]);
 
 				logReq(XT);
 				logNotAccepted(ctx);
 
 				return false;
 			} else if (data.joinCodes[ctx.from.id] === "accepted") {
-				ctx.reply("Вы успешно добавлены в список разрешенных пользователей.");
+				ctx.reply("Вы успешно приняты в список разрешенных пользователей.");
 
 				// 9.0.7 Fix: Memory leak
 				delete data.joinCodes[ctx.from.id];
@@ -101,7 +98,7 @@ export async function getUser(ctx) {
  * @returns {Promise<DB.Group | false>}
  */
 export async function getGroup(ctx) {
-	if (ctx.chat.type !== "supergroup" && ctx.chat.type !== "group") return;
+	if (ctx.chat?.type !== "supergroup" && ctx.chat?.type !== "group") return;
 
 	/**
 	 * @type {DB.Group}
@@ -123,10 +120,7 @@ export async function getGroup(ctx) {
 					.mono(ctx.chat.id)
 					.text("\n\nКод: ")
 					.mono(ctx.chat.id.toString(16))
-					.inlineKeyboard(
-						[Button("Принять", u.query("N", "group", ctx.chat.id))],
-						[Button("Игнорировать", u.query("all", "delmsg"))]
-					);
+					.inlineKeyboard([btn("Принять", "N", "group", ctx.chat.id)], [btn("Игнорировать", "all", "delmsg")]);
 
 				newlog({
 					text: XT,
