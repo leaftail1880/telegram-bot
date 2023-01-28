@@ -1,5 +1,5 @@
 /** @type {Record<string, Function[]>}*/
-const Events = {};
+const EVENTS = {};
 
 /**
  * Subscribes to event
@@ -7,7 +7,7 @@ const Events = {};
  * @param {Function} callback
  */
 export function on(type, callback) {
-	const TypedEvents = (Events[type] ??= []);
+	const TypedEvents = (EVENTS[type] ??= []);
 	TypedEvents.push(callback);
 }
 
@@ -16,8 +16,8 @@ export function on(type, callback) {
  * @param {keyof typeof IEvent.Events} type
  */
 export async function emit(type) {
-	if (Events[type])
-		for (const callback of Events[type]) {
+	if (EVENTS[type])
+		for (const callback of EVENTS[type]) {
 			await callback();
 		}
 }

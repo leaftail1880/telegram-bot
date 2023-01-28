@@ -23,31 +23,12 @@ export class MultiMenu {
 	}
 	/**
 	 *
-	 * @param {Context} ctx
-	 * @param {string} text
-	 * @param {import("telegraf/types").Convenience.ExtraEditMessageText} [extra]
-	 * @param {Array<Array<import("telegraf/types").InlineKeyboardButton>>} [InlineKeyboard]
-	 */
-	editMsgFromQuery(ctx, text, extra, InlineKeyboard) {
-		return editMsg(ctx, ctx.callbackQuery.message, text, extra, InlineKeyboard);
-	}
-	/**
-	 *
 	 * @param {string} methodName
 	 * @param  {...any} args
 	 * @returns {string}
 	 */
 	link(methodName, ...args) {
 		return u.query(this.prefix, methodName, ...args);
-	}
-	/**
-	 *
-	 * @param {DB.User} user
-	 * @param {number} lvl
-	 * @returns
-	 */
-	isCacheEmpty(user, lvl = 0) {
-		return !user?.cache?.sceneCache?.map || !user?.cache?.sceneCache[lvl];
 	}
 	/**
 	 *
@@ -93,10 +74,4 @@ export class MultiMenu {
 	createButtonMaker() {
 		return CreateNamespacedButton(this.prefix);
 	}
-}
-
-export async function editMsg(ctx, message, text, extra, InlineKeyboard) {
-	if (text > 4020) return;
-	if (typeof extra === "object" && InlineKeyboard) extra.reply_markup.inline_keyboard = InlineKeyboard;
-	await ctx.telegram.editMessageText(message.chat.id, message.message_id, null, text, extra);
 }

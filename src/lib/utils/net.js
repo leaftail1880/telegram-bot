@@ -6,7 +6,6 @@ import os from "os";
  * Opens server and returns server ip
  * @param {number} port
  * @param {(message: string) => string | Promise<string>} callback
- * @returns
  */
 export function OpenServer(port, callback) {
 	http
@@ -19,8 +18,8 @@ export function OpenServer(port, callback) {
 		})
 		.listen(port);
 
-	const nets = os.networkInterfaces();
 	const results = [];
+	const nets = os.networkInterfaces();
 
 	for (const faces of Object.values(nets)) {
 		if (typeof faces === "undefined") continue;
@@ -37,27 +36,19 @@ export function OpenServer(port, callback) {
 }
 
 /**
- *
+ * Sends message to url
  * @param {string} url
- * @param {string} message
- * @returns
+ * @param {string} body
  */
-export function SendMessage(url, message) {
+export function SendMessage(url, body) {
 	return new Promise(async (resolve, reject) => {
-		let response;
-		try {
-			response = await fetch(url, {
-				body: message,
-				method: "PUT",
-			});
-		} catch (e) {
-			reject(e);
-		}
+		const request = fetch(url, { body, method: "PUT" });
+		request.catch(reject);
+
+		const response = await request;
 
 		if (!response?.ok) return reject(response);
 		if (!response.body) return reject("Got null body");
-		response.body.on("data", (chunk) => {
-			resolve(chunk.toString());
-		});
+		response.body.on("data", (chunk) => resolve(chunk.toString()));
 	});
 }

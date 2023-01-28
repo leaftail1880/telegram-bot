@@ -3,7 +3,7 @@ import { util } from "../Class/Utils.js";
 /**
  * @type {[RegExp | string, string?, number?][]}
  */
-const filters = [
+const FITLERS = [
 	[/\\/g, "/"],
 	["<anonymous>", "</>", 0],
 	[/file:.*src\/(.*)/, "src/$1"],
@@ -12,12 +12,10 @@ const filters = [
 ];
 
 /**
- *
  * @param {string} line
- * @returns
  */
 function parseStackLine(line) {
-	for (const [regexp, replacer, count] of filters) {
+	for (const [regexp, replacer, count] of FITLERS) {
 		if (typeof line !== "string") continue;
 		const replaceAll = count === 0;
 
@@ -28,7 +26,6 @@ function parseStackLine(line) {
 }
 
 /**
- *
  * @param {{name?: string; stack?: string; message: string; on?: object;}} err
  * @returns {[string, string, string, string]}
  */

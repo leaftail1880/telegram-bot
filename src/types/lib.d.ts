@@ -85,7 +85,7 @@ declare namespace DB {
 type QueryCallback = (
 	ctx: Context & { callbackQuery: import("telegraf/types").CallbackQuery.DataQuery },
 	path: string[],
-	edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraReplyMessage) => Promise<void>
+	edit: (text: string, extra?: import("telegraf/types").Convenience.ExtraEditMessageText) => Promise<any>
 ) => void;
 
 type ServiceData = typeof import("../index.js").data;
@@ -112,6 +112,7 @@ type IEnv = {
 	DB_REPO?: string;
 	DB_USERNAME?: string;
 	E?: string;
+	P?: string;
 	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;

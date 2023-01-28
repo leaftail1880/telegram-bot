@@ -2,15 +2,14 @@ import clc from "cli-color";
 import { bot, newlog } from "../../index.js";
 import { safeRun } from "../utils/safe.js";
 import { on } from "./Events.js";
-import { editMsg } from "./Menu.js";
 import { u, util } from "./Utils.js";
 import { XTimer } from "./XTimer.js";
 
-/**
- * @type {Object<string, Query>}
- */
-const ques = {};
 export class Query {
+	/**
+	 * @type {Record<string, Query>}
+	 */
+	static queries = {};
 	/**
 	 * Создает команду
 	 * @param {Object} info
@@ -23,15 +22,15 @@ export class Query {
 	constructor(info, callback) {
 		if (!info?.name) return;
 
-		// Регистрация инфы
 		this.info = {
 			name: info.name,
-			msg: info.message,
+			prefix: info.prefix,
+			message: info.message,
 			perm: info.permisson ?? 0,
 		};
 		this.callback = callback;
 
-		ques[`${info.prefix}${u.separator.link}${info.name}`] = this;
+		Query.queries[`${info.prefix}${u.separator.link}${info.name}`] = this;
 	}
 	/**
 	 *
@@ -49,9 +48,7 @@ export class Query {
 }
 
 /**
- *
  * @param {string} data
- * @returns {{Qname: string; args: string[]}}
  */
 function parseQueryData(data) {
 	const unparsed = data.split(u.separator.linkToData);
@@ -62,19 +59,28 @@ function parseQueryData(data) {
 				.split(u.separator.data)
 				.map((e) => e.replace(escaper, u.separator.link))
 		: [];
-	return { Qname: unparsed[0], args };
+	return { query: Query.queries[unparsed[0]], args };
+}
+
+/**
+ *
+ * @param {Context} ctx
+ * @returns {ctx is Context & { callbackQuery: import("telegraf/types").CallbackQuery.DataQuery }}
+ */
+function isQuery(ctx) {
+	return "data" in ctx.callbackQuery;
 }
 
 const Qtimer = new XTimer(0.3, true);
+
 on("modules.load", () => {
 	bot.on("callback_query", async (ctx, next) => {
-		if (!("data" in ctx.callbackQuery)) return;
+		if (!isQuery(ctx)) return;
 		const data = ctx.callbackQuery.data;
 		if (!Qtimer.isExpired(data)) return;
 
-		const { Qname, args } = parseQueryData(data);
-		const q = ques[Qname];
-		if (!q) {
+		const { query, args } = parseQueryData(data);
+		if (!query) {
 			ctx.answerCbQuery("Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
 				show_alert: true,
 			});
@@ -82,11 +88,9 @@ on("modules.load", () => {
 			return next();
 		}
 
-		Query.Log(ctx, `${Qname} ${args.join("  ")}`);
-		await safeRun("Q", () =>
-			q.callback(ctx, args, (text, extra) => editMsg(ctx, ctx.callbackQuery.message, text, extra))
-		);
-		if (q.info.msg) ctx.answerCbQuery(q.info.msg);
+		Query.Log(ctx, `${query.info.prefix} ${query.info.name}: ${args.map((e) => `'${e}'`).join(" ")}`);
+		await safeRun("Q", () => query.callback(ctx, args, (text, extra) => ctx.editMessageText(text, extra)));
+		if (query.info.message) ctx.answerCbQuery(query.info.message);
 	});
 });
 

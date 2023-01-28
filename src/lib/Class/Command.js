@@ -172,7 +172,12 @@ on("modules.load", () => {
 		}
 		if (typeof command !== "object") return next();
 
-		if (ctx.data.scene && !command.info.allowScene && command.info.permission !== "bot_owner")
+		if (
+			ctx.data.scene &&
+			!command.info.allowScene &&
+			command.info.permission !== "bot_owner" &&
+			ctx.chat.type === "private"
+		)
 			return reply(
 				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${u.langJoin(
 					Commands.filter((e) => e.info.allowScene && e.info.permission !== "bot_owner").map(

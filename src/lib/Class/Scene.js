@@ -31,6 +31,7 @@ function MakeScene(ctx, scene, i = 0) {
 			},
 		}),
 	};
+	return ctx;
 }
 
 /**
@@ -42,12 +43,13 @@ function MakeScene(ctx, scene, i = 0) {
  */
 
 /**
- * @template {Record<string, any>} SceneData
+ * @template {Record<string, any>} [SceneData = Record<string, any>]
  * @template {(ctx: any, next?: any) => any} [MiddlewareFn = MiddlewareFunction<SceneData>]
  */
 export class Scene {
 	/** @type {Record<string, Scene>} */
 	static scenes = {};
+	/** @type {Record<string, MiddlewareFn>} */
 	nextHandlers = {};
 	isWizardScene = false;
 	/**
@@ -99,8 +101,8 @@ export class Scene {
 	 */
 	enter(user, scene = "0", cache) {
 		if (typeof user === "number") user = tables.users.get(user);
-
 		if (!user || typeof user !== "object") return;
+
 		user.cache.scene = u.pn(this.name, scene);
 		if (cache) user.cache.sceneCache = cache;
 
@@ -132,7 +134,7 @@ export class Scene {
 	/**
 	 * Register the handler for entering specified scene scene
 	 * @param {string} scene
-	 * @param {(ctx: TextMessageContext, data: DB.User) => void} callback
+	 * @param {MiddlewareFn} callback
 	 */
 	next(scene, callback) {
 		if (this.isWizardScene)
@@ -175,7 +177,7 @@ new Command(
 		const no_menu = () => ctx.reply("Вы не находитесь в меню!");
 		const no_skip = () => ctx.reply("Этот шаг не предусматривает пропуска!");
 
-		if (!data.scene) return no_menu();
+		if (!("scene" in data)) return no_menu();
 
 		const scene = Scene.scenes[data.scene.name];
 		if (!scene) return no_menu();
@@ -183,6 +185,8 @@ new Command(
 		if (typeof scene.nextHandlers[data.scene.state] !== "function") return no_skip();
 
 		MakeScene(ctx, scene, parseInt(data.scene.state));
+		// 9.1.16
+		// @ts-expect-error Idk how to make extensionable context type safe
 		scene.nextHandlers[data.scene.state](ctx, data.user);
 	}
 );

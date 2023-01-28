@@ -2,13 +2,13 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { bot, data, database, log, newlog, Service, tables } from "../../index.js";
+import { bot, data, database, env, log, newlog, Service, tables } from "../../index.js";
 import { OpenServer, SendMessage } from "../utils/net.js";
 import { bigger, setDataType } from "./dataType.js";
 import { service_lang as lang } from "./lang.js";
 
 export const UpdateServer = {
-	passcode: "test",
+	passcode: env.P ?? "test",
 	isClosed: false,
 	ip: OpenServer(~~(Math.random() * 10000), (message) => {
 		if (UpdateServer.isClosed) return "closed";
