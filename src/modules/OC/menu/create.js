@@ -7,7 +7,7 @@ import { lang } from "../index.js";
 import { oclog, saveOC } from "../utils.js";
 
 const create = {
-	file: fmt`Отправь мне референс персонажа ввиде ${bold("", link("файла", u.guide(5)))}\nВыйти: /cancel.`,
+	file: fmt`Отправь мне референс персонажа ввиде ${bold("", link("файла", u.guide(5)))}\nВыйти: /cancel`,
 
 	name: "Теперь отправь мне имя персонажа.",
 
