@@ -38,7 +38,7 @@ function logNotAccepted(ctx) {
  * @returns {Promise<DB.User | false>}
  */
 export async function getUser(ctx) {
-	let user = tables.users.get(ctx.from?.id);
+	let user = tables.users.get(ctx.from.id);
 
 	if (!user) {
 		if (ctx.chat.type === "private" && data.private) {
@@ -93,7 +93,6 @@ export async function getUser(ctx) {
 	return user;
 }
 /**
- *
  * @param {Context} ctx
  * @returns {Promise<DB.Group | false>}
  */
@@ -178,4 +177,11 @@ export async function getGroup(ctx) {
 	if (update) tables.groups.set(ctx.chat.id, group);
 
 	return group;
+}
+/**
+ * @param {Context} ctx
+ * @returns {Promise<boolean>}
+ */
+export async function getChannel(ctx) {
+	return false;
 }
