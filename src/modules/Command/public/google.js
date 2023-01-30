@@ -8,14 +8,16 @@ new Command(
 		target: "all",
 	},
 	(ctx, input) => {
-		const repl = (t) =>
+		const repl = (/** @type {string | ReturnType<fmt>} */ t) =>
 			ctx.reply(t, {
 				reply_to_message_id: ctx.message.reply_to_message?.message_id ?? ctx.message.message_id,
 				allow_sending_without_reply: true,
 				disable_web_page_preview: false,
 			});
 
-		const text = "text" in ctx.message.reply_to_message ? ctx.message.reply_to_message.text : input;
+		const reply_msg = ctx.message.reply_to_message;
+		const text_in_reply = "text" in reply_msg && reply_msg.text;
+		const text = input ?? text_in_reply;
 
 		if (!text)
 			return repl(`Либо ответь на сообщение, которое хочешь загуглить, либо отправь "/google Текст для поиска"`);
@@ -24,6 +26,6 @@ new Command(
 		params.append("q", text);
 		const text_link = "https://google.com/search?" + params.toString();
 
-		repl(fmt`${link("Ссылка на запрос", text_link)} ${text} в гугле.`);
+		repl(fmt`Поиск в гугле: ${link(text, text_link)}`);
 	}
 );

@@ -8,7 +8,7 @@ bot.use(async (ctx, next) => {
 	ctx.data ??= {};
 
 	if (ctx.chat.type === "channel") {
-		newlog({ text: fmt`Unknown channel: ${ctx.chat.title}\n@${ctx.chat.username}\n${ctx.chat.id}` });
+		newlog({ text: fmt`Сhannel: ${ctx.chat.title}\n@${ctx.chat.username}\n${ctx.chat.id}` });
 		return;
 	}
 
