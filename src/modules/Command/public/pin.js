@@ -38,13 +38,13 @@ new Command(
 				await ctx.unpinChatMessage(group.cache.pin.message_id);
 			} catch {}
 
-		let raw_num = 0;
+		let raw_num = 1;
 		input
 			.split(" ")
 			.map(Number)
 			.forEach((e) => (raw_num *= e));
 
-		const time = isNaN(raw_num) || raw_num < 0 ? 1000 * 60 * 60 * 5 : raw_num * 1000;
+		const time = isNaN(raw_num) || raw_num < 1 ? 1000 * 60 * 60 * 5 : raw_num * 1000;
 
 		ctx.pinChatMessage(msgToPin, { disable_notification: true });
 		group.cache.pin.message_id = msgToPin;
