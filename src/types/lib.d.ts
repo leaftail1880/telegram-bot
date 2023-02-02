@@ -75,8 +75,11 @@ declare namespace DB {
 			titleAnimation?: Array<string>;
 			titleAnimationSpeed?: number;
 			lastCall?: number;
-			lastPin?: {};
-			pin?: string;
+			pin?: {
+				date?: number;
+				message_id?: number;
+				lastPins?: Record<number, number>;
+			};
 			artRepost?: 1 | undefined;
 		};
 	};
@@ -134,3 +137,4 @@ type Optional<O> = { [E in keyof O]?: O[E] };
 type NotOptional<O> = { [E in keyof O]-?: O[E] };
 
 type StringLike = number | string;
+type Text = string | import("telegraf").Format.FmtString;

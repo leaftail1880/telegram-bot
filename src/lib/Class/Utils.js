@@ -1,7 +1,46 @@
 import node_utils from "util";
 import { tables } from "../../index.js";
+import { fmt } from "./Xitext.js";
 
 export const util = {
+	/**
+	 * Safly gets key from object **and triggers** [[Get]] listener
+	 * @template {object} S
+	 * @param {S} source
+	 * @param {keyof S | string} key
+	 * @returns {any}
+	 */
+	get(source, key) {
+		if (!(source && typeof source === "object" && key in source)) return;
+		// @ts-expect-error We already used in statement to check this.
+		return source[key];
+	},
+	/**
+	 * @param {{
+	 *   reply(s: string | ReturnType<fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
+	 *   message: { message_id: number; reply_to_message?: {message_id?: number}}
+	 * }} ctx
+	 * @param {'reply' | 'direct'} prefer
+	 */
+	makeReply(ctx, prefer = "reply") {
+		/**
+		 * Replies
+		 * @param {Text} text
+		 * @param {'reply' | 'direct'} more_prefer
+		 * @returns
+		 */
+		function repl(text, more_prefer = "reply") {
+			return ctx.reply(text, {
+				allow_sending_without_reply: true,
+				reply_to_message_id:
+					(more_prefer ?? prefer) === "reply"
+						? ctx.message?.reply_to_message?.message_id ?? ctx.message.message_id
+						: ctx.message.message_id,
+				disable_web_page_preview: true,
+			});
+		}
+		return repl;
+	},
 	/**
 	 * @param {any} obj
 	 * @returns {string}

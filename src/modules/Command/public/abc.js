@@ -1,5 +1,10 @@
 import { Command } from "../../../lib/Class/Command.js";
+import { util } from "../../../lib/Class/Utils.js";
+import { bold, fmt } from "../../../lib/Class/Xitext.js";
 
+/**
+ * @type {Record<string, string>}
+ */
 const obj = {
 	q: "й",
 	w: "ц",
@@ -50,7 +55,7 @@ function abc(msg) {
 	let ret = "";
 	for (const a of msg.split("")) {
 		let l = a;
-		if (obj[a]) l = obj[a];
+		if (a in obj) l = obj[a];
 		else if (obj[a.toLowerCase()]) l = obj[a.toLowerCase()].toUpperCase();
 		ret = ret + l;
 	}
@@ -65,20 +70,14 @@ new Command(
 		target: "all",
 	},
 	(ctx) => {
-		if (!("reply_to_message" in ctx.message))
-			return ctx.reply("Отметь сообщение!", {
-				reply_to_message_id: ctx.message.message_id,
-				allow_sending_without_reply: true,
-			});
-
+		const repl = util.makeReply(ctx, "direct");
 		/** @type {{text?: string; caption?: string; message_id: number}} */
 		const msg = ctx.message.reply_to_message;
 
-		if (!msg.text && !msg.caption) return ctx.reply("Я не могу это перевести!");
+		if (!msg) return repl(fmt`${bold("Ответь")} на сообщение, раскладку которого хочешь перевести`);
 
-		ctx.reply(abc(msg.text ?? msg.caption), {
-			reply_to_message_id: msg.message_id,
-			allow_sending_without_reply: true,
-		});
+		if (!msg.text && !msg.caption) return repl("Я не могу это перевести!");
+
+		repl(abc(msg.text ?? msg.caption), "reply");
 	}
 );

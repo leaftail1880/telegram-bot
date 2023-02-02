@@ -1,5 +1,6 @@
 import { data as $data, tables } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
+import { util } from "../../../lib/Class/Utils.js";
 import { bold, fmt } from "../../../lib/Class/Xitext.js";
 
 new Command(
@@ -13,10 +14,9 @@ new Command(
 		const user = data.user;
 		const name = user.cache.nickname;
 		const default_name = "<Не установлен>";
-		const repl = (t) =>
-			ctx.reply(t, { reply_to_message_id: ctx.message.message_id, allow_sending_without_reply: true });
+		const repl = util.makeReply(ctx);
 
-		if (typeof ctx.message.reply_to_message === "object") {
+		if (ctx.message.reply_to_message?.from) {
 			const repl_user = tables.users.get(ctx.message.reply_to_message.from.id);
 			if (!input) return repl(repl_user.cache.nickname ?? default_name);
 			if (ctx.from.id !== $data.chatID.owner) return repl("Что?");
@@ -32,6 +32,6 @@ new Command(
 
 		user.cache.nickname = input;
 		tables.users.set(ctx.from.id, user);
-		repl(`Ник '${name ?? default_name}' сменен на '${input}'`);
+		repl(`Ник ${`'${name}'` ?? default_name} сменен на '${input}'`);
 	}
 );

@@ -42,10 +42,12 @@ export function OpenServer(port, callback) {
  */
 export function SendMessage(url, body) {
 	return new Promise(async (resolve, reject) => {
-		const request = fetch(url, { body, method: "PUT" });
-		request.catch(reject);
-
-		const response = await request;
+		let response;
+		try {
+			response = await fetch(url, { body, method: "PUT" });
+		} catch (error) {
+			return reject(error);
+		}
 
 		if (!response?.ok) return reject(response);
 		if (!response.body) return reject("Got null body");

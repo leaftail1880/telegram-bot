@@ -9,9 +9,8 @@ new Command(
 		description: "Bot App",
 		permission: "bot_owner",
 	},
-	(ctx, args) => {
-		const c = args[0];
-		if (c !== "BOT" && c !== "ALL" && c !== "none") return ctx.reply('Args[0] need to be "BOT" | "ALL" | "none"');
+	(ctx, c) => {
+		if (c !== "BOT" && c !== "ALL" && c !== "none") return ctx.reply('Input need to be "BOT" | "ALL" | "none"');
 		Service.stop("Ручная остановка", c);
 	}
 );

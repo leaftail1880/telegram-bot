@@ -38,6 +38,9 @@ export function setupDB() {
 			static: {
 				id: Number(key),
 			},
+			cache: {
+				members: [],
+			},
 		};
 		return setDefaults(value, defaultGroup);
 	});
