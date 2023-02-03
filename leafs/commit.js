@@ -14,3 +14,5 @@ Commiter.subscribe("before_commit", async ({ version, prev_version }) => {
 
 	await fs.writeFile(config_path, config);
 });
+
+Commiter.add_commit_push({ arg: process.argv[2] });
