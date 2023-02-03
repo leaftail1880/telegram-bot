@@ -1,16 +1,15 @@
-import { TypedBind } from "leafy-utils";
 import { MultiMenu } from "../../lib/Class/Menu.js";
 import { u } from "../../lib/Class/Utils.js";
 import { bold, fmt, link } from "../../lib/Class/Xitext.js";
 import { safeLoad } from "../../lib/utils/safe.js";
 
-export const m = new MultiMenu("OC");
+export const ocmenu = new MultiMenu("OC");
 
-m.query({ name: "s" }, (ctx) => {
+ocmenu.query({ name: "s" }, (ctx) => {
 	ctx.answerCbQuery("Скоро!", { show_alert: true });
 });
 
-export const ocbutton = m.createButtonMaker();
+export const ocbutton = ocmenu.createButtonMaker();
 
 export const lang = {
 	mainKeyboard: [
@@ -29,6 +28,7 @@ export const lang = {
 	 */
 	maxLength: (type, length, end = "о") =>
 		fmt`${type} должн${end} быть ${bold("не")} больше ${length} символов в длину.`,
+
 	find: "Список владельцев ОС",
 	/**
 	 * @param {string} name
@@ -52,7 +52,7 @@ export const lang = {
 		return fmt`${
 			path
 				? bold("", link(name, `https://telegra.ph/${path}`))
-				: `${name} - не обновлен. Нажми редактировать и просто пропусти все шаги для обновления. Если что-то не сработало, попробуй скинуть старый реф, т.к. ссылка на файл могла перестать работать.`
+				: `${name} - не обновлен. Нажми редактировать и просто пропусти все шаги для обновления. Если что-то не сработало, попробуй снова скинуть старый реф, т.к. ссылка на файл могла перестать работать.`
 		}\nЭто Ваш персонаж.`;
 	},
 };

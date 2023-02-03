@@ -20,8 +20,8 @@ new Query(
 		prefix: "OC",
 		message: "Назад",
 	},
-	async (ctx, path, edit) => {
-		edit(lang.main.text, {
+	async (ctx) => {
+		ctx.editMessageText(lang.main.text, {
 			entities: lang.main.entities,
 			reply_markup: {
 				inline_keyboard: lang.mainKeyboard,

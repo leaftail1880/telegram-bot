@@ -71,8 +71,7 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	if (prevOC) {
 		prev_page_id = prevOC.path;
 		saveOC.path = prevOC.path;
-
-		if (!("description" in OC)) saveOC.description = prevOC.description;
+		saveOC.description ??= prevOC.description;
 	}
 
 	if (prevOC?.fileid === OC.fileid && prevOC.filepath) {
@@ -81,20 +80,20 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	} else {
 		// New file, uploading...
 		await progress("Загрузка референса...");
-		const telegram_link = (await bot.telegram.getFileLink(OC.fileid)).toString();
+		const telegram_link = (await bot.telegram.getFileLink(saveOC.fileid)).toString();
 		ref_link = await upload(telegram_link);
 	}
 	saveOC.filepath = ref_link;
 
 	await progress("Создание поста...");
-	const Post = parseMarkdown(`![Референс](${ref_link} "Референс")\n${OC.description}`);
+	const Post = parseMarkdown(`![Референс](${ref_link} "Референс")\n${saveOC.description}`);
 
 	if (prev_page_id) {
 		// Page already exists, just edit it
 		await telegraph.edit(prev_page_id, { content: Post });
 	} else {
 		// Creating new page...
-		const page = await telegraph.create({ title: OC.name, content: Post });
+		const page = await telegraph.create({ title: saveOC.name, content: Post });
 		saveOC.path = page.path;
 	}
 	if (prevOC) OCs[index] = saveOC;
@@ -125,5 +124,5 @@ export async function deleteOC(id, index) {
  * @param {Context} ctx
  */
 export function noOC(ctx) {
-	ctx.answerCbQuery("Нету ОС!", { show_alert: true });
+	ctx.answerCbQuery("Не удалось найти персонажей.", { show_alert: true });
 }

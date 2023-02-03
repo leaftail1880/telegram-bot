@@ -54,7 +54,7 @@ const scene = new Scene(
 			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
 			ctx.scene.data.fileid = oldoc.fileid;
 
-			ctx.reply(create.description);
+			ctx.reply(create.name);
 			oclog(ctx.from, `оставил(а) прежний реф`);
 
 			ctx.scene.next();

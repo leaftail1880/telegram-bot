@@ -1,7 +1,7 @@
 import { tables } from "../../../../index.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { util } from "../../../../lib/Class/Utils.js";
-import { lang, m, ocbutton } from "../../index.js";
+import { lang, ocbutton, ocmenu } from "../../index.js";
 import { noOC, OC_DB } from "../../utils.js";
 
 new Query(
@@ -30,9 +30,9 @@ new Query(
 			} catch {}
 		}
 
-		buttons = m.generatePageSwitcher({
+		buttons = ocmenu.generatePageSwitcher({
 			buttons: buttons,
-			backButton: ocbutton(m.config.backButtonSymbol, "back"),
+			backButton: ocbutton(ocmenu.config.backButtonSymbol, "back"),
 			queryName: "find",
 			pageTo: page,
 		});
