@@ -63,7 +63,7 @@ const scene = new Scene(
 		if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
 
 		const data = ctx.scene.data;
-		const message = await ctx.reply("Сохраняю...");
+		const message = await ctx.reply(create.saving);
 		const progress = (/** @type {string} */ m) =>
 			ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
 
@@ -72,12 +72,11 @@ const scene = new Scene(
 			{
 				name: data.name,
 				fileid: data.file_id,
-				description: data.desc,
+				description: data.description,
 			},
 			progress
 		);
 
 		ctx.scene.leave();
-		progress(create.saving);
 	}
 );

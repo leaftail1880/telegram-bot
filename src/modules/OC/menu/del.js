@@ -1,5 +1,6 @@
 import { Query } from "../../../lib/Class/Query.js";
 import { deleteOC } from "../utils.js";
+import { lang } from "../index.js"
 
 new Query(
 	{
@@ -9,6 +10,12 @@ new Query(
 	},
 	async (ctx, data) => {
 		deleteOC(ctx.callbackQuery.from.id, parseInt(data[0]));
-		await ctx.telegram.deleteMessage(ctx.callbackQuery.message.chat.id, ctx.callbackQuery.message.message_id);
+		ctx.editMessageText("Персонаж удален.", {
+			entities: lang.main.entities,
+			reply_markup: {
+				inline_keyboard: lang.mainKeyboard,
+			},
+			disable_web_page_preview: true,
+		});
 	}
 );

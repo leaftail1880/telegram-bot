@@ -117,7 +117,7 @@ export async function deleteOC(id, index) {
 	OCs.splice(index, 1);
 	save();
 
-	oclog(null, `Удален персонаж. Имя: ${OCs[index]?.name}`);
+	oclog(null, `Удален персонаж. Имя: ${ocToDel?.name}`);
 }
 /**
  *

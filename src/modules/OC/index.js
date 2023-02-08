@@ -13,10 +13,10 @@ export const ocbutton = ocmenu.createButtonMaker();
 
 export const lang = {
 	mainKeyboard: [
-		[ocbutton("Все персонажи", "find")],
+		[ocbutton("Найти", "find")],
 		[ocbutton("Мои персонажи", "my")],
 		[ocbutton("Добавить персонажа", "reg")],
-		[ocbutton("Найти", "s", "all")],
+		[ocbutton("Все подряд", "s", "all")],
 		[ocbutton("Случайный персонаж", "s", "random")],
 	],
 

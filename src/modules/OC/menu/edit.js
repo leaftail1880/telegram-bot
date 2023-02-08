@@ -17,7 +17,7 @@ const create = {
 	description:
 		"Отправь мне описание персонажа. Лучше всего то, что поможет придумать окружение на будущем гифте.\nОставить прежнее: /next",
 
-	saving: "Сохраняю...",
+	saving: "Успешно сохранено! /oc",
 };
 
 new Query(
@@ -94,7 +94,7 @@ const scene = new Scene(
 			if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
 
 			const d = ctx.scene.data;
-			const message = await ctx.reply("Сохраняю...");
+			const message = await ctx.reply(create.saving);
 			const progress = (/** @type {string} */ m) =>
 				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
 
@@ -109,12 +109,11 @@ const scene = new Scene(
 				d.i
 			);
 			ctx.scene.leave();
-			progress(create.saving);
 		},
 		async next(ctx) {
-			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
-			const d = ctx.scene.data;
-			const message = await ctx.reply("Сохраняю...");
+		  const d = ctx.scene.data;
+			const oldoc = OC_DB.get(ctx.from.id)[d.i];
+			const message = await ctx.reply(create.saving);
 			const progress = (/** @type {string} */ m) =>
 				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
 
@@ -129,7 +128,6 @@ const scene = new Scene(
 				d.i
 			);
 			ctx.scene.leave();
-			progress(create.saving);
 		},
 	}
 );
