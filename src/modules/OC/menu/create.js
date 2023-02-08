@@ -29,7 +29,7 @@ new Query(
 );
 
 /**
- * @type {Scene<{file_id?: string; name?: string; desc?: string;}>}
+ * @type {Scene<{file_id?: string; name?: string}>}
  */
 const scene = new Scene(
 	"создание персонажа",
@@ -72,7 +72,7 @@ const scene = new Scene(
 			{
 				name: data.name,
 				fileid: data.file_id,
-				description: data.description,
+				description: ctx.message.text,
 			},
 			progress
 		);

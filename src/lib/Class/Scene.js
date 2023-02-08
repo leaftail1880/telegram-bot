@@ -61,7 +61,7 @@ export class Scene {
 		this.name = name;
 		Scene.scenes[name] = this;
 
-		if (handlers.length > 1) {
+		if (handlers.length > 0) {
 			this.isWizardScene = true;
 			const mappedHandlers = handlers.map((fn) => (typeof fn === "function" ? { middleware: fn } : fn));
 			this.mappedHandlers = mappedHandlers;
@@ -130,17 +130,6 @@ export class Scene {
 		if (!("scene" in data) || data.scene.name !== this.name || "group" in data) return false;
 
 		return data.scene.state;
-	}
-	/**
-	 * Register the handler for entering specified scene scene
-	 * @param {string} scene
-	 * @param {MiddlewareFn} callback
-	 */
-	next(scene, callback) {
-		if (this.isWizardScene)
-			throw new Error("To set next listener on Wizard scene use { middleware() {}, next() {} } in constructor!");
-
-		this.nextHandlers[scene] = callback;
 	}
 }
 
