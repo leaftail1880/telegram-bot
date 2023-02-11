@@ -4,7 +4,7 @@ import { Scene } from "../../../lib/Class/Scene.js";
 import { u } from "../../../lib/Class/Utils.js";
 import { bold, fmt, link } from "../../../lib/Class/Xitext.js";
 import { lang } from "../index.js";
-import { oclog, OC_DB, saveOC } from "../utils.js";
+import { oclog, OC_DB, saveOC, CreateProgressManager} from "../utils.js";
 
 const create = {
 	file: fmt`Отправь мне референс персонажа ввиде ${bold(
@@ -95,8 +95,8 @@ const scene = new Scene(
 
 			const d = ctx.scene.data;
 			const message = await ctx.reply(create.saving);
-			const progress = (/** @type {string} */ m) =>
-				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
+			const progress = (/** @type {string} */ m, /** @type {Extra} */extra = {}) =>
+				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m, extra);
 
 			saveOC(
 				ctx.from,

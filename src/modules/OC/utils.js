@@ -42,6 +42,16 @@ export function oclog(from, message) {
 }
 
 /**
+ * @param {Context} ctx
+ * @returns {Context["editMessageText"]}
+ */
+export async function CreateProgressManager(ctx) {
+  const message = await ctx.reply(create.saving);
+	return (t, e = {}) =>
+		ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, t, e);
+}
+
+/**
  *
  * @param {import("telegraf/types").User} user
  * @param {{
@@ -99,9 +109,18 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	if (prevOC) OCs[index] = saveOC;
 	else OCs.push(saveOC);
 	save();
-
-	progress("Готово! /oc");
-	oclog(null, `${typeof index === "number" ? "Изменен" : "Создан новый"} персонаж. Имя: ${OC.name}`);
+	
+	const text = 	`${typeof index === "number" ? "Изменен" : "Создан новый"} персонаж с имннем ${OC.name}`
+		
+	const buttons = [];
+	const menu = [ocbutton("↩️ Назад", "back")];
+	for (const [i, oc] of OCs.entries()) {
+		if (oc && oc.name) buttons.push([ocbutton(oc.name, "myoc", i)]);
+	}
+	buttons.push(menu);
+	
+	progress(text, Markup.inlineKeyboard(buttons));
+	oclog(null, text);
 }
 
 /**

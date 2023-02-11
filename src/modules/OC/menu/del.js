@@ -11,7 +11,6 @@ new Query(
 	async (ctx, data) => {
 		deleteOC(ctx.callbackQuery.from.id, parseInt(data[0]));
 		ctx.editMessageText("Персонаж удален.", {
-			entities: lang.main.entities,
 			reply_markup: {
 				inline_keyboard: lang.mainKeyboard,
 			},
