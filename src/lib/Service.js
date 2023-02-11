@@ -139,7 +139,7 @@ async function start() {
 	const print = lang.state(9);
 
 	print(`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`);
-	try {
+	if (data.development) try {
 		await fs.mkdir("logs");
 	} catch {}
 

@@ -1,6 +1,13 @@
-.env
-node_modules
-logs
-yarn-error.log
-yarn.lock
-migration.json
+# Ignore everything
+*
+
+# Folder whitelist
+!src/
+!leafs/
+
+# Root files whitelist
+!package.json
+!README.md
+!tsconfig.json
+!env.sample
+!.gitignore

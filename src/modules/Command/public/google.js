@@ -11,7 +11,7 @@ new Command(
 	(ctx, input) => {
 		const repl_msg = ctx.message.reply_to_message;
 		const repl = util.makeReply(ctx);
-		const text = input ?? util.get(repl_msg, "text") ?? util.get(repl_msg, "caption");
+		const text = input ? input : util.get(repl_msg, "text") ?? util.get(repl_msg, "caption");
 
 		if (!text) return repl(`Ответь на сообщение, которое хочешь загуглить, либо отправь "/google Текст для поиска"`);
 

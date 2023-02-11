@@ -1,16 +1,12 @@
-import { bot, newlog, tables } from "../../index.js";
-import { fmt } from "../../lib/Class/Xitext.js";
+import { bot, tables } from "../../index.js";
 import { getGroup, getUser } from "./get.js";
 import "./queries.js";
 
 bot.use(async (ctx, next) => {
-	if (!("message" in ctx)) return next();
+	if (!ctx.message) return next();
 	ctx.data ??= {};
 
-	if (ctx.chat.type === "channel") {
-		newlog({ text: fmt`Сhannel: ${ctx.chat.title}\n@${ctx.chat.username}\n${ctx.chat.id}` });
-		return;
-	}
+	if (ctx.chat?.type === "channel") return;
 
 	if (ctx.chat.type === "group" || ctx.chat.type === "supergroup") {
 		const group = await getGroup(ctx);

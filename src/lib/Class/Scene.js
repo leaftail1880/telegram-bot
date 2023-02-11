@@ -127,7 +127,7 @@ export class Scene {
 	 * @returns {string | false}
 	 */
 	step(data) {
-		if (!("scene" in data) || data.scene.name !== this.name || "group" in data) return false;
+		if (!data?.scene || data.scene.name !== this.name || "group" in data) return false;
 
 		return data.scene.state;
 	}

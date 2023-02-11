@@ -1,4 +1,3 @@
-import { Context } from "telegraf";
 import { Query } from "./Query.js";
 import { u } from "./Utils.js";
 import { Button, CreateNamespacedButton } from "./Xitext.js";
@@ -6,7 +5,7 @@ import { Button, CreateNamespacedButton } from "./Xitext.js";
 export class MultiMenu {
 	static get config() {
 		return {
-			maxRows: 12,
+			maxRows: 6,
 			maxButtonsPerRow: 6,
 			backButtonSymbol: "↩️",
 			pageBack: "«",

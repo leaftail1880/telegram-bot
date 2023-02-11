@@ -1,22 +1,19 @@
 import { data, tables } from "../../index.js";
 import { Query } from "../../lib/Class/Query.js";
-import { u } from "../../lib/Class/Utils.js";
-import { Button, Xitext } from "../../lib/Class/Xitext.js";
+import { btn, code, fmt } from "../../lib/Class/Xitext.js";
 
 new Query(
 	{
 		prefix: "N",
 		name: "accept",
 	},
-	(_ctx, path, edit) => {
+	(ctx, path) => {
 		data.joinCodes[Number(path[0])] = "accepted";
-		edit(
-			...new Xitext()
-				.text(`Запрос на лс принят`)
-				.mono(path[0])
-				.inlineKeyboard([Button("Удалить", u.query("N", "del", "u", path[0]))])
-				._.build()
-		);
+		const text = fmt`Запрос на лс принят ${code(path[0])}`;
+		ctx.editMessageText(text.text, {
+			entities: text.entities,
+			reply_markup: { inline_keyboard: [[btn("Удалить", "N", "del", "u", path[0])]] },
+		});
 	}
 );
 
@@ -25,15 +22,13 @@ new Query(
 		prefix: "N",
 		name: "group",
 	},
-	(_ctx, path, edit) => {
+	(ctx, path) => {
 		data.joinCodes[Number(path[0])] = "accepted";
-		edit(
-			...new Xitext()
-				.text(`Запрос группы принят`)
-				.mono(path[0])
-				.inlineKeyboard([Button("Удалить", u.query("N", "del", "g", path[0]))])
-				._.build()
-		);
+		const text = fmt`Запрос на группу принят ${code(path[0])}`;
+		ctx.editMessageText(text.text, {
+			entities: text.entities,
+			reply_markup: { inline_keyboard: [[btn("Удалить", "N", "del", "g", path[0])]] },
+		});
 	}
 );
 
