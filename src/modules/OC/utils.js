@@ -1,10 +1,11 @@
 import { parseMarkdown, upload } from "better-telegraph";
 import { DatabaseWrapper } from "leafy-db";
-import { Context } from "telegraf";
+import { Context, Markup } from "telegraf";
 import { bot, database, newlog } from "../../index.js";
 import { getAccount } from "../../lib/Class/Telegraph.js";
 import { util } from "../../lib/Class/Utils.js";
 import { fmt } from "../../lib/Class/Xitext.js";
+import { ocbutton } from "./index.js";
 
 /**
  * @typedef {{
@@ -43,12 +44,12 @@ export function oclog(from, message) {
 
 /**
  * @param {Context} ctx
- * @returns {Context["editMessageText"]}
+ * @returns {Promise<Context["editMessageText"]>}
+ * @param {string} firstProgress
  */
-export async function CreateProgressManager(ctx) {
-  const message = await ctx.reply(create.saving);
-	return (t, e = {}) =>
-		ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, t, e);
+export async function CreateProgressManager(ctx, firstProgress) {
+	const message = await ctx.reply(firstProgress);
+	return (t, e = {}) => ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, t, e);
 }
 
 /**
@@ -59,7 +60,7 @@ export async function CreateProgressManager(ctx) {
  *  fileid: string;
  *  description?: string
  * }} OC
- * @param {(m: string) => any} [progress]
+ * @param {(m: string, e?: import("telegraf/types").Convenience.ExtraEditMessageText) => any} [progress]
  * @param {number} [index]
  */
 export async function saveOC(user, OC, progress = () => void 0, index) {
@@ -109,16 +110,16 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	if (prevOC) OCs[index] = saveOC;
 	else OCs.push(saveOC);
 	save();
-	
-	const text = 	`${typeof index === "number" ? "Изменен" : "Создан новый"} персонаж с имннем ${OC.name}`
-		
+
+	const text = `${typeof index === "number" ? "Изменен" : "Создан новый"} персонаж с имннем ${OC.name}`;
+
 	const buttons = [];
 	const menu = [ocbutton("↩️ Назад", "back")];
 	for (const [i, oc] of OCs.entries()) {
 		if (oc && oc.name) buttons.push([ocbutton(oc.name, "myoc", i)]);
 	}
 	buttons.push(menu);
-	
+
 	progress(text, Markup.inlineKeyboard(buttons));
 	oclog(null, text);
 }

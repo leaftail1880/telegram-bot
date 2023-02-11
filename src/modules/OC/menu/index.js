@@ -1,6 +1,6 @@
 import { Command } from "../../../lib/Class/Command.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { lang } from "../index.js";
+import { oc } from "../index.js";
 
 new Command(
 	{
@@ -10,7 +10,7 @@ new Command(
 		target: "private",
 	},
 	(ctx) => {
-		ctx.reply(lang.main, { reply_markup: { inline_keyboard: lang.mainKeyboard }, disable_web_page_preview: true });
+		ctx.reply(oc.main, { reply_markup: { inline_keyboard: oc.mainKeyboard }, disable_web_page_preview: true });
 	}
 );
 
@@ -21,10 +21,10 @@ new Query(
 		message: "Назад",
 	},
 	async (ctx) => {
-		ctx.editMessageText(lang.main.text, {
-			entities: lang.main.entities,
+		ctx.editMessageText(oc.main.text, {
+			entities: oc.main.entities,
 			reply_markup: {
-				inline_keyboard: lang.mainKeyboard,
+				inline_keyboard: oc.mainKeyboard,
 			},
 			disable_web_page_preview: true,
 		});

@@ -17,7 +17,7 @@ export function setupDB() {
 			},
 			cache: {},
 		};
-		return setDefaults(value, defaultUser);
+		return setDefaults(value, defaultUser, true);
 	});
 	tables.users._.on("beforeSet", (key, value) => {
 		/** @type {DB.User} */
@@ -40,9 +40,10 @@ export function setupDB() {
 			},
 			cache: {
 				members: [],
+				silentMembers: {},
 			},
 		};
-		return setDefaults(value, defaultGroup);
+		return setDefaults(value, defaultGroup, true);
 	});
 	tables.groups._.on("beforeSet", (key, value) => {
 		/** @type {DB.Group} */

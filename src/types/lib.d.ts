@@ -59,7 +59,7 @@ declare namespace DB {
 			nickname?: string;
 			dm?: 1 | 0 | undefined;
 			scene?: string;
-			sceneCache?: string[] | Record<string, any>;
+			sceneCache?: Array<string> | Record<string, any>;
 			tag?: string;
 		};
 		needSafe?: true;
@@ -72,6 +72,7 @@ declare namespace DB {
 		};
 		cache: {
 			members: Array<number>;
+			silentMembers: Record<string, string>;
 			titleAnimation?: Array<string>;
 			titleAnimationSpeed?: number;
 			lastCall?: number;
@@ -80,7 +81,7 @@ declare namespace DB {
 				message_id?: number;
 				lastPins?: Record<number, number>;
 			};
-			artRepost?: 1 | undefined;
+			artRepost?: 1;
 		};
 	};
 }

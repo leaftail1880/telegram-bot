@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 6, 0],
+	version: [9, 6, 2],
 
 	command: {
 		/**
@@ -54,6 +54,18 @@ export default {
 		 * parsing update if user is not logged.
 		 */
 		"DataGuard",
+		/**
+		 * Handles error for all next listeners and sends message about
+		 * error to log cvhat and chat where error happened. Because of
+		 * previous middlewares is guards from not registered users
+		 * and groups, it cannot send messages before they will run.
+		 */
+		"ErrorHandler",
+		/**
+		 * Cancels next listeners and deletes message if user entered
+		 * nonotify mode
+		 */
+		"NoNotify",
 		/**
 		 * Parsing ctx.data.user.scene and ctx.data.sceneCache
 		 * to ctx.scene object.

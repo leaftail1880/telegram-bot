@@ -12,9 +12,9 @@ import deepExtend from "deep-extend";
  * @param {D} defaultObject
  * @returns {S & D}
  */
-export function setDefaults(sourceObject, defaultObject) {
-	//                 No another simplier way do delete links
-	return deepExtend(JSON.parse(JSON.stringify(defaultObject)), sourceObject);
+export function setDefaults(sourceObject, defaultObject, noUnlink = false) {
+	//                                           No another simplier way do delete links
+	return deepExtend(noUnlink ? defaultObject : JSON.parse(JSON.stringify(defaultObject)), sourceObject);
 }
 /**
  *

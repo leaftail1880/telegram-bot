@@ -1,6 +1,6 @@
 import { Markup } from "../../../index.js";
 import { Query } from "../../../lib/Class/Query.js";
-import { lang, ocbutton } from "../index.js";
+import { oc, ocbutton } from "../index.js";
 import { noOC, OC_DB } from "../utils.js";
 
 // Главное меню > Мои персонажи
@@ -21,6 +21,6 @@ new Query(
 		buttons.push(menu);
 
 		ctx.answerCbQuery("Ваши персонажи");
-		edit(lang.myOCS, Markup.inlineKeyboard(buttons));
+		edit(oc.myOCS, Markup.inlineKeyboard(buttons));
 	}
 );

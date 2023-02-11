@@ -11,7 +11,8 @@ ocmenu.query({ name: "s" }, (ctx) => {
 
 export const ocbutton = ocmenu.createButtonMaker();
 
-export const lang = {
+export const oc = {
+
 	mainKeyboard: [
 		[ocbutton("Найти", "find")],
 		[ocbutton("Мои персонажи", "my")],

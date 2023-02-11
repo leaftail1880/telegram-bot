@@ -3,8 +3,8 @@ import { Query } from "../../../lib/Class/Query.js";
 import { Scene } from "../../../lib/Class/Scene.js";
 import { u } from "../../../lib/Class/Utils.js";
 import { bold, fmt, link } from "../../../lib/Class/Xitext.js";
-import { lang } from "../index.js";
-import { oclog, OC_DB, saveOC, CreateProgressManager} from "../utils.js";
+import { oc } from "../index.js";
+import { CreateProgressManager, oclog, OC_DB, saveOC } from "../utils.js";
 
 const create = {
 	file: fmt`Отправь мне референс персонажа ввиде ${bold(
@@ -67,10 +67,10 @@ const scene = new Scene(
 		async middleware(ctx, next) {
 			if (!hasText(ctx)) return next();
 
-			if (ctx.message.text.length > 32) return ctx.reply(lang.maxLength("Имя", 32));
+			if (ctx.message.text.length > 32) return ctx.reply(oc.maxLength("Имя", 32));
 
 			ctx.reply(create.description);
-			oclog(ctx.from, `изменил(а) имя`);
+			oclog(ctx.from, `изменил(а) имя (${ctx.message.text})`);
 
 			ctx.scene.data.name = ctx.message.text;
 			ctx.scene.next();
@@ -79,7 +79,7 @@ const scene = new Scene(
 			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
 
 			ctx.reply(create.description);
-			oclog(ctx.from, `оставил(а) прежнее имя`);
+			oclog(ctx.from, `оставил(а) прежнее имя (${oldoc.name})`);
 
 			ctx.scene.data.name = oldoc.name;
 			ctx.scene.next();
@@ -91,12 +91,10 @@ const scene = new Scene(
 	{
 		async middleware(ctx, next) {
 			if (!hasText(ctx)) return next();
-			if (ctx.message.text.length > 4000) return ctx.reply(lang.maxLength("Описание", 4000));
+			if (ctx.message.text.length > 4000) return ctx.reply(oc.maxLength("Описание", 4000));
 
 			const d = ctx.scene.data;
-			const message = await ctx.reply(create.saving);
-			const progress = (/** @type {string} */ m, /** @type {Extra} */extra = {}) =>
-				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m, extra);
+			const progress = await CreateProgressManager(ctx, create.saving);
 
 			saveOC(
 				ctx.from,
@@ -113,9 +111,7 @@ const scene = new Scene(
 		async next(ctx) {
 			const d = ctx.scene.data;
 			const oldoc = OC_DB.get(ctx.from.id)[d.i];
-			const message = await ctx.reply(create.saving);
-			const progress = (/** @type {string} */ m) =>
-				ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
+			const progress = await CreateProgressManager(ctx, create.saving);
 
 			saveOC(
 				ctx.from,

@@ -1,6 +1,6 @@
 import { Query } from "../../../lib/Class/Query.js";
 import { util } from "../../../lib/Class/Utils.js";
-import { lang, ocbutton } from "../index.js";
+import { oc, ocbutton } from "../index.js";
 import { noOC, OC_DB } from "../utils.js";
 
 // Главное меню > Мои персонажи > |Персонаж|
@@ -18,7 +18,7 @@ new Query(
 
 		/** @type {import("../utils.js").Character} */
 		const OC = OCs[oc_index];
-		const capt = lang.mOC(OC.name, OC.path);
+		const capt = oc.mOC(OC.name, OC.path);
 
 		ctx.answerCbQuery(OC.name);
 		edit(capt.text, {

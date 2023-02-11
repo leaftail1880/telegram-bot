@@ -1,7 +1,7 @@
 import { tables } from "../../../../index.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { util } from "../../../../lib/Class/Utils.js";
-import { lang, ocbutton, ocmenu } from "../../index.js";
+import { oc, ocbutton, ocmenu } from "../../index.js";
 import { noOC, OC_DB } from "../../utils.js";
 
 new Query(
@@ -37,7 +37,7 @@ new Query(
 			pageTo: page,
 		});
 
-		edit(lang.find, {
+		edit(oc.find, {
 			reply_markup: { inline_keyboard: buttons },
 		});
 	}

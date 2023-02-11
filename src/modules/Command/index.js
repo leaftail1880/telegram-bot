@@ -7,7 +7,8 @@ const public_commands = [
 	"name",
 	"pin",
 	"admins",
-	"upload", //
+	"upload",
+	"nonotify", //
 ];
 
 for (const cmd of public_commands) import(`./public/${cmd}.js`);

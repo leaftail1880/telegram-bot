@@ -1,7 +1,7 @@
 import { Markup, tables } from "../../../../index.js";
 import { Query } from "../../../../lib/Class/Query.js";
 import { util } from "../../../../lib/Class/Utils.js";
-import { lang, ocbutton } from "../../index.js";
+import { oc, ocbutton } from "../../index.js";
 import { OC_DB } from "../../utils.js";
 
 new Query(
@@ -25,7 +25,7 @@ new Query(
 		buttons.push(menu);
 
 		ctx.answerCbQuery("ОС " + name);
-		const lan = lang.ocs(name, user.static.nickname, user.static.id, hasOldOCs);
+		const lan = oc.ocs(name, user.static.nickname, user.static.id, hasOldOCs);
 		edit(lan.text, {
 			entities: lan.entities,
 			reply_markup: { inline_keyboard: buttons },
