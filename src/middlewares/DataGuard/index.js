@@ -4,6 +4,7 @@ import "./queries.js";
 
 bot.use(async (ctx, next) => {
 	if (!ctx.message) return next();
+
 	ctx.data ??= {};
 
 	if (ctx.chat?.type === "channel") return;

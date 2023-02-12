@@ -3,6 +3,8 @@ import { bot, data, tables } from "../../index.js";
 import { u, util } from "../../lib/Class/Utils.js";
 
 bot.use(async (ctx, next) => {
+	if (!ctx.message) return next();
+
 	const silent = ctx.data.group.cache.silentMembers;
 	const reply = "reply_to_message" in ctx.message;
 	let reason, ping_id;

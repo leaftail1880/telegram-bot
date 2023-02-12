@@ -1,6 +1,6 @@
 import { Command } from "../../lib/Class/Command.js";
 import { Scene } from "../../lib/Class/Scene.js";
-import { Xitext } from "../../lib/Class/Xitext.js";
+import { fmt, Markup, Xitext } from "../../lib/Class/Xitext.js";
 import { safeRun } from "../../lib/utils/safe.js";
 import { artButton, artMenu } from "./utils.js";
 export * from "./utils.js";
@@ -12,27 +12,24 @@ new Command(
 		target: "private",
 	},
 	(ctx) => {
-		ctx.reply(...ART.lang.main._.build());
+		ctx.reply(ART.mainLang, Markup.inlineKeyboard(ART.mainKeyboard));
 	}
 );
 
 artMenu.query({ name: "back" }, (ctx, path, edit) => {
-	edit(...ART.lang.main._.build());
+	edit(ART.mainLang, Markup.inlineKeyboard(ART.mainKeyboard));
 });
 
 export const ART = {
 	platfroms: ["telegram", "twitter", "vk"],
 	/** @type {Record<string, {attach: import("./types.js").AttachFunction; post: import("./types.js").PostFunction}>} */
 	platformActions: {},
-	lang: {
-		main: new Xitext()
-			.text("Кроссплатформенная публикация (Бета!)")
-			.inlineKeyboard(
-				[artButton("Новая публикация", "publish")],
-				[artButton("Платформы", "platforms")],
-				[artButton("Настройки", "settings")]
-			),
-	},
+	mainLang: `Кроссплатформенная публикация (Бета!)`,
+	mainKeyboard: [
+		[artButton("Новая публикация", "publish")],
+		[artButton("Платформы", "platforms")],
+		[artButton("Настройки", "settings")],
+	],
 	languages: {
 		ru: ["русский", "русском"],
 		en: ["английский", "английском"],

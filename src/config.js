@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 6, 3],
+	version: [9, 6, 5],
 
 	command: {
 		/**
@@ -15,31 +15,31 @@ export default {
 
 	update: {
 		/**
-		 * Время во время которого в лог будет выводиться скорость обработки запроса. 0 что бы отключить
+		 * 0 to disable
 		 * @type {milliseconds}
 		 */
 		logTime: Infinity,
 
 		/**
-		 * Задержка между запросами к другим активным версиям
+		 * Cooldown between requests to another active versions
 		 * @type {milliseconds}
 		 */
 		timerTime: 5000,
 
 		/**
-		 * Интервал перезапуска длинного поллинга воизбежание зависаний кеша
+		 * Relaunch polling interval for avoiding hang up's
 		 * @type {milliseconds}
 		 */
 		pollingRelaunchInterval: 1000 * 60 * 60,
 	},
 
 	/**
-	 * Кулдаун для ошибок в чате
+	 * Cooldown of logging no connection errors
 	 * @type {seconds}
 	 */
-	ErrorCooldown: 10,
+	NoConnectionLogCooldown: 10,
 	/**
-	 * Время в секундах, через которое бот попытается восстановить подключение после сетевой ошибки
+	 * Cooldown beetween tries to reconnect after network error
 	 * @type {seconds}
 	 */
 	ReconnectTimerWaitTime: 1,

@@ -12,7 +12,7 @@ const Connect = {
 	Promise: null,
 };
 
-const ErrorLog = new XTimer(config.ErrorCooldown);
+const ErrorLog = new XTimer(config.NoConnectionLogCooldown);
 
 /**
  *
