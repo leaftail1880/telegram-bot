@@ -1,3 +1,4 @@
+import clc from "cli-color";
 import { SingleBar } from "cli-progress";
 import { clearLines, TypedBind } from "leafy-utils";
 import { database, tables } from "../../index.js";
@@ -58,35 +59,17 @@ export function setupDB() {
 
 	database.renderer = (postfix, total) => {
 		const bar = new SingleBar({
-			format: `[${styles.progressBar(`{bar}`)}] {percentage}% - {value}/{total} ${postfix}`,
-			barCompleteChar: "#",
-			barIncompleteChar: "..",
+			format: `${styles.progressBar(`{bar}`)} {percentage}% - {value}/{total}`,
+			barCompleteChar: clc.greenBright("█"),
+			barIncompleteChar: clc.blackBright("▒"),
+			barsize: 150,
+
 			hideCursor: true,
+			clearOnComplete: true,
+			// linewrap: true,
 		});
 
 		bar.start(total, 0);
-		const originalStop = TypedBind(bar.stop, bar);
-		bar.stop = () => {
-			originalStop();
-			clearLines(-1);
-		};
-		return bar;
-	};
-
-	UpdateServer.renderer = (total) => {
-		const bar = new SingleBar({
-			format: `[${styles.progressBar(`{bar}`)}] {percentage}% - {value}/{total}`,
-			barCompleteChar: "#",
-			barIncompleteChar: "..",
-			hideCursor: true,
-		});
-
-		bar.start(total, 0);
-		const originalStop = TypedBind(bar.stop, bar);
-		bar.stop = () => {
-			originalStop();
-			clearLines(-1);
-		};
 		return bar;
 	};
 }

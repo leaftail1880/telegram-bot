@@ -19,8 +19,8 @@ import { setDataType } from "./launch/dataType.js";
 import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
 import { setupDB } from "./launch/setupDB.js";
-import { safeLoad } from "./utils/safe.js";
 import { parseError } from "./utils/error.js";
+import { safeLoad } from "./utils/safe.js";
 
 export const data = {
 	v: config.version.join("."),
@@ -139,9 +139,10 @@ async function start() {
 	const print = lang.state(9);
 
 	print(`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`);
-	if (data.development) try {
-		await fs.mkdir("logs");
-	} catch {}
+	if (data.development)
+		try {
+			await fs.mkdir("logs");
+		} catch {}
 
 	/**
 	 * Seting default get/set values and progress renderers
@@ -187,8 +188,8 @@ async function start() {
 	/**
 	 * Command and lists initalization
 	 */
-	print("Setting up enviroment...");
-	await emit("modules.load");
+	print("Emiting load.modules...");
+	await emit("load.modules");
 
 	/**
 	 * Bot launch

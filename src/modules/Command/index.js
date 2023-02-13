@@ -8,7 +8,7 @@ const public_commands = [
 	"pin",
 	"admins",
 	"upload",
-	"nonotify", //
+	// sleep Moved to middlewares/NoNotify/index.js
 ];
 
 for (const cmd of public_commands) import(`./public/${cmd}.js`);

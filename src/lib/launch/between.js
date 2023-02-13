@@ -10,7 +10,7 @@ import { service_lang as lang } from "./lang.js";
 export const UpdateServer = {
 	passcode: env.P ?? "test",
 	isClosed: false,
-	ip: OpenServer(~~(Math.random() * 10000), (message) => {
+	ip: OpenServer(Math.floor(Math.random() * 30000 + 3000), (message) => {
 		if (UpdateServer.isClosed) return "closed";
 
 		/** @type {{passcode: string; version?: [number, number, number]; message?: string}} */
@@ -39,21 +39,19 @@ export const UpdateServer = {
 		if (q === "realese") return Service.message.terminate_you;
 
 		if (q === "old" || q === "work") {
-			Service.stop(lang.stop.old(), "ALL");
+			Service.stop(lang.message.old(), "ALL");
 			return Service.message.terminate_me;
 		}
 	}),
-	renderer(c = 1) {
-		return {
-			increment(n = 1) {},
-			stop() {},
-		};
+	/**
+	 *
+	 * @param {string} message
+	 */
+	progress(message) {
+		console.log(`${clc.blackBright("[SyncServer]")} ${message}`);
 	},
 	async open() {
-		const bar = this.renderer(5);
-
 		await database.Reconnect();
-		bar.increment();
 
 		const activeIP = tables.main.get(config.dbkey.ip);
 		const activePASSCODE = tables.main.get(config.dbkey.ip_passcode);
@@ -64,16 +62,14 @@ export const UpdateServer = {
 						activeIP,
 						JSON.stringify({ passcode: activePASSCODE, message: Service.message.development })
 					);
+					UpdateServer.progress("External server instance was successfully setted to development mode.");
 				} catch {}
-			bar.increment(3);
 
 			tables.main.set(config.dbkey.ip, UpdateServer.ip);
 			tables.main.set(config.dbkey.ip_passcode, UpdateServer.passcode);
 			await tables.main._.commit();
-			bar.increment();
+			UpdateServer.progress("Setting-up done.");
 		}
-
-		bar.stop();
 		this.isClosed = false;
 	},
 	close() {
@@ -87,11 +83,11 @@ export async function freeze() {
 	UpdateServer.close();
 	database.Close();
 	if (data.isLaunched) {
-		const l = lang.stop.freeze();
+		const l = lang.message.freeze();
 		newlog({
 			text: l,
-			consoleMessage: clc.bgCyanBright.black(l._.text),
-			fileMessage: l._.text,
+			consoleMessage: clc.bgCyanBright.black(l.text),
+			fileMessage: l.text,
 		});
 	}
 
@@ -122,7 +118,7 @@ export async function freeze() {
 				JSON.stringify({ passcode, version: [config.version[0], config.version[1], config.version[2]] })
 			);
 		} catch (e) {
-			if (e.name === "FetchError") return launch("Не смог достучаться до сервера разработки: " + e.message, "↩️");
+			if (e.name === "FetchError") return launch("Сервер разработки не ответил:\n" + e.message, "↩️");
 			throw e;
 		}
 
@@ -131,18 +127,18 @@ export async function freeze() {
 		}
 
 		if (answer === "closed") {
-			return launch("Запрашиваемый сервер заморожен");
+			return launch("Запрашиваемый бот заморожен (Сервер помечен как закрытый)");
 		}
 
 		if (answer === Service.message.terminate_you) {
-			return Service.stop(lang.stop.terminate(), "ALL");
+			return Service.stop(lang.message.terminate(), "ALL");
 		}
 
 		if (answer === Service.message.terminate_me) {
-			return launch("Запущена как новая", "NEW");
+			return launch("Другой бот решил что он старый", "NEW");
 		}
 		if (answer === Service.message.development) {
-			if (devTimes === 0) log("Ожидает конца разработки...");
+			if (devTimes === 0) log(lang.message.development());
 			devTimes++;
 			times = 0;
 			return;
@@ -152,7 +148,7 @@ export async function freeze() {
 		console.log(times >= 1 ? `Нет ответа ${times}` : `Ждет ответ...`);
 		if (times >= 1) {
 			const message = devTimes
-				? `Запущена после разработки [${((devTimes * config.update.timerTime) / 1000).toFixed(2)} сек]`
+				? `Запущена после разработки длиной в ${((devTimes * config.update.timerTime) / 1000).toFixed(2)} сек`
 				: `Не получила ответа`;
 
 			await launch(message, "↩️");

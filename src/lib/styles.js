@@ -10,4 +10,6 @@ export default {
 	connectionResolved: clc.greenBright,
 	loadError: clc.redBright(" [-] "),
 	load: highlight(" [+] "),
+	completeLoadChar: clc.greenBright("|"),
+	incompleteLoadChar: clc.blackBright("|"),
 };

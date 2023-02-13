@@ -73,7 +73,7 @@ function isQuery(ctx) {
 
 const Qtimer = new XTimer(0.3, true);
 
-on("modules.load", () => {
+on("load.modules", () => {
 	bot.on("callback_query", async (ctx, next) => {
 		if (!isQuery(ctx)) return;
 		const data = ctx.callbackQuery.data;

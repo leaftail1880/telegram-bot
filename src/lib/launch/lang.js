@@ -1,13 +1,17 @@
 import clc from "cli-color";
 import { data } from "../../index.js";
-import { Xitext } from "../Class/Xitext.js";
+import { fmt, Xitext } from "../Class/Xitext.js";
 
 export const service_lang = {
 	launch: (/** @type {string} */ reason) => `⌬ ${data.logVersion} ${reason}`,
-	stop: {
+	message: {
 		terminate: () => `${data.logVersion} принудительно остановлена.`,
-		old: () => `${data.logVersion} выключена как старая`,
-		freeze: () => new Xitext().text(`${data.readableVersion} ждет ответа...`),
+
+		old: () => `${data.logVersion} поняла, что устарела и выключилась.`,
+		launchAsNew: () => ``,
+
+		freeze: () => fmt`${data.readableVersion} запросила статус другого сервера...`,
+		development: () => `${data.readableVersion} перешла в режим разработки.`,
 	},
 
 	/**

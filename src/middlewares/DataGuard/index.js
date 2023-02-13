@@ -3,7 +3,7 @@ import { getGroup, getUser } from "./get.js";
 import "./queries.js";
 
 bot.use(async (ctx, next) => {
-	if (!ctx.message) return next();
+	if (!ctx.from || !ctx.chat) return next();
 
 	ctx.data ??= {};
 

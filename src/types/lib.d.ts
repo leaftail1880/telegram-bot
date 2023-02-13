@@ -43,7 +43,7 @@ declare namespace IEvent {
 	};
 
 	enum Events {
-		"modules.load",
+		"load.modules",
 		"new.member",
 	}
 }

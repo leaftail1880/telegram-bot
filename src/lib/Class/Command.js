@@ -117,7 +117,7 @@ const V = {
 	channel: "КАНАЛ БЛИН",
 };
 
-on("modules.load", () => {
+on("load.modules", () => {
 	const groupCommands = [];
 	const groupAdminCommands = [];
 	const privateCommands = [];

@@ -66,7 +66,7 @@ export class Scene {
 			const mappedHandlers = handlers.map((fn) => (typeof fn === "function" ? { middleware: fn } : fn));
 			this.mappedHandlers = mappedHandlers;
 
-			on("modules.load", () => {
+			on("load.modules", () => {
 				/**
 				 * @type {Record<string, {
 				 *   middleware: MiddlewareFn;
