@@ -11,7 +11,7 @@ import "./Class/Query.js";
 
 import { emit } from "./Class/Events.js";
 import { util } from "./Class/Utils.js";
-import { bold, fmt, FmtString, link, Xitext } from "./Class/Xitext.js";
+import { bold, fmt, FmtString, link } from "./Class/Xitext.js";
 import { XTimer } from "./Class/XTimer.js";
 
 import { freeze, UpdateServer } from "./launch/between.js";
@@ -45,6 +45,7 @@ export const data = {
 		owner: Number(env.ownerID),
 		log: Number(env.logID),
 	},
+
 	/** @type {Record<number, 'accepted' | 'waiting'>} */
 	joinCodes: {},
 	/** @type {Record<string, any>} */
@@ -63,7 +64,7 @@ export const Service = {
 		terminate_you: "terminate_you",
 		terminate_me: "terminate_me",
 	},
-	safeBotLauch,
+	safeBotLaunch,
 	safeBotStop,
 	handlers: {
 		processError: handleError,
@@ -97,7 +98,9 @@ export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 		/** @type {[string, any] | [FmtString]} */
 		const doneText = "_" in text ? text._.build() : [text];
 
-		tasks.push(bot.telegram.sendMessage(data.chatID.log, doneText[0], doneText[1]));
+		tasks.push(
+			bot.telegram.sendMessage(data.chatID.log, doneText[0], doneText[1])
+		);
 	}
 
 	if (fileMessage)
@@ -105,20 +108,23 @@ export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 			const p = path.join("logs", fileName ?? "logs.txt");
 			await fs.writeFile(
 				p,
-				`[${new Date().toLocaleString([], { hourCycle: "h24" })}] ${fileMessage}\r` + (await fs.readFile(p)).toString()
+				`[${new Date().toLocaleString([], {
+					hourCycle: "h24",
+				})}] ${fileMessage}\r` + (await fs.readFile(p)).toString()
 			);
 		});
 
 	return Promise.all(tasks);
 }
 
-function safeBotLauch() {
+function safeBotLaunch() {
 	data.isLaunched = true;
 	data.isStopped = false;
 	data.isFreezed = false;
 	bot.launch();
 	data.relaunchTimer = setInterval(() => {
-		if (data.isStopped || data.isFreezed) return clearInterval(data.relaunchTimer);
+		if (data.isStopped || data.isFreezed)
+			return clearInterval(data.relaunchTimer);
 		bot.stop("Relaunch");
 		bot.launch();
 	}, config.update.pollingRelaunchInterval);
@@ -136,9 +142,11 @@ function safeBotStop(freeze = false) {
  * @returns {Promise<void>}
  */
 async function start() {
-	const print = lang.state(9);
+	const print = lang.state(8);
 
-	print(`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`);
+	print(
+		`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`
+	);
 	if (data.development)
 		try {
 			await fs.mkdir("logs");
@@ -159,13 +167,15 @@ async function start() {
 	print(`Type: ${styles.highlight(data.type)}`);
 
 	bot.catch(Service.handlers.bot);
-	bot.telegram.sendMessage(data.chatID.log, ...lang.start());
+	bot.telegram.sendMessage(data.chatID.log, lang.start());
 
 	/**
 	 * Middlewares
 	 */
 	print("Loading middlewares...");
-	await safeLoad(config.middlewares, (s) => import(`../middlewares/${s}/index.js`));
+	await safeLoad(config.middlewares, (s) =>
+		import(`../middlewares/${s}/index.js`)
+	);
 
 	/**
 	 * Modules
@@ -182,13 +192,12 @@ async function start() {
 	/**
 	 * Tells another active sessions that they need to be freezed until development
 	 */
-	print("Opening sync server...");
 	await UpdateServer.open();
 
 	/**
 	 * Command and lists initalization
 	 */
-	print("Emiting load.modules...");
+	print("Launching load.modules...");
 	await emit("load.modules");
 
 	/**
@@ -197,9 +206,13 @@ async function start() {
 	print("Launching bot...");
 	const me = await bot.telegram.getMe();
 	bot.botInfo = me;
-	safeBotLauch();
+	safeBotLaunch();
 
-	print(`Ready to work in ${styles.highlight(((Date.now() - data.start_time) / 1000).toFixed(2))}s`);
+	print(
+		`Ready to work in ${styles.highlight(
+			((Date.now() - data.start_time) / 1000).toFixed(2)
+		)}s`
+	);
 }
 
 /**
@@ -209,24 +222,22 @@ async function start() {
  * @param {boolean} sendMessage
  */
 async function stop(reason = "Остановка", type = "none", sendMessage = true) {
+	console.log(styles.state("Bot", "Stopping..."));
 	UpdateServer.close();
-	const text = new Xitext()._.group("✕  ").url(null, "https://t.me").bold()._.group();
 
-	text.text(`${type}. `);
+	let message = fmt`${link(bold`✕`, "https://t.me")}  ${type}. ${reason}`;
+	message = fmt`${message}\n${data.logVersion} ${bold(env.whereImRunning)}`;
 
-	text.text(reason);
+	// Skip on dev terminal stop
+	let skipMessage = data.development && ["SIGINT", "SIGTERM"].includes(reason);
 
-	text.text("\n" + data.logVersion + " ");
-	text.bold(env.whereImRunning);
-
-	let skipMessage = false;
-	if (data.development && ["SIGINT", "SIGTERM"].includes(reason)) skipMessage = true;
-
-	if (!skipMessage)
-		console.log(styles.error(text._.text.split("\n")[0]) + "\n" + clc.redBright(text._.text.split("\n")[1]));
+	if (!skipMessage) {
+		const [fullreason, info] = message.text.split("\n");
+		console.log(styles.error(fullreason) + "\n" + clc.redBright(info));
+	}
 
 	if (data.isLaunched && sendMessage && !skipMessage)
-		await bot.telegram.sendMessage(data.chatID.log, ...text._.build());
+		await bot.telegram.sendMessage(data.chatID.log, message);
 
 	if (type !== "none" && data.isLaunched && !data.isStopped) {
 		data.isStopped = true;
@@ -235,6 +246,7 @@ async function stop(reason = "Остановка", type = "none", sendMessage = 
 
 	if (type === "ALL") {
 		await database.commitAll();
+		console.log(styles.state("Bot", "Stopping done."));
 		process.exit(0);
 	}
 }
@@ -258,9 +270,13 @@ async function error(error, options = { sendMessage: "ifNotStopped" }) {
 			console.warn(stack);
 			console.warn(" ");
 
-			const text = fmt`${link(type, "https://t.me/")}${bold(message)}\n${stack}`;
+			const text = fmt`${link(type, "https://t.me/")}${bold(
+				message
+			)}\n${stack}`;
 
-			await bot.telegram.sendMessage(data.chatID.log, text, { disable_web_page_preview: true });
+			await bot.telegram.sendMessage(data.chatID.log, text, {
+				disable_web_page_preview: true,
+			});
 
 			if (extra) {
 				await util.sendSeparatedMessage(

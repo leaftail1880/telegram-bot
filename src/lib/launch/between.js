@@ -2,14 +2,25 @@
 
 import clc from "cli-color";
 import config from "../../config.js";
-import { bot, data, database, env, log, newlog, Service, tables } from "../../index.js";
-import { OpenServer, SendMessage } from "../utils/net.js";
+import {
+	bot,
+	data,
+	database,
+	env,
+	log,
+	newlog,
+	Service,
+	tables,
+} from "../../index.js";
+import styles from "../styles.js";
+import { OpenServer, SendBotMessage } from "../utils/net.js";
 import { bigger, setDataType } from "./dataType.js";
 import { service_lang as lang } from "./lang.js";
 
 export const UpdateServer = {
 	passcode: env.P ?? "test",
 	isClosed: false,
+	isFirstOpen: true,
 	ip: OpenServer(Math.floor(Math.random() * 30000 + 3000), (message) => {
 		if (UpdateServer.isClosed) return "closed";
 
@@ -32,7 +43,11 @@ export const UpdateServer = {
 		/**
 		 * @type {typeof data.type}
 		 */
-		const q = bigger(config.version, request.version, ["realese", "old", "work"]);
+		const q = bigger(config.version, request.version, [
+			"realese",
+			"old",
+			"work",
+		]);
 
 		if (data.development) return Service.message.development;
 
@@ -44,13 +59,15 @@ export const UpdateServer = {
 		}
 	}),
 	/**
-	 *
+	 * Sends [SyncServer] message to console with colors from styles.state
 	 * @param {string} message
 	 */
 	progress(message) {
-		console.log(`${clc.blackBright("[SyncServer]")} ${message}`);
+		console.log(styles.state("SyncServer", message));
 	},
+
 	async open() {
+		UpdateServer.progress(this.isFirstOpen ? "Opening..." : "Reopening...");
 		await database.Reconnect();
 
 		const activeIP = tables.main.get(config.dbkey.ip);
@@ -58,17 +75,22 @@ export const UpdateServer = {
 		if (activeIP !== UpdateServer.ip) {
 			if (data.development)
 				try {
-					await SendMessage(
-						activeIP,
-						JSON.stringify({ passcode: activePASSCODE, message: Service.message.development })
-					);
-					UpdateServer.progress("External server instance was successfully setted to development mode.");
+					await SendBotMessage({
+						ip: activeIP,
+						passcode: activePASSCODE,
+						message: "development",
+					});
+					UpdateServer.progress("Another bot entered dev mode.");
 				} catch {}
 
 			tables.main.set(config.dbkey.ip, UpdateServer.ip);
 			tables.main.set(config.dbkey.ip_passcode, UpdateServer.passcode);
 			await tables.main._.commit();
-			UpdateServer.progress("Setting-up done.");
+			UpdateServer.progress(
+				this.isFirstOpen ? "Successfully opened." : "Successfully reopened."
+			);
+
+			this.isFirstOpen = false;
 		}
 		this.isClosed = false;
 	},
@@ -113,12 +135,10 @@ export async function freeze() {
 		let answer;
 
 		try {
-			answer = await SendMessage(
-				ip,
-				JSON.stringify({ passcode, version: [config.version[0], config.version[1], config.version[2]] })
-			);
+			answer = await SendBotMessage({ ip, passcode, version: config.version });
 		} catch (e) {
-			if (e.name === "FetchError") return launch("Сервер разработки не ответил:\n" + e.message, "↩️");
+			if (e.name === "FetchError")
+				return launch("Сервер разработки не ответил:\n" + e.message, "↩️");
 			throw e;
 		}
 
@@ -127,7 +147,9 @@ export async function freeze() {
 		}
 
 		if (answer === "closed") {
-			return launch("Запрашиваемый бот заморожен (Сервер помечен как закрытый)");
+			return launch(
+				"Запрашиваемый бот заморожен (Сервер помечен как закрытый)"
+			);
 		}
 
 		if (answer === Service.message.terminate_you) {
@@ -148,7 +170,10 @@ export async function freeze() {
 		console.log(times >= 1 ? `Нет ответа ${times}` : `Ждет ответ...`);
 		if (times >= 1) {
 			const message = devTimes
-				? `Запущена после разработки длиной в ${((devTimes * config.update.timerTime) / 1000).toFixed(2)} сек`
+				? `Запущена после разработки длиной в ${(
+						(devTimes * config.update.timerTime) /
+						1000
+				  ).toFixed(2)} сек`
 				: `Не получила ответа`;
 
 			await launch(message, "↩️");
@@ -169,6 +194,7 @@ export async function freeze() {
 		if (timeout) clearInterval(timeout);
 		if (data.isStopped === false) return;
 
+		const print = lang.state(2);
 		const message = lang.launch(info);
 		newlog({
 			fileMessage: message,
@@ -184,13 +210,15 @@ export async function freeze() {
 		/**
 		 * Updates local cache to actual data
 		 */
-		for (const table in database.tables) database.tables[table]._.isConnected = false;
+		for (const table in database.tables)
+			database.tables[table]._.isConnected = false;
+		print("Connecting to db...");
 		await database.Connect();
 
 		await UpdateServer.open();
-		Service.safeBotLauch();
+		Service.safeBotLaunch();
 
-		bot.telegram.sendMessage(data.chatID.log, ...lang.start(info, prefix));
-		console.log("Запущен.");
+		bot.telegram.sendMessage(data.chatID.log, lang.start(info, prefix));
+		print("Relaunching done.");
 	}
 }

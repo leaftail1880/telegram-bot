@@ -1,4 +1,3 @@
-import clc from "cli-color";
 import { Service } from "../../index.js";
 import styles from "../styles.js";
 
@@ -36,10 +35,15 @@ export async function safeLoad(folderArray, importFN, log = true) {
 			if (module && "wait" in module) await module.wait;
 
 			if (log)
-				console.log(`${styles.load}${file} (${clc.yellowBright(`${(performance.now() - start).toFixed(2)} ms`)})`);
+				console.log(
+					`${styles.load}${file} (${styles.number(
+						`${(performance.now() - start).toFixed(2)} ms`
+					)})`
+				);
 		} catch (e) {
 			console.log(`${styles.loadError}${file}`);
-			Service.error(e);
+			await Service.error(e);
+			Service.stop("Error while loading", "ALL", false);
 		}
 	}
 }

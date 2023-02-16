@@ -8,7 +8,7 @@ const FITLERS = [
 	["<anonymous>", "</>", 0],
 	[/file:.*src\/(.*)/, "src/$1"],
 	[/.*Telegram\.callApi.*/, "Telegram.callApi()"],
-	[/.*node.*/],
+	// [/.*node.*/],
 ];
 
 /**
@@ -19,7 +19,8 @@ function parseStackLine(line) {
 		if (typeof line !== "string") continue;
 		const replaceAll = count === 0;
 
-		if (replaceAll) line = line.replace(new RegExp(regexp, "g"), replacer ?? "");
+		if (replaceAll)
+			line = line.replace(new RegExp(regexp, "g"), replacer ?? "");
 		else line = line.replace(regexp, replacer ?? "");
 	}
 	return line;

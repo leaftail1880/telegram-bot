@@ -1,6 +1,6 @@
-import clc from "cli-color";
 import { data } from "../../index.js";
-import { fmt, Xitext } from "../Class/Xitext.js";
+import { fmt, italic, link, bold } from "../Class/Xitext.js";
+import styles from "../styles.js";
 
 export const service_lang = {
 	launch: (/** @type {string} */ reason) => `⌬ ${data.logVersion} ${reason}`,
@@ -10,37 +10,29 @@ export const service_lang = {
 		old: () => `${data.logVersion} поняла, что устарела и выключилась.`,
 		launchAsNew: () => ``,
 
-		freeze: () => fmt`${data.readableVersion} запросила статус другого сервера...`,
+		freeze: () =>
+			fmt`${data.readableVersion} запросила статус другого сервера...`,
 		development: () => `${data.readableVersion} перешла в режим разработки.`,
 	},
 
 	/**
-	 *
 	 * @param {number} total
-	 * @returns
 	 */
 	state(total) {
 		let c = 0;
 		return (/** @type {string} */ m) => {
-			console.log(clc.blackBright(`[${c}/${total}] `) + clc.white(m));
+			console.log(styles.state(`${c}/${total}`, " " + m));
 			c++;
 		};
 	},
 
 	/**
-	 *
 	 * @param {string} [info]
 	 * @param {string} [prefix]
-	 * @returns
 	 */
 	start: (info = data.readableVersion.split(" ")[1], prefix = "⌬") =>
-		new Xitext()
-			.text(`${prefix} Кобольдя `)
-			._.group(data.readableVersion.split(" ")[0])
-			.url(null, `https://t.me/`)
-			.bold()
-			._.group()
-			.text(" ")
-			.italic(info)
-			._.build(),
+		fmt`${prefix} Кобольдя ${link(
+			bold(data.readableVersion.split(" ")[0]),
+			"https://t.me/"
+		)} ${italic(info)}`,
 };

@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 7, 0],
+	version: [9, 8, 0],
 
 	command: {
 		/**
@@ -43,6 +43,12 @@ export default {
 	 * @type {seconds}
 	 */
 	ReconnectTimerWaitTime: 1,
+
+	/**
+	 * Time to wait until abort request to another bot instances
+	 * @type {milliseconds}
+	 */
+	MessageTimeout: 2000,
 
 	middlewares: [
 		/**

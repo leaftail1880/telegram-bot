@@ -1,6 +1,8 @@
-import fetch from "node-fetch";
 import http from "http";
+import fetch from "node-fetch";
 import os from "os";
+import config from "../../config.js";
+import { Service } from "../Service.js";
 
 /**
  * Opens server and returns server ip
@@ -12,7 +14,7 @@ export function OpenServer(port, callback) {
 		.createServer((incoming, response) => {
 			incoming.on("data", async (chunk) => {
 				const message = await callback(chunk.toString());
-				response.write(message);
+				if (message) response.write(message);
 				response.end();
 			});
 		})
@@ -28,7 +30,8 @@ export function OpenServer(port, callback) {
 			// 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
 			const familyV4Value = typeof face.family === "string" ? "IPv4" : 4;
 
-			if (face.family === familyV4Value && !face.internal) results.push(face.address);
+			if (face.family === familyV4Value && !face.internal)
+				results.push(face.address);
 		}
 	}
 
@@ -36,15 +39,33 @@ export function OpenServer(port, callback) {
 }
 
 /**
- * Sends message to url
- * @param {string} url
- * @param {string} body
+ * Sends message to another bot
+ * @param {LoginInfo & ({
+ *   message?: keyof Service["message"]
+ *   version?: number[]
+ * })} data
  */
-export function SendMessage(url, body) {
+export function SendBotMessage(data) {
+	if (!data.message && !data.version) {
+		throw new ReferenceError(
+			"You must specify message or version in SendBotMessage!"
+		);
+	}
+
 	return new Promise(async (resolve, reject) => {
 		let response;
 		try {
-			response = await fetch(url, { body, method: "PUT" });
+			const controller = new AbortController();
+			const ip = data.ip;
+
+			setTimeout(() => controller.abort(), config.MessageTimeout);
+			delete data.ip;
+
+			response = await fetch(ip, {
+				signal: controller.signal,
+				method: "PUT",
+				body: data,
+			});
 		} catch (error) {
 			return reject(error);
 		}
@@ -54,3 +75,10 @@ export function SendMessage(url, body) {
 		response.body.on("data", (chunk) => resolve(chunk.toString()));
 	});
 }
+
+/**
+ * @typedef {{
+ *   ip: string;
+ *   passcode: string;
+ * }} LoginInfo
+ */
