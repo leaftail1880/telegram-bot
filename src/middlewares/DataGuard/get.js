@@ -26,10 +26,12 @@ function logNotAccepted(ctx) {
 		.text("Лс (NoReg) ")
 		.url(
 			util.getTelegramName(ctx.from),
-			ctx.from.username ? `https://t.me/${ctx.from.username}` : u.userLink(ctx.from.id)
+			ctx.from.username
+				? `https://t.me/${ctx.from.username}`
+				: u.userLink(ctx.from.id)
 		);
 
-	if ("text" in ctx.message) XT.text(`: ${ctx.message.text}`);
+	if (ctx.message && "text" in ctx.message) XT.text(`: ${ctx.message.text}`);
 	logReq(XT);
 }
 
@@ -50,7 +52,10 @@ export async function getUser(ctx) {
 					.url(util.getTelegramName(ctx.from), u.userLink(ctx.from.id))
 					.text("\nID: ")
 					.mono(ctx.from.id)
-					.inlineKeyboard([btn("Принять", "N", "accept", ctx.from.id)], [btn("Игнорировать", "all", "delmsg")]);
+					.inlineKeyboard(
+						[btn("Принять", "N", "accept", ctx.from.id)],
+						[btn("Игнорировать", "all", "delmsg")]
+					);
 
 				logReq(XT);
 				logNotAccepted(ctx);
@@ -107,7 +112,8 @@ export async function getGroup(ctx) {
 
 	if (!group) {
 		if (data.private) {
-			if (ctx.chat.id === data.chatID.log) data.joinCodes[ctx.chat.id] = "accepted";
+			if (ctx.chat.id === data.chatID.log)
+				data.joinCodes[ctx.chat.id] = "accepted";
 
 			if (!(ctx.chat.id in data.joinCodes)) {
 				data.joinCodes[ctx.chat.id] = "waiting";
@@ -119,7 +125,10 @@ export async function getGroup(ctx) {
 					.mono(ctx.chat.id)
 					.text("\n\nКод: ")
 					.mono(ctx.chat.id.toString(16))
-					.inlineKeyboard([btn("Принять", "N", "group", ctx.chat.id)], [btn("Игнорировать", "all", "delmsg")]);
+					.inlineKeyboard(
+						[btn("Принять", "N", "group", ctx.chat.id)],
+						[btn("Игнорировать", "all", "delmsg")]
+					);
 
 				newlog({
 					text: XT,

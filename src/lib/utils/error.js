@@ -7,8 +7,9 @@ const FITLERS = [
 	[/\\/g, "/"],
 	["<anonymous>", "</>", 0],
 	[/file:.*src\/(.*)/, "src/$1"],
+	[/file:.*node_modules\/(.*)/, "node_modules/$1"],
 	[/.*Telegram\.callApi.*/, "Telegram.callApi()"],
-	// [/.*node.*/],
+	[/.*node:.*/],
 ];
 
 /**

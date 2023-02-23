@@ -49,7 +49,8 @@ export function oclog(from, message) {
  */
 export async function CreateProgressManager(ctx, firstProgress) {
 	const message = await ctx.reply(firstProgress);
-	return (t, e = {}) => ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, t, e);
+	return (t, e = {}) =>
+		ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, t, e);
 }
 
 /**
@@ -91,13 +92,17 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	} else {
 		// New file, uploading...
 		await progress("Загрузка референса...");
-		const telegram_link = (await bot.telegram.getFileLink(saveOC.fileid)).toString();
+		const telegram_link = (
+			await bot.telegram.getFileLink(saveOC.fileid)
+		).toString();
 		ref_link = await upload(telegram_link);
 	}
 	saveOC.filepath = ref_link;
 
 	await progress("Создание поста...");
-	const Post = parseMarkdown(`![Референс](${ref_link} "Референс")\n${saveOC.description}`);
+	const Post = parseMarkdown(
+		`![Референс](${ref_link} "Референс")\n${saveOC.description}`
+	);
 
 	if (prev_page_id) {
 		// Page already exists, just edit it
@@ -111,7 +116,9 @@ export async function saveOC(user, OC, progress = () => void 0, index) {
 	else OCs.push(saveOC);
 	save();
 
-	const text = `${typeof index === "number" ? "Изменен" : "Создан новый"} персонаж с имннем ${OC.name}`;
+	const text = `${
+		typeof index === "number" ? "Изменен" : "Создан новый"
+	} персонаж с имннем ${OC.name}`;
 
 	const buttons = [];
 	const menu = [ocbutton("↩️ Назад", "back")];
