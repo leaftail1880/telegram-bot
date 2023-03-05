@@ -11,8 +11,8 @@ import { Service } from "../Service.js";
  */
 export function OpenServer(port, callback) {
 	http
-		.createServer((incoming, response) => {
-			incoming.on("data", async (chunk) => {
+		.createServer((request, response) => {
+			request.on("data", async (chunk) => {
 				const message = await callback(chunk.toString());
 				if (message) response.write(message);
 				response.end();
@@ -20,23 +20,34 @@ export function OpenServer(port, callback) {
 		})
 		.listen(port);
 
-	const results = [];
-	const nets = os.networkInterfaces();
-
-	for (const faces of Object.values(nets)) {
+	for (const faces of Object.values(os.networkInterfaces())) {
 		if (typeof faces === "undefined") continue;
+
 		for (const face of faces) {
 			// Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
 			// 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
 			const familyV4Value = typeof face.family === "string" ? "IPv4" : 4;
 
-			if (face.family === familyV4Value && !face.internal)
-				results.push(face.address);
+			if (face.family === familyV4Value && !face.internal) {
+				return `http://${face.address}:${port}`;
+			}
 		}
 	}
-
-	return "http://" + results[0] + ":" + port;
 }
+
+const ip = OpenServer(3040, (message) => {
+	if (message === "hello") return "hi";
+
+	return "wtf who are you";
+});
+
+await fetch(ip, {
+	body: "hello",
+}); // hi
+
+await fetch(ip, {
+	body: "asd",
+}); // wtf who are you
 
 /**
  * Sends message to another bot
