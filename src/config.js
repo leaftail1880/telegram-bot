@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 9, 0],
+	version: [9, 9, 3],
 
 	command: {
 		/**

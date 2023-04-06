@@ -35,20 +35,6 @@ export function OpenServer(port, callback) {
 	}
 }
 
-const ip = OpenServer(3040, (message) => {
-	if (message === "hello") return "hi";
-
-	return "wtf who are you";
-});
-
-await fetch(ip, {
-	body: "hello",
-}); // hi
-
-await fetch(ip, {
-	body: "asd",
-}); // wtf who are you
-
 /**
  * Sends message to another bot
  * @param {LoginInfo & ({
