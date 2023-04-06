@@ -38,10 +38,10 @@ on("load.modules", async () => {
 
 		if (status === "NOT_A_PHONE") return;
 
-		// Check if phone need a charge
+		// Check if phone need dont need a charge
 		if (
-			(status.percentage > 40 && status.percentage < 70) ||
-			status.status === "CHARGING"
+			(status.percentage < 40 && status.status === "CHARGING") ||
+			(status.percentage > 70 && status.status !== "CHARGING")
 		) {
 			// Phone doesnt need a charge, skip
 			notified = false;
@@ -51,7 +51,14 @@ on("load.modules", async () => {
 		// We already notified, so now dont spam
 		if (notified) return;
 
-		bot.telegram.sendMessage(data.chatID.log, "Телефон требуется зарядить.");
+		bot.telegram.sendMessage(
+			data.chatID.log,
+			status.percentage > 40
+				? "Телефон требуется зарядить."
+				: status.percentage < 70
+				? "Телефон можно снять с зарядки."
+				: "Error231"
+		);
 		notified = true;
 	}, 1000 * 60 * 60 * 60);
 });
