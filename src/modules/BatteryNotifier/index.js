@@ -53,9 +53,9 @@ on("load.modules", async () => {
 
 		bot.telegram.sendMessage(
 			data.chatID.log,
-			status.percentage > 40
+			status.percentage < 40
 				? "Телефон требуется зарядить."
-				: status.percentage < 70
+				: status.percentage > 70
 				? "Телефон можно снять с зарядки."
 				: "Error231"
 		);
