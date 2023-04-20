@@ -33,7 +33,7 @@ on("load.modules", async () => {
 		return;
 	}
 
-	setInterval(async () => {
+	const notify = async () => {
 		const status = await getStatus();
 
 		if (status === "NOT_A_PHONE") return;
@@ -60,5 +60,12 @@ on("load.modules", async () => {
 				: "Error231"
 		);
 		notified = true;
-	}, 1000 * 60 * 60);
+	};
+
+	notify();
+
+	setInterval(notify, 1000 * 60 * 60);
+
+	data.notify = notify;
+	data.getStatus = getStatus;
 });
