@@ -33,6 +33,8 @@ function parseStackLine(line) {
  */
 export function parseError(err) {
 	let message = err.message;
+	if (typeof message !== "string")
+		message = "NOT_A_STRING_MESSAGE: " + JSON.stringify(message);
 	let stack = err.stack.replace(err.message, "").split("\n");
 	let type = err.name;
 	if (!stack[0].match(/^\s+at\s/)) type = stack.shift();

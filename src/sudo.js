@@ -10,8 +10,12 @@ import { Xitext } from "./lib/Class/Xitext.js";
  * @param {unknown} Data
  */
 export async function sudo(ctx, _, Data) {
-	const args = "help, ctx, db, data, edata, Xitext, util, r, d, keys, rr, bot, tb, db";
-	const code = `(async () => {\n${ctx.message.text.replace(config.command.clear, "")}\n})();`;
+	const args =
+		"help, ctx, db, data, edata, Xitext, util, r, d, keys, rr, bot, tb, db";
+	const code = `(async () => {\n${ctx.message.text.replace(
+		config.command.clear,
+		""
+	)}\n})();`;
 	const func = new Function(args, code);
 	try {
 		await func(
@@ -22,7 +26,8 @@ export async function sudo(ctx, _, Data) {
 			Data, // event data
 			Xitext,
 			util,
-			(/** @type {unknown} */ m) => util.sendSeparatedMessage(util.inspect(m), (r) => ctx.reply(r)),
+			(/** @type {unknown} */ m) =>
+				util.sendSeparatedMessage(util.inspect(m), (r) => ctx.reply(r)),
 			u,
 			(/** @type {unknown} */ o) => Object.keys(o), //keys
 			ctx.reply.bind(ctx), //rr
