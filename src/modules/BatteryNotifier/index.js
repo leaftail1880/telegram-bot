@@ -60,5 +60,5 @@ on("load.modules", async () => {
 				: "Error231"
 		);
 		notified = true;
-	}, 1000 * 60 * 60 * 60);
+	}, 1000 * 60 * 60);
 });
