@@ -53,11 +53,13 @@ on("load.modules", async () => {
 
 		bot.telegram.sendMessage(
 			data.chatID.log,
-			status.percentage < 40
-				? "Телефон требуется зарядить."
+			(status.percentage < 40
+				? "Телефон требуется зарядить. ("
 				: status.percentage > 70
-				? "Телефон можно снять с зарядки."
-				: "Error231"
+				? "Телефон можно снять с зарядки. ("
+				: "Error231") +
+				status.percentage +
+				"%)"
 		);
 		notified = true;
 	};
@@ -65,7 +67,4 @@ on("load.modules", async () => {
 	notify();
 
 	setInterval(notify, 1000 * 60 * 60);
-
-	data.notify = notify;
-	data.getStatus = getStatus;
 });
