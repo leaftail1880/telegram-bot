@@ -21,7 +21,7 @@ export const service_lang = {
 	state(total) {
 		let c = 0;
 		return (/** @type {string} */ m) => {
-			console.log(styles.state(`${c}/${total}`, " " + m));
+			console.log(styles.state(`${c}/${total}`, m));
 			c++;
 		};
 	},

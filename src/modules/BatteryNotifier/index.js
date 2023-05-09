@@ -66,5 +66,5 @@ on("load.modules", async () => {
 
 	notify();
 
-	setInterval(notify, 1000 * 60 * 60);
+	setInterval(notify, 1000 * 60 * 30);
 });

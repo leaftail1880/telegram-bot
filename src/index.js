@@ -7,7 +7,12 @@ import { env } from "./lib/launch/telegraf.js";
 import { Service } from "./lib/Service.js";
 
 export const database = new DatabaseManager({
-	repositoryURL: env.DB_REPO,
+	repository: {
+		branch: "master",
+		ns: "github",
+		owner: env.DB_USERNAME,
+		repo: env.DB_REPO,
+	},
 	token: env.DB_TOKEN,
 	username: env.DB_USERNAME,
 });
@@ -32,3 +37,4 @@ process.once("SIGTERM", () => Service.stop("SIGTERM", "ALL"));
 
 // All done, start
 Service.start();
+
