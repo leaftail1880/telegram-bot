@@ -1,15 +1,20 @@
 import { message } from "telegraf/filters";
-import { bot, data, tables } from "../../index.js";
+import { bot, data, database, tables } from "../../index.js";
 
-const filter = message("new_chat_title");
-
-bot.use((ctx, next) => {
-	if (filter(ctx.update)) {
-		ctx.deleteMessage(ctx.message.message_id);
-	}
+bot.on(message("new_chat_title"), (ctx, next) => {
+	ctx.deleteMessage(ctx.message.message_id);
 	next();
 });
-const active = {};
+
+/**
+ * @type {Record<string, {
+ *   timer: NodeJS.Timer;
+ *   titleAnimation: string[];
+ *   titleAnimationSpeed: number;
+ *   stage: number;
+ * }>}
+ */
+const ACTIVE = {};
 
 /**
  *
@@ -17,17 +22,17 @@ const active = {};
  */
 function Animate(group) {
 	const id = group.static.id;
-	if (active[id]) {
-		clearInterval(active[id].timer);
-		delete active[id];
+	if (ACTIVE[id]) {
+		clearInterval(ACTIVE[id].timer);
+		delete ACTIVE[id];
 	}
 	const timer = setInterval(() => {
-		if (data.isStopped || tables.main.isClosed) return;
-		active[id].stage++;
-		if (!group.cache.titleAnimation[active[id].stage]) active[id].stage = 0;
-		bot.telegram.setChatTitle(id, group.cache.titleAnimation[active[id].stage]);
+		if (data.isStopped || database.isClosed) return;
+		ACTIVE[id].stage++;
+		if (!group.cache.titleAnimation[ACTIVE[id].stage]) ACTIVE[id].stage = 0;
+		bot.telegram.setChatTitle(id, group.cache.titleAnimation[ACTIVE[id].stage]);
 	}, Math.round(group.cache.titleAnimationSpeed * 1000));
-	active[id] = {
+	ACTIVE[id] = {
 		timer: timer,
 		titleAnimation: group.cache.titleAnimation,
 		titleAnimationSpeed: group.cache.titleAnimationSpeed,
@@ -43,11 +48,7 @@ export async function SetAnimations() {
 			group.cache?.titleAnimationSpeed?.toFixed &&
 			group.cache.titleAnimationSpeed >= 5 &&
 			group.cache.titleAnimationSpeed <= 1000 &&
-			!(
-				active[group.static.id] &&
-				active[group.static.id].titleAnimation == group?.cache?.titleAnimation &&
-				active[group.static.id].titleAnimationSpeed == group.cache?.titleAnimationSpeed
-			)
+			!ACTIVE[group.static.id]
 		)
 			Animate(group);
 	}

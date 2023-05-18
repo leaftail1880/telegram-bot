@@ -3,7 +3,7 @@ import { bot, data, database, Service } from "../../index.js";
 import { XTimer } from "../Class/XTimer.js";
 import styles from "../styles.js";
 
-const Connect = {
+const CONNECT = {
 	/** @type {NodeJS.Timer} */
 	Interval: null,
 	/** @type {Function} */
@@ -12,12 +12,10 @@ const Connect = {
 	Promise: null,
 };
 
-const ErrorLog = new XTimer(config.NoConnectionLogCooldown);
+const ERROR_TIMER = new XTimer(config.NoConnectionLogCooldown);
 
 /**
- *
  * @param {string} [type]
- * @returns
  */
 export async function noConnection(type) {
 	if (data.isLaunched && !data.isStopped) {
@@ -26,7 +24,7 @@ export async function noConnection(type) {
 	}
 	if (!database.isClosed) database.Close();
 
-	if (ErrorLog.isExpired()) {
+	if (ERROR_TIMER.isExpired()) {
 		console.log(
 			styles.noConnection(
 				`Нет подключения к интернету ${type ? `${type}` : ""}`
@@ -34,20 +32,20 @@ export async function noConnection(type) {
 		);
 	}
 
-	if (!Connect.Interval) {
-		Connect.Interval = setInterval(timer, config.ReconnectTimerWaitTime * 1000);
+	if (!CONNECT.Interval) {
+		CONNECT.Interval = setInterval(timer, config.ReconnectTimerWaitTime * 1000);
 	}
 
-	if (!Connect.Promise) {
-		Connect.Promise = new Promise((resolve) => {
-			Connect.Resolve = () => {
+	if (!CONNECT.Promise) {
+		CONNECT.Promise = new Promise((resolve) => {
+			CONNECT.Resolve = () => {
 				resolve();
-				delete Connect.Promise;
-				delete Connect.Resolve;
+				delete CONNECT.Promise;
+				delete CONNECT.Resolve;
 			};
 		});
 	}
-	return Connect.Promise;
+	return CONNECT.Promise;
 }
 
 async function timer() {
@@ -68,9 +66,9 @@ async function timer() {
 
 	console.log(styles.connectionResolved("Подключение восстановлено!"));
 
-	clearInterval(Connect.Interval);
-	delete Connect.Interval;
+	clearInterval(CONNECT.Interval);
+	delete CONNECT.Interval;
 
-	// Call waiting for connection resolve functiom
-	Connect.Resolve();
+	// Call waiting for connection resolve function
+	CONNECT.Resolve();
 }

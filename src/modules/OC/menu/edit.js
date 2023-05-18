@@ -6,7 +6,7 @@ import { bold, fmt, link } from "../../../lib/Class/Xitext.js";
 import { oc } from "../index.js";
 import { CreateProgressManager, oclog, OC_DB, saveOC } from "../utils.js";
 
-const create = {
+const CREATE = {
 	file: fmt`Отправь мне референс персонажа ввиде ${bold(
 		"",
 		link("файла", u.guide(5))
@@ -27,15 +27,15 @@ new Query(
 		message: "Редактирование",
 	},
 	(ctx, data) => {
-		scene.enter(ctx.from.id, "0", { i: parseInt(data[0]) });
-		ctx.reply(create.file, { disable_web_page_preview: true });
+		SCENE.enter(ctx.from.id, "0", { i: parseInt(data[0]) });
+		ctx.reply(CREATE.file, { disable_web_page_preview: true });
 	}
 );
 
 /**
  * @type {Scene<{fileid: string; i: number; description: string; name: string;}>}
  */
-const scene = new Scene(
+const SCENE = new Scene(
 	"редактирование персонажа",
 	/**
 	 * Reference
@@ -45,7 +45,7 @@ const scene = new Scene(
 			if (!hasDocument(ctx)) return next();
 
 			ctx.scene.data.fileid = ctx.message.document.file_id;
-			ctx.reply(create.name);
+			ctx.reply(CREATE.name);
 			oclog(ctx.from, `изменил(а) реф`);
 
 			ctx.scene.next();
@@ -54,7 +54,7 @@ const scene = new Scene(
 			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
 			ctx.scene.data.fileid = oldoc.fileid;
 
-			ctx.reply(create.name);
+			ctx.reply(CREATE.name);
 			oclog(ctx.from, `оставил(а) прежний реф`);
 
 			ctx.scene.next();
@@ -69,7 +69,7 @@ const scene = new Scene(
 
 			if (ctx.message.text.length > 32) return ctx.reply(oc.maxLength("Имя", 32));
 
-			ctx.reply(create.description);
+			ctx.reply(CREATE.description);
 			oclog(ctx.from, `изменил(а) имя (${ctx.message.text})`);
 
 			ctx.scene.data.name = ctx.message.text;
@@ -78,7 +78,7 @@ const scene = new Scene(
 		next(ctx, _) {
 			const oldoc = OC_DB.get(ctx.from.id)[ctx.scene.data.i];
 
-			ctx.reply(create.description);
+			ctx.reply(CREATE.description);
 			oclog(ctx.from, `оставил(а) прежнее имя (${oldoc.name})`);
 
 			ctx.scene.data.name = oldoc.name;
@@ -94,7 +94,7 @@ const scene = new Scene(
 			if (ctx.message.text.length > 4000) return ctx.reply(oc.maxLength("Описание", 4000));
 
 			const d = ctx.scene.data;
-			const progress = await CreateProgressManager(ctx, create.saving);
+			const progress = await CreateProgressManager(ctx, CREATE.saving);
 
 			saveOC(
 				ctx.from,
@@ -111,7 +111,7 @@ const scene = new Scene(
 		async next(ctx) {
 			const d = ctx.scene.data;
 			const oldoc = OC_DB.get(ctx.from.id)[d.i];
-			const progress = await CreateProgressManager(ctx, create.saving);
+			const progress = await CreateProgressManager(ctx, CREATE.saving);
 
 			saveOC(
 				ctx.from,

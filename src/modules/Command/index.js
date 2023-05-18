@@ -1,6 +1,6 @@
 export const cooldown = 5 * 3.6e6;
 
-const public_commands = [
+const PUBLIC = [
 	"abc",
 	"call",
 	"google",
@@ -11,9 +11,9 @@ const public_commands = [
 	// sleep Moved to middlewares/NoNotify/index.js
 ];
 
-for (const cmd of public_commands) import(`./public/${cmd}.js`);
+for (const cmd of PUBLIC) import(`./public/${cmd}.js`);
 
-const private_commands = [
+const PRIVATE = [
 	"stop",
 	"sudo",
 	"v",
@@ -21,4 +21,4 @@ const private_commands = [
 	"repl", //
 ];
 
-for (const cmd of private_commands) import(`./private/${cmd}.js`);
+for (const cmd of PRIVATE) import(`./private/${cmd}.js`);

@@ -11,7 +11,7 @@ import { Xitext } from "./lib/Class/Xitext.js";
  */
 export async function sudo(ctx, _, Data) {
 	const args =
-		"help, ctx, db, data, edata, Xitext, util, r, d, keys, rr, bot, tb, db";
+		"help, ctx, data, edata, Xitext, util, r, d, keys, rr, bot, tb, db";
 	const code = `(async () => {\n${ctx.message.text.replace(
 		config.command.clear,
 		""
@@ -21,7 +21,6 @@ export async function sudo(ctx, _, Data) {
 		await func(
 			args, //help
 			ctx,
-			tables.main, //db
 			data, // bot data
 			Data, // event data
 			Xitext,

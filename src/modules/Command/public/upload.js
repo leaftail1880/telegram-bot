@@ -6,13 +6,19 @@ import { hasDocument } from "../../../lib/Class/Filters.js";
 import { Scene } from "../../../lib/Class/Scene.js";
 import { u } from "../../../lib/Class/Utils.js";
 
-const files = fmt`
-Отправляй мне изображения ${link("файлами", u.guide(5))}, а я буду создавать ссылки на них.
+const FILES = fmt`
+Отправляй мне изображения ${link(
+	"файлами",
+	u.guide(5)
+)}, а я буду создавать ссылки на них.
 
 Как только закончишь, используй /cancel`;
 
-const wrongType = fmt`
-Отправь ${link("файл", u.guide(5))} с изображением, либо используй /cancel для выхода`;
+const WRONG_TYPE = fmt`
+Отправь ${link(
+	"файл",
+	u.guide(5)
+)} с изображением, либо используй /cancel для выхода`;
 
 new Command(
 	{
@@ -21,13 +27,14 @@ new Command(
 		target: "private",
 	},
 	(ctx) => {
-		scene.enter(ctx.from.id);
-		ctx.reply(files, { disable_web_page_preview: true });
+		SCENE.enter(ctx.from.id);
+		ctx.reply(FILES, { disable_web_page_preview: true });
 	}
 );
 
-const scene = new Scene("загрузка файла", async (ctx) => {
-	if (!hasDocument(ctx)) return ctx.reply(wrongType, { disable_web_page_preview: true });
+const SCENE = new Scene("загрузка файла", async (ctx) => {
+	if (!hasDocument(ctx))
+		return ctx.reply(WRONG_TYPE, { disable_web_page_preview: true });
 	const message = await ctx.reply("Загрузка началась...");
 	const progress = (/** @type {string} */ m) => ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
 

@@ -6,29 +6,23 @@ import { noConnection } from "./noConnection.js";
 /**
  * @type {IOnErrorActions}
  */
-const OnError = {
+const ON_ERROR = {
 	timer: new XTimer(5),
 	codes: {
 		ECONNRESET: () => noConnection("Err CONNECTION RESET"),
 		ERR_MODULE_NOT_FOUND: (err) => {
 			Service.error(err);
 		},
-		409: () => Service.freeze(),
 		400: (err) => {
 			if (err?.response?.description?.includes("not enough rights")) {
 				bot.telegram.sendMessage(
 					err.on.payload.chat_id,
-					'У бота нет разрешений для выполнения действия "' + err.on.method + '"'
+					`У бота нет разрешений для выполнения действия "${err.on.method}"`
 				);
-				return;
-			}
-			Service.error(err);
+			} else Service.error(err);
 		},
 		429: (err) => {
-			if (OnError.timer.isExpired()) console.warn(err.stack);
-		},
-		413: (err) => {
-			Service.error(err);
+			if (ON_ERROR.timer.isExpired()) console.warn(err.stack);
 		},
 	},
 	types: {
@@ -40,8 +34,8 @@ const OnError = {
  * @param {IhandledError} err
  */
 export async function handleError(err) {
-	const code_action = OnError.codes[err?.response?.error_code];
-	const type_action = OnError.types[err?.name];
+	const code_action = ON_ERROR.codes[err?.response?.error_code];
+	const type_action = ON_ERROR.types[err?.name];
 
 	if (type_action) {
 		type_action(err);
@@ -59,6 +53,7 @@ export async function handleError(err) {
  * @returns
  */
 export async function handleBotError(err) {
-	if (err && err.name === "FetchError") noConnection(styles.highlight("Telegraf"));
+	if (err && err.name === "FetchError")
+		noConnection(styles.highlight("Telegraf"));
 	else Service.error(err);
 }

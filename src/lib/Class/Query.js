@@ -71,25 +71,37 @@ function isQuery(ctx) {
 	return "data" in ctx.callbackQuery;
 }
 
-const Qtimer = new XTimer(0.3, true);
+const Q_TIMER = new XTimer(0.3, true);
 
 on("load.modules", () => {
 	bot.on("callback_query", async (ctx, next) => {
 		if (!isQuery(ctx)) return;
 		const data = ctx.callbackQuery.data;
-		if (!Qtimer.isExpired(data)) return;
+		if (!Q_TIMER.isExpired(data)) return;
 
 		const { query, args } = parseQueryData(data);
 		if (!query) {
-			ctx.answerCbQuery("Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.", {
-				show_alert: true,
-			});
+			ctx.answerCbQuery(
+				"Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.",
+				{
+					show_alert: true,
+				}
+			);
 			Query.Log(ctx, "No button parser for: " + data);
 			return next();
 		}
 
-		Query.Log(ctx, `${query.info.prefix} ${query.info.name}: ${args.map((e) => `'${e}'`).join(" ")}`);
-		await safeRun("Q", () => query.callback(ctx, args, (text, extra) => ctx.editMessageText(text, extra)));
+		Query.Log(
+			ctx,
+			`${query.info.prefix} ${query.info.name}: ${args
+				.map((e) => `'${e}'`)
+				.join(" ")}`
+		);
+		await safeRun("Q", () =>
+			query.callback(ctx, args, (text, extra) =>
+				ctx.editMessageText(text, extra)
+			)
+		);
 		if (query.info.message) ctx.answerCbQuery(query.info.message);
 	});
 });

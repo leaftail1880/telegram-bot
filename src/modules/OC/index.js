@@ -58,15 +58,15 @@ export const oc = {
 	},
 };
 
-const modules = {
+const MODULES = {
 	menu: ["index", "del", "edit", "my", "create", "myoc"],
 	"menu/find": ["find", "uOC"],
 };
 
-const mds = [];
+const PATHES = [];
 
-for (const [folder, files] of Object.entries(modules)) {
-	for (const file of files) mds.push(`./${folder}/${file}.js`);
+for (const [folder, files] of Object.entries(MODULES)) {
+	for (const file of files) PATHES.push(`./${folder}/${file}.js`);
 }
 
-export const wait = safeLoad(mds, (path) => import(path), false);
+export const wait = safeLoad(PATHES, (path) => import(path), false);

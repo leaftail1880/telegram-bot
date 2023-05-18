@@ -38,17 +38,16 @@ on("load.modules", async () => {
 
 		if (status === "NOT_A_PHONE") return;
 
-		// Check if phone need dont need a charge
+		// Check if phone don't need a charge
 		if (
 			(status.percentage < 40 && status.status === "CHARGING") ||
 			(status.percentage > 70 && status.status !== "CHARGING")
 		) {
-			// Phone doesnt need a charge, skip
 			notified = false;
 			return;
 		}
 
-		// We already notified, so now dont spam
+		// We already notified, so now don't spam
 		if (notified) return;
 
 		bot.telegram.sendMessage(

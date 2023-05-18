@@ -14,8 +14,6 @@ import { util } from "./Class/Utils.js";
 import { bold, fmt, FmtString, link } from "./Class/Xitext.js";
 import { XTimer } from "./Class/XTimer.js";
 
-import { freeze, UpdateServer } from "./launch/between.js";
-import { setDataType } from "./launch/dataType.js";
 import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
 import { setupDB } from "./launch/setupDB.js";
@@ -24,18 +22,12 @@ import { safeLoad } from "./utils/safe.js";
 
 export const data = {
 	v: config.version.join("."),
-
-	readableVersion: `v${config.version.join(".")}`,
-	logVersion: `v${config.version.join(".")} I`,
-
-	/** @type {'work' | 'realese' | 'old'} */
-	type: "realese",
+	sv: `v${config.version.join(".")}`,
 
 	start_time: Date.now(),
 
 	isLaunched: false,
 	isStopped: false,
-	isFreezed: false,
 
 	development: env.dev == "true",
 	benchmark: true,
@@ -55,7 +47,6 @@ export const data = {
 };
 
 export const Service = {
-	freeze,
 	start,
 	stop,
 	error,
@@ -73,19 +64,7 @@ export const Service = {
 };
 
 /**
- *
- * @param {string} msg
- */
-export function log(msg) {
-	return newlog({
-		text: fmt(msg),
-		fileMessage: msg,
-		consoleMessage: msg,
-	});
-}
-
-/**
- *
+ * TODO Make it use fs.open and WriteStream instead of read/writeFile
  * @param {{text?: {_ :{build(): [string, any]}} | FmtString; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
  */
 export function newlog({ text, consoleMessage, fileMessage, fileName }) {
@@ -120,26 +99,22 @@ export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 function safeBotLaunch() {
 	data.isLaunched = true;
 	data.isStopped = false;
-	data.isFreezed = false;
 	bot.launch();
 	data.relaunchTimer = setInterval(() => {
-		if (data.isStopped || data.isFreezed)
-			return clearInterval(data.relaunchTimer);
+		if (data.isStopped) return clearInterval(data.relaunchTimer);
 		bot.stop("Relaunch");
 		bot.launch();
 	}, config.update.pollingRelaunchInterval);
 }
 
-function safeBotStop(freeze = false) {
+function safeBotStop() {
 	clearInterval(data.relaunchTimer);
 	data.isStopped = true;
-	data.isFreezed = freeze;
 	bot.stop();
 }
 
 /**
  * Запуск бота
- * @returns {Promise<void>}
  */
 async function start() {
 	const print = lang.state(8);
@@ -147,6 +122,7 @@ async function start() {
 	print(
 		`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`
 	);
+
 	if (data.development)
 		try {
 			await fs.mkdir("logs");
@@ -162,9 +138,6 @@ async function start() {
 	 */
 	print("Fetching global db data...");
 	await database.Connect();
-
-	setDataType(data);
-	print(`Type: ${styles.highlight(data.type)}`);
 
 	bot.catch(Service.handlers.bot);
 	bot.telegram.sendMessage(data.chatID.log, lang.start());
@@ -190,11 +163,6 @@ async function start() {
 	await database.Connect();
 
 	/**
-	 * Tells another active sessions that they need to be freezed until development
-	 */
-	await UpdateServer.open();
-
-	/**
 	 * Command and lists initalization
 	 */
 	print("Launching load.modules...");
@@ -204,8 +172,7 @@ async function start() {
 	 * Bot launch
 	 */
 	print("Launching bot...");
-	const me = await bot.telegram.getMe();
-	bot.botInfo = me;
+	bot.botInfo = await bot.telegram.getMe();
 	safeBotLaunch();
 
 	print(
@@ -218,49 +185,45 @@ async function start() {
 /**
  *
  * @param {string} reason
- * @param {"ALL" | "BOT" | "none"} type
+ * @param {"ALL" | "BOT" | "none"} mode
  * @param {boolean} sendMessage
  */
-async function stop(reason = "Остановка", type = "none", sendMessage = true) {
+async function stop(reason = "Остановка", mode = "none", sendMessage = true) {
 	console.log(styles.state("Bot", "Stopping..."));
-	UpdateServer.close();
 
-	let message = fmt`${link(bold`✕`, "https://t.me")}  ${type}. ${reason}`;
-	message = fmt`${message}\n${data.logVersion} ${bold(env.whereImRunning)}`;
+	let message = fmt`${link(bold`✕`, "https://t.me")}  ${mode}. ${reason}`;
+	message = fmt`${message}\n${data.sv} ${bold(env.whereImRunning)}`;
 
 	// Skip on dev terminal stop
-	let skipMessage = data.development && ["SIGINT", "SIGTERM"].includes(reason);
-
-	if (!skipMessage) {
+	const send = !(data.development && ["SIGINT", "SIGTERM"].includes(reason));
+	if (send) {
 		const [fullreason, info] = message.text.split("\n");
 		console.log(styles.error(fullreason) + "\n" + clc.redBright(info));
+
+		if (data.isLaunched && sendMessage)
+			await bot.telegram.sendMessage(data.chatID.log, message);
 	}
 
-	if (data.isLaunched && sendMessage && !skipMessage)
-		await bot.telegram.sendMessage(data.chatID.log, message);
-
-	if (type !== "none" && data.isLaunched && !data.isStopped) {
+	if (mode !== "none" && data.isLaunched && !data.isStopped) {
 		data.isStopped = true;
 		bot.stop(reason);
 	}
 
-	if (type === "ALL") {
-		await database.commitAll();
+	if (mode === "ALL") {
+		if (!database.isClosed) await database.commitAll();
 		console.log(styles.state("Bot", "Stopping done."));
 		process.exit(0);
 	}
 }
 
-const errTimer = new XTimer(5);
+const ERROR_TIMER = new XTimer(5);
 
 /**
  *
  * @param {IhandledError} error
- * @param {{sendMessage: true | "ifNotStopped"}} [options]
  */
-async function error(error, options = { sendMessage: "ifNotStopped" }) {
-	if (options.sendMessage === "ifNotStopped" && data.isStopped === true) return;
-	if (errTimer.isExpired())
+async function error(error) {
+	if (ERROR_TIMER.isExpired())
 		try {
 			if (!error.stack) error.stack = Error().stack;
 			const [type, message, stack, extra] = parseError(error);
@@ -269,6 +232,8 @@ async function error(error, options = { sendMessage: "ifNotStopped" }) {
 			console.warn(clc.red(type).trim() + clc.white(message));
 			console.warn(stack);
 			console.warn(" ");
+
+			if (!data.isLaunched || data.isStopped) return;
 
 			const text = fmt`${link(type, "https://t.me/")}${bold(
 				message
@@ -288,6 +253,6 @@ async function error(error, options = { sendMessage: "ifNotStopped" }) {
 				);
 			}
 		} catch (e) {
-			console.warn(e);
+			console.warn(new Error(e.message, { cause: error }));
 		}
 }

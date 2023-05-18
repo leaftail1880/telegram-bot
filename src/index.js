@@ -13,8 +13,8 @@ export const database = new DatabaseManager({
 		owner: env.DB_USERNAME,
 		repo: env.DB_REPO,
 	},
-	token: env.DB_TOKEN,
 	username: env.DB_USERNAME,
+	token: env.DB_TOKEN,
 });
 
 export const tables = {
@@ -23,8 +23,6 @@ export const tables = {
 
 	/** @type {DatabaseWrapper<DB.Group>} */
 	groups: database.CreateTable("groups.json"),
-
-	main: database.Database,
 };
 
 // Global error handlers
@@ -36,5 +34,8 @@ process.once("SIGINT", () => Service.stop("SIGINT", "ALL"));
 process.once("SIGTERM", () => Service.stop("SIGTERM", "ALL"));
 
 // All done, start
-Service.start();
+Service.start().catch((e) => {
+	Service.error(e);
+	process.exit(1);
+});
 

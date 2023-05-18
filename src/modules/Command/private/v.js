@@ -14,7 +14,7 @@ new Command(
 	},
 	(ctx) => {
 		ctx.reply(
-			...new Xitext()._.group(data.readableVersion)
+			...new Xitext()._.group(data.sv)
 				.url(null, u.guide(8))
 				.bold()
 				._.group()

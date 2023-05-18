@@ -5,7 +5,7 @@ import { bold, fmt } from "../../../lib/Class/Xitext.js";
 /**
  * @type {Record<string, string>}
  */
-const obj = {
+const DICT = {
 	q: "й",
 	w: "ц",
 	e: "у",
@@ -55,8 +55,8 @@ function abc(msg) {
 	let ret = "";
 	for (const a of msg.split("")) {
 		let l = a;
-		if (a in obj) l = obj[a];
-		else if (obj[a.toLowerCase()]) l = obj[a.toLowerCase()].toUpperCase();
+		if (a in DICT) l = DICT[a];
+		else if (DICT[a.toLowerCase()]) l = DICT[a.toLowerCase()].toUpperCase();
 		ret = ret + l;
 	}
 	return ret;

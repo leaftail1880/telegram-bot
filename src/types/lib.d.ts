@@ -116,8 +116,6 @@ type IEnv = {
 	DB_REPO?: string;
 	DB_USERNAME?: string;
 	E?: string;
-	P?: string;
-	VK_TOKEN?: string;
 	whereImRunning?: string;
 	dev?: string | boolean;
 	ownerID?: string;
@@ -128,11 +126,6 @@ type seconds = number;
 type milliseconds = number;
 type minutes = number;
 type hours = number;
-
-declare module "hooman" {
-	const got: import("got").Got;
-	export default got;
-}
 
 type Optional<O> = { [E in keyof O]?: O[E] };
 type NotOptional<O> = { [E in keyof O]-?: O[E] };

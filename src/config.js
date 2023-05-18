@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 9, 14],
+	version: [9, 10, 0],
 
 	command: {
 		/**
@@ -82,17 +82,9 @@ export default {
 	modules: [
 		"Command",
 		"OC",
-		"ManageDB",
-		"MultiPublish",
 		"BatteryNotifier",
 		// "Subscribe",
 		// "Migrate",
 		// "Animation"
 	],
-
-	dbkey: {
-		version: "bot_latest_version",
-		ip: "ip",
-		ip_passcode: "ip_passcode",
-	},
 };

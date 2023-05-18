@@ -4,10 +4,10 @@ import { util } from "../../lib/Class/Utils.js";
 import { fmt } from "../../lib/Class/Xitext.js";
 
 /** @type {Record<number, DB.User>} */
-const newUsers = {};
+const CREATED_USERS = {};
 
 /** @type {Record<number, DB.Group>} */
-const newGroups = {};
+const CREATES_GROUPS = {};
 
 /**
  * @param {Context} ctx
@@ -18,9 +18,11 @@ export function CreateUser(ctx) {
 	const name = util.getTelegramName(ctx.from);
 	const nickname = ctx.from.username;
 
-	if (newUsers[id]) return newUsers[id];
+	if (CREATED_USERS[id]) return CREATED_USERS[id];
 
-	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${nickname ? `\n @${nickname}` : ""}`;
+	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${
+		nickname ? `\n @${nickname}` : ""
+	}`;
 	newlog({
 		consoleMessage: text,
 		text: fmt(text),
@@ -39,7 +41,7 @@ export function CreateUser(ctx) {
 		cache: {},
 	};
 
-	newUsers[id] = user;
+	CREATED_USERS[id] = user;
 	return user;
 }
 
@@ -51,7 +53,7 @@ export function CreateUser(ctx) {
  * @returns {DB.Group}
  */
 export function CreateGroup(id, title, members = []) {
-	if (newGroups[id]) return newGroups[id];
+	if (CREATES_GROUPS[id]) return CREATES_GROUPS[id];
 	const text = `Новая группа!\n Название: ${title}\n ID: ${id}`;
 	newlog({
 		consoleMessage: text,
@@ -59,6 +61,8 @@ export function CreateGroup(id, title, members = []) {
 		fileMessage: text,
 		fileName: "groups.txt",
 	});
+
+	/** @type {DB.Group} */
 	const group = {
 		static: {
 			id: id,
@@ -67,9 +71,9 @@ export function CreateGroup(id, title, members = []) {
 		cache: {
 			members: members,
 			lastCall: Date.now(),
-			lastPin: {},
+			silentMembers: {},
 		},
 	};
-	newGroups[id] = group;
+	CREATES_GROUPS[id] = group;
 	return group;
 }

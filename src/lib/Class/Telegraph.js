@@ -7,7 +7,7 @@ import { u, util } from "./Utils.js";
 /**
  * @type {DatabaseWrapper<string>}
  */
-const TelegraphDB = database.CreateTable("modules/telegraph.json");
+const TELEGRAPH_DB = database.CreateTable("modules/telegraph.json");
 
 /**
  * @param {string | number | DB.User} user
@@ -17,7 +17,7 @@ export async function getAccount(user) {
 	const id = user.static.id;
 	let token;
 
-	if (!TelegraphDB.has(id)) {
+	if (!TELEGRAPH_DB.has(id)) {
 		const account = new Telegraph({
 			author_name: util.getName(user),
 			author_url: u.httpsUserLink(user.static.nickname),
@@ -27,9 +27,9 @@ export async function getAccount(user) {
 		await account.setupAccount();
 
 		token = account.token;
-		TelegraphDB.set(id, pack(env.E, account.token));
+		TELEGRAPH_DB.set(id, pack(env.E, account.token));
 	}
 
-	token = token ?? unpack(env.E, TelegraphDB.get(id));
+	token = token ?? unpack(env.E, TELEGRAPH_DB.get(id));
 	return new Telegraph({ accessToken: token });
 }

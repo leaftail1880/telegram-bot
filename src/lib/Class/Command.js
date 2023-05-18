@@ -8,12 +8,14 @@ import { hasText } from "./Filters.js";
 import { u, util } from "./Utils.js";
 import { Xitext } from "./Xitext.js";
 
-/** @type {CommandTypes.Stored[]} */
-const Commands = [];
-
 export class Command {
+	/** 
+	 * @type {CommandTypes.Stored[]}
+	 */
+	static COMMANDS = [];
+
 	/**
-	 *
+	 * Creates new command
 	 * @param {CommandTypes.RegistrationInfo} info
 	 * @param {CommandTypes.Callback} callback
 	 * @returns
@@ -41,7 +43,7 @@ export class Command {
 		if (typeof info.prefix === "string") StoreInfo.info.prefix = [info.prefix];
 		if (Array.isArray(info.prefix)) StoreInfo.info.prefix = info.prefix;
 
-		Commands.push(StoreInfo);
+		Command.COMMANDS.push(StoreInfo);
 	}
 	/**
 	 *
@@ -55,8 +57,10 @@ export class Command {
 
 		const [, prefix, command] = match;
 		return (
-			Commands.find(
-				(с) => с.info.prefix.includes(prefix) && (с.info.name === command || с.info.aliases?.includes(command))
+			Command.COMMANDS.find(
+				(с) =>
+					с.info.prefix.includes(prefix) &&
+					(с.info.name === command || с.info.aliases?.includes(command))
 			) ?? "not_found"
 		);
 	}
@@ -69,14 +73,19 @@ export class Command {
 	 */
 	static cantUse(command, ctx, chatMember = null) {
 		const location_group =
-			command.info.target === "group" && (ctx.chat.type === "group" || ctx.chat.type === "supergroup");
-		const location_private = command.info.target === "private" && ctx.chat.type === "private";
+			command.info.target === "group" &&
+			(ctx.chat.type === "group" || ctx.chat.type === "supergroup");
+		const location_private =
+			command.info.target === "private" && ctx.chat.type === "private";
 		const location_all = command.info.target === "all";
 
 		const permission_all = command.info.permission === "all";
 		const permission_admin =
-			command.info.permission === "group_admins" && ["administrator", "creator"].includes(chatMember.status);
-		const permission_owner = command.info.permission === "bot_owner" && ctx.from.id == Data.chatID.owner;
+			command.info.permission === "group_admins" &&
+			["administrator", "creator"].includes(chatMember.status);
+		const permission_owner =
+			command.info.permission === "bot_owner" &&
+			ctx.from.id == Data.chatID.owner;
 
 		return !(
 			(location_all || location_group || location_private) &&
@@ -95,7 +104,12 @@ export class Command {
 		const xt = new Xitext()
 			.text(`${V[ctx.chat.type]} `)
 			._.group(name)
-			.url(null, ctx.from.id !== Data.chatID.owner ? u.userLink(ctx.from.id) : `https://t.me/${ctx.from.username}`)
+			.url(
+				null,
+				ctx.from.id !== Data.chatID.owner
+					? u.userLink(ctx.from.id)
+					: `https://t.me/${ctx.from.username}`
+			)
 			.bold()
 			._.group()
 			.text(`${message ? ` ${message}` : ""}: ${ctx.message.text}`);
@@ -110,6 +124,7 @@ export class Command {
 	}
 }
 
+/** @enum {string} */
 const V = {
 	private: "Лc",
 	group: "Группа",
@@ -123,7 +138,7 @@ on("load.modules", () => {
 	const privateCommands = [];
 	const botAdminCommands = [];
 
-	for (const command of Commands.filter((e) => e.info.prefix.includes("/"))) {
+	for (const command of Command.COMMANDS.filter((e) => e.info.prefix.includes("/"))) {
 		if (command.info.hideFromHelpList) continue;
 		const packedCommand = { command: command.info.name, description: command.info.description };
 
@@ -180,7 +195,7 @@ on("load.modules", () => {
 		)
 			return reply(
 				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${u.langJoin(
-					Commands.filter((e) => e.info.allowScene && e.info.permission !== "bot_owner").map(
+					Command.COMMANDS.filter((e) => e.info.allowScene && e.info.permission !== "bot_owner").map(
 						(e) => e.info.prefix[0] + e.info.name
 					)
 				)}`
@@ -224,14 +239,14 @@ new Command(
 		const a = new Xitext();
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		for (const e of Commands.filter((e) => e.info.prefix.includes("/"))) {
+		for (const e of Command.COMMANDS.filter((e) => e.info.prefix.includes("/"))) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
 			if (!c) a.text(`Команды:\n`), (c = true);
 			a.text(`  /${e.info.name}`);
 			a.italic(` - ${e.info.description}\n`);
 		}
 
-		for (const e of Commands.filter((e) => !e.info.prefix.includes("/"))) {
+		for (const e of Command.COMMANDS.filter((e) => !e.info.prefix.includes("/"))) {
 			if (Command.cantUse(e, ctx, rigths)) continue;
 			a.text(`  `);
 			a.mono(`${e.info.prefix.length > 1 ? `[${e.info.prefix.join(", ")}]` : e.info.prefix[0]}${e.info.name}`);
