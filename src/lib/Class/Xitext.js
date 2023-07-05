@@ -8,7 +8,7 @@ export * from "telegraf/format";
  * @param {StringLike} text
  * @param {StringLike} data
  * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
- * @deprecated Use btn, CreateNamespacedButton or Markup button instead.
+ * @deprecated Use btn, CreateNamespacedButton or Markup.button instead.
  */
 export function Button(text, data) {
 	text = text + "";
@@ -35,7 +35,7 @@ export function btn(text, namespace, method, ...args) {
 }
 
 /**
- * ALias to btn function
+ * Alias to btn function
  * @param {StringLike} namespace
  * @returns
  */

@@ -22,7 +22,7 @@ export async function noConnection(type) {
 		data.isStopped = true;
 		bot.stop("NOCONNECTION");
 	}
-	if (!database.isClosed) database.Close();
+	database.isClosed = true;
 
 	if (ERROR_TIMER.isExpired()) {
 		console.log(

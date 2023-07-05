@@ -11,8 +11,7 @@
 		"maxNodeModuleJsDepth": 0,
 		"allowSyntheticDefaultImports": true,
 		"noImplicitAny": true,
-		"declaration": true,
-		"emitDeclarationOnly": true
+		"noEmit": true
 	},
 	"include": ["./src/"]
 }

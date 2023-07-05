@@ -4,10 +4,9 @@ import { Xitext } from "../../../lib/Class/Xitext.js";
 
 new Command(
 	{
-		prefix: "@",
 		name: "admins",
 		target: "group",
-		description: "Созывает админов",
+		description: "Вызывает админов",
 	},
 	async (ctx) => {
 		const admins = (await ctx.getChatAdministrators()).filter((e) => !e.user.is_bot);

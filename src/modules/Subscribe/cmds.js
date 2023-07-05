@@ -17,6 +17,9 @@ new Command(
 	}
 );
 
+/**
+ * @param {number} id
+ */
 function SubMenuLang(id, page = 1) {
 	const c = new Xitext();
 
@@ -24,6 +27,9 @@ function SubMenuLang(id, page = 1) {
 
 	const s = new PersonalSubs(id);
 
+  /**
+   * @param {[string, boolean]} a1
+   */
 	const B = ([setting, value]) => [
 		Button(`${value ? "✅" : "🔺"} ${Subs[setting][1]}`, SubMenu.link("c", page, setting, value ? 0 : 1)),
 	];
@@ -37,6 +43,7 @@ function SubMenuLang(id, page = 1) {
 }
 
 SubMenu.query({ name: "page" }, async (ctx, path, edit) => {
+	// @ts-expect-error
 	edit(...SubMenuLang(ctx.callbackQuery.from.id, Number(path[0])));
 });
 
@@ -45,8 +52,8 @@ SubMenu.query({ name: "c" }, async (ctx, path, edit) => {
 
 	const c = new PersonalSubs(ctx.from.id);
 
-	// @ts-expect-error
 	c.set(path[1], Number(path[2]) === 1);
 
+	// @ts-expect-error
 	edit(...SubMenuLang(ctx.callbackQuery.from.id, Number(path[0])));
 });

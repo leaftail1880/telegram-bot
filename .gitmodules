@@ -1,0 +1,3 @@
+[submodule "src/web"]
+	path = src/web
+	url = git@github.com:leaftail1880/telegram-bot-webapp.git
