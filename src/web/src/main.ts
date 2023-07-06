@@ -1,5 +1,6 @@
-import { render } from 'preact'
-import { App } from './web/app.tsx'
+import { section } from "@fusorjs/dom/html";
+import { Home } from './views/home.ts';
+import "./style.css";
 
 document.body.style.visibility = '';
 Telegram.WebApp.ready();
@@ -8,4 +9,9 @@ Telegram.WebApp.MainButton.setParams({
     is_visible: true
 }).onClick(Telegram.WebApp.close);
 
-render(<App />, document.getElementById('app') as HTMLElement)
+
+document.body.append(
+  section(
+    Home()
+  ).element
+);

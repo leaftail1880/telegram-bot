@@ -1,1 +1,19 @@
-{  "name": "webapp",  "private": true,  "version": "0.0.1",  "type": "module",  "scripts": {    "dev": "vite",    "build": "tsc && vite build",    "preview": "vite preview"  },  "dependencies": {    "preact": "^10.13.2",    "vite-plugin-api": "^0.1.11"  },  "devDependencies": {    "@preact/preset-vite": "^2.5.0",    "typescript": "^5.0.2",    "vite": "^4.3.9"  }}
+{
+  "name": "webapp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 8888",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "telegram-webapps-types": "^1.0.5",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "@fusorjs/dom": "^2.0.1"
+  }
+}
