@@ -1,4 +1,4 @@
-import { data, env } from "../../../index.js";
+import { data } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
 import { u } from "../../../lib/Class/Utils.js";
 import { Xitext } from "../../../lib/Class/Xitext.js";
@@ -19,7 +19,7 @@ new Command(
 				.bold()
 				._.group()
 				.text(` `)
-				.bold(env.whereImRunning)
+				.bold(process.env.whereImRunning)
 				._.build()
 		);
 	}

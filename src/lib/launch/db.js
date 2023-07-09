@@ -1,9 +1,23 @@
 import { SingleBar } from "cli-progress";
-import { database, tables } from "../../index.js";
+import { DatabaseManager, DatabaseTable, Github } from "leafy-db";
+
 import styles from "../styles.js";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
 
-export function setupDB() {
+export const database = new DatabaseManager({
+	repository: Github(process.env.DB_REPO),
+	token: process.env.DB_TOKEN,
+});
+
+export const tables = {
+	/** @type {DatabaseTable<DB.User>} */
+	users: database.table("users.json"),
+
+	/** @type {DatabaseTable<DB.Group>} */
+	groups: database.table("groups.json"),
+};
+
+export async function setupDatabase() {
 	tables.users._.on("beforeGet", (key, value) => {
 		if (!value) return void 0;
 

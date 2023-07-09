@@ -27,7 +27,7 @@ function Animate(group) {
 		delete ACTIVE[id];
 	}
 	const timer = setInterval(() => {
-		if (data.isStopped || database.isClosed) return;
+		if (data.isStopped || database.closed) return;
 		ACTIVE[id].stage++;
 		if (!group.cache.titleAnimation[ACTIVE[id].stage]) ACTIVE[id].stage = 0;
 		bot.telegram.setChatTitle(id, group.cache.titleAnimation[ACTIVE[id].stage]);

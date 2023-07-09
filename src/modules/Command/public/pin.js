@@ -56,7 +56,7 @@ new Command(
 );
 
 setInterval(async () => {
-	if (data.isStopped || database.isClosed) return;
+	if (data.isStopped || database.closed) return;
 	for (const key of tables.groups.keys()) {
 		const { data: group, save } = tables.groups.work(key);
 

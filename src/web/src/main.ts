@@ -1,5 +1,6 @@
 import { section } from "@fusorjs/dom/html";
 import { Home } from './views/home.ts';
+import { Fetcher } from "./views/fetcher.ts"
 import "./style.css";
 
 document.body.style.visibility = '';
@@ -12,6 +13,7 @@ Telegram.WebApp.MainButton.setParams({
 
 document.body.append(
   section(
-    Home()
+    Home(),
+    Fetcher()
   ).element
 );

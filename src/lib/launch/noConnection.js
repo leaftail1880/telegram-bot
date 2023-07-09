@@ -22,7 +22,7 @@ export async function noConnection(type) {
 		data.isStopped = true;
 		bot.stop("NOCONNECTION");
 	}
-	database.isClosed = true;
+	database.closed = true;
 
 	if (ERROR_TIMER.isExpired()) {
 		console.log(
@@ -61,7 +61,7 @@ async function timer() {
 		throw e;
 	}
 
-	await database.Reconnect();
+	await database.reconnect();
 	Service.safeBotLaunch();
 
 	console.log(styles.connectionResolved("Подключение восстановлено!"));

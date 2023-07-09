@@ -1,13 +1,13 @@
 import { Telegraph } from "better-telegraph";
-import { DatabaseWrapper } from "leafy-db";
-import { database, env, tables } from "../../index.js";
+import { DatabaseTable } from "leafy-db";
+import { database, tables } from "../../index.js";
 import { pack, unpack } from "./Pack.js";
 import { u, util } from "./Utils.js";
 
 /**
- * @type {DatabaseWrapper<string>}
+ * @type {DatabaseTable<string>}
  */
-const TELEGRAPH_DB = database.CreateTable("modules/telegraph.json");
+const TELEGRAPH_DB = database.table("modules/telegraph.json");
 
 /**
  * @param {string | number | DB.User} user
@@ -27,9 +27,9 @@ export async function getAccount(user) {
 		await account.setupAccount();
 
 		token = account.token;
-		TELEGRAPH_DB.set(id, pack(env.E, account.token));
+		TELEGRAPH_DB.set(id, pack(process.env.E, account.token));
 	}
 
-	token = token ?? unpack(env.E, TELEGRAPH_DB.get(id));
+	token = token ?? unpack(process.env.E, TELEGRAPH_DB.get(id));
 	return new Telegraph({ accessToken: token });
 }

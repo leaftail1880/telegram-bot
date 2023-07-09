@@ -1,5 +1,5 @@
 import { parseMarkdown, upload } from "better-telegraph";
-import { DatabaseWrapper } from "leafy-db";
+import { DatabaseTable } from "leafy-db";
 import { Context, Markup } from "telegraf";
 import { bot, database, newlog } from "../../index.js";
 import { getAccount } from "../../lib/Class/Telegraph.js";
@@ -22,9 +22,9 @@ import { ocbutton } from "./index.js";
  */
 
 /**
- * @type {DatabaseWrapper<StoredCharacter[]>}
+ * @type {DatabaseTable<StoredCharacter[]>}
  */
-export const OC_DB = database.CreateTable("modules/oc.json");
+export const OC_DB = database.table("modules/oc.json");
 
 OC_DB._.on("beforeGet", (key, value) => (Array.isArray(value) ? value : []));
 
