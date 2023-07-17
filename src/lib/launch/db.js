@@ -1,6 +1,6 @@
 import { SingleBar } from "cli-progress";
 import { DatabaseManager, DatabaseTable, Github } from "leafy-db";
-
+export * as leafy_db from "leafy-db";
 import styles from "../styles.js";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
 
@@ -15,9 +15,14 @@ export const tables = {
 
 	/** @type {DatabaseTable<DB.Group>} */
 	groups: database.table("groups.json"),
+	
+	/** @type {DatabaseTable<Required<DB.Character>[]>} */
+	ocs: database.table("modules/oc.json")
 };
 
 export async function setupDatabase() {
+  tables.ocs._.on("beforeGet", (key, value) => (Array.isArray(value) ? value : []));
+  
 	tables.users._.on("beforeGet", (key, value) => {
 		if (!value) return void 0;
 

@@ -1,32 +1,13 @@
 import { parseMarkdown, upload } from "better-telegraph";
 import { DatabaseTable } from "leafy-db";
 import { Context, Markup } from "telegraf";
-import { bot, database, newlog } from "../../index.js";
+import { bot, database, newlog, tables} from "../../index.js";
 import { getAccount } from "../../lib/Class/Telegraph.js";
 import { util } from "../../lib/Class/Utils.js";
 import { fmt } from "../../lib/Class/Xitext.js";
 import { ocbutton } from "./index.js";
 
-/**
- * @typedef {{
- *  name: string;
- *  description: string
- *  fileid: string;
- *  path?: string;
- *  filepath?: string;
- * }} Character
- */
-
-/**
- * @typedef {NotOptional<Character>} StoredCharacter
- */
-
-/**
- * @type {DatabaseTable<StoredCharacter[]>}
- */
-export const OC_DB = database.table("modules/oc.json");
-
-OC_DB._.on("beforeGet", (key, value) => (Array.isArray(value) ? value : []));
+export const OC_DB = tables.ocs;
 
 /**
  *

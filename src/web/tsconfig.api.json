@@ -2,8 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {},
-    "types": ["src/api/types.d.ts"]
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/api"],
+  "include": ["src/api", "src/server"],
   "exclude": []
 }

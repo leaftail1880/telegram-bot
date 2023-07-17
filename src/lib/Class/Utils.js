@@ -1,6 +1,5 @@
 import node_utils from "util";
-import { tables } from "../../index.js";
-import { fmt } from "./Xitext.js";
+import { tables } from "../launch/db.js";
 
 export const util = {
 	/**
@@ -17,7 +16,7 @@ export const util = {
 	},
 	/**
 	 * @param {{
-	 *   reply(s: string | ReturnType<fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
+	 *   reply(s: string | ReturnType<import("./Xitext.js").fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
 	 *   message: { message_id: number; reply_to_message?: {message_id?: number}}
 	 * }} ctx
 	 * @param {'reply' | 'direct'} prefer

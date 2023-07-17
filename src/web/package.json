@@ -6,17 +6,20 @@
   "scripts": {
     "dev": "vite --port 8888",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tran": "li18n"
   },
   "devDependencies": {
-    "telegram-webapps-types": "^1.0.5",
+    "@types/express": "^4.17.17",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "typescript": "^5.0.2",
-    "vite": "^4.3.9"
+    "vite": "^4.3.9",
+    "vite-plugin-api": "^0.1.11"
   },
   "dependencies": {
     "@fusorjs/dom": "^2.0.1",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "vite-plugin-api": "^0.1.11"
+    "@twa-dev/types": "^6.7.0",
+    "leafy-i18n": "^0.0.7"
   }
 }

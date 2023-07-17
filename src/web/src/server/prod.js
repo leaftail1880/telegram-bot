@@ -9,7 +9,8 @@ const server = express();
 server.use(express.json());
 server.use(express.static(CLIENT_DIR));
 applyRouters(({ method, path, cb }) => {
-  if (server[method]) {
+  if (method in server) {
+    // @ts-ignore
     server[method](path, cb);
   } else {
     console.log("[api] Not support '" + method + "' in express");

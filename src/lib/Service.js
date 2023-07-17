@@ -99,7 +99,7 @@ export function newlog({ text, consoleMessage, fileMessage, fileName }) {
 function safeBotLaunch() {
   data.isLaunched = true;
   data.isStopped = false;
-  bot.launch({dropPendingUpdates: true});
+  bot.launch({dropPendingUpdates: false});
   data.relaunchTimer = setInterval(() => {
     if (data.isStopped) return clearInterval(data.relaunchTimer);
     bot.stop("Relaunch");

@@ -86,6 +86,14 @@ declare namespace DB {
       artRepost?: 1;
     };
   };
+
+  type Character = {
+    name: string;
+    description: string;
+    fileid: string;
+    path?: string;
+    filepath?: string;
+  };
 }
 
 type QueryCallback = (
@@ -117,14 +125,14 @@ type IhandledError = {
   errno?: string;
 };
 
-namespace NodeJS {
+declare namespace NodeJS {
   interface ProcessEnv {
     TOKEN?: string;
     DB_TOKEN?: string;
     DB_REPO?: string;
     E?: string;
     whereImRunning?: string;
-    dev?: string | boolean;
+    dev?: string;
     ownerID?: string;
     logID?: string;
   }

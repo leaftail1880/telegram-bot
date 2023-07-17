@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       external: ["express", "dotenv"],
     },
+    modulePreload: { polyfill: false },
   },
   plugins: [
     pluginAPI({
@@ -25,4 +26,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+});

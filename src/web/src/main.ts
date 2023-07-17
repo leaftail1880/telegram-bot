@@ -1,19 +1,38 @@
-import { section } from "@fusorjs/dom/html";
-import { Home } from './views/home.ts';
-import { Fetcher } from "./views/fetcher.ts"
-import "./style.css";
+// Components
+import { Router } from "./web/router.ts";
+import { Home } from "./views/home.ts";
+import { OCs } from "./views/ocs.ts";
+import { OC } from "./views/oc.ts";
+import { Subscriptions } from "./views/subs.ts";
+import { Fetcher } from "./views/fetcher.ts";
 
-document.body.style.visibility = '';
+// Setup
+import "./web/style.css";
+import { i18nLoad } from "./web/i18n.ts";
+import { fetchAuthToken } from "./web/utils.ts";
+import "./web/quill.ts"
+
 Telegram.WebApp.ready();
-Telegram.WebApp.MainButton.setParams({
-    text: 'CLOSE WEBVIEW',
-    is_visible: true
-}).onClick(Telegram.WebApp.close);
+i18nLoad().then(async () => {
+  Telegram.WebApp.MainButton.setParams({
+    text: i18n`CLOSE WEBVIEW`,
+    is_visible: true,
+  });
+  Telegram.WebApp.MainButton.onClick(Telegram.WebApp.close);
 
+  try {
+    document.body.append(
+      Router({
+        "/home": Home(),
+        "/ocs": OCs(),
+        "/subs": Subscriptions(),
+        "/fetch": Fetcher(),
+        "^\\/oc\\/\\d+/\\d+$": OC(),
+      })
+    );
+  } catch (e) {
+    alert(e);
+  }
 
-document.body.append(
-  section(
-    Home(),
-    Fetcher()
-  ).element
-);
+  await fetchAuthToken();
+});
