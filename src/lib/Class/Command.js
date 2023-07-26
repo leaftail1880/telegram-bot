@@ -1,15 +1,15 @@
-import clc from "cli-color";
+import clc, { italic } from "cli-color";
 import { Context } from "telegraf";
 import config from "../../config.js";
-import { bot, data as Data, newlog } from "../../index.js";
+import { bot, data as Data } from "../../index.js";
+import { Logger } from "../utils/logger.js";
 import { safeRun } from "../utils/safe.js";
-import { on } from "./Events.js";
 import { hasText } from "./Filters.js";
 import { u, util } from "./Utils.js";
-import { Xitext } from "./Xitext.js";
+import { bold, code, fmt, link } from "./Xitext.js";
 
 export class Command {
-	/** 
+	/**
 	 * @type {CommandTypes.Stored[]}
 	 */
 	static COMMANDS = [];
@@ -92,6 +92,9 @@ export class Command {
 			(permission_all || permission_admin || permission_owner)
 		);
 	}
+
+	static logger = new Logger();
+
 	/**
 	 *
 	 * @param {Context & { message: import("telegraf/types").Message.TextMessage;}} ctx
@@ -101,25 +104,20 @@ export class Command {
 	static Log(ctx, dbuser, message = null) {
 		const name = util.getName(dbuser, ctx.from);
 
-		const xt = new Xitext()
-			.text(`${V[ctx.chat.type]} `)
-			._.group(name)
-			.url(
-				null,
-				ctx.from.id !== Data.chatID.owner
-					? u.userLink(ctx.from.id)
-					: `https://t.me/${ctx.from.username}`
-			)
-			.bold()
-			._.group()
-			.text(`${message ? ` ${message}` : ""}: ${ctx.message.text}`);
-		const text = xt._.text;
+		const url =
+			ctx.from.id !== Data.chatID.owner
+				? u.userLink(ctx.from.id)
+				: u.httpsUserLink(ctx.from.username);
+
+		const log = fmt`${V[ctx.chat.type]} ${link(bold(name), url)} ${
+			message ? ` ${message}` : ""
+		}: ${ctx.message.text}`;
 
 		if (ctx.chat.id !== Data.chatID.log)
-			newlog({
-				text: xt,
-				consoleMessage: clc.blackBright("C> ") + text,
-				fileMessage: text,
+			this.logger.log({
+				text: log,
+				consoleMessage: clc.blackBright("C> ") + log.text,
+				fileMessage: log.text,
 			});
 	}
 }
@@ -132,24 +130,32 @@ const V = {
 	channel: "КАНАЛ БЛИН",
 };
 
-on("load.modules", () => {
+process.on("modulesLoad", () => {
 	const groupCommands = [];
 	const groupAdminCommands = [];
 	const privateCommands = [];
 	const botAdminCommands = [];
 
-	for (const command of Command.COMMANDS.filter((e) => e.info.prefix.includes("/"))) {
+	for (const command of Command.COMMANDS.filter((e) =>
+		e.info.prefix.includes("/")
+	)) {
 		if (command.info.hideFromHelpList) continue;
-		const packedCommand = { command: command.info.name, description: command.info.description };
+		const packedCommand = {
+			command: command.info.name,
+			description: command.info.description,
+		};
 
 		if (["group", "all"].includes(command.info.target)) {
 			if (command.info.permission === "all") groupCommands.push(packedCommand);
-			if (command.info.permission === "group_admins") groupAdminCommands.push(packedCommand);
+			if (command.info.permission === "group_admins")
+				groupAdminCommands.push(packedCommand);
 		}
 
-		if (["private", "all"].includes(command.info.target)) privateCommands.push(packedCommand);
+		if (["private", "all"].includes(command.info.target))
+			privateCommands.push(packedCommand);
 
-		if (command.info.permission === "bot_owner") botAdminCommands.push(packedCommand);
+		if (command.info.permission === "bot_owner")
+			botAdminCommands.push(packedCommand);
 	}
 
 	/**
@@ -162,9 +168,14 @@ on("load.modules", () => {
 	}
 
 	addIfExists(groupCommands, { type: "all_group_chats" });
-	addIfExists(groupAdminCommands.concat(groupCommands), { type: "all_chat_administrators" });
+	addIfExists(groupAdminCommands.concat(groupCommands), {
+		type: "all_chat_administrators",
+	});
 	addIfExists(privateCommands, { type: "all_private_chats" });
-	addIfExists(botAdminCommands.concat(privateCommands), { type: "chat", chat_id: Data.chatID.owner });
+	addIfExists(botAdminCommands.concat(privateCommands), {
+		type: "chat",
+		chat_id: Data.chatID.owner,
+	});
 
 	bot.on("message", async (ctx, next) => {
 		if (!hasText(ctx)) return next();
@@ -194,27 +205,35 @@ on("load.modules", () => {
 			ctx.chat.type === "private"
 		)
 			return reply(
-				`В сцене ${ctx.data.scene.name} ${ctx.data.scene.state} вам доступны только ${u.langJoin(
-					Command.COMMANDS.filter((e) => e.info.allowScene && e.info.permission !== "bot_owner").map(
-						(e) => e.info.prefix[0] + e.info.name
-					)
+				`В сцене ${ctx.data.scene.name} ${
+					ctx.data.scene.state
+				} вам доступны только ${u.langJoin(
+					Command.COMMANDS.filter(
+						(e) => e.info.allowScene && e.info.permission !== "bot_owner"
+					).map((e) => e.info.prefix[0] + e.info.name)
 				)}`
 			);
 
-		const user_rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+		const user_rigths = await ctx.telegram.getChatMember(
+			ctx.chat.id,
+			ctx.from.id
+		);
 
-		if (Command.cantUse(command, ctx, user_rigths)) return reply("Не здесь. /help");
+		if (Command.cantUse(command, ctx, user_rigths))
+			return reply("Не здесь. /help");
 
 		Command.Log(ctx, ctx.data.user);
 		await safeRun(`Command`, () =>
-			command.callback(ctx, text.replace(config.command.clear, ""), { ...ctx.data, user_rigths }, command)
+			command.callback(
+				ctx,
+				text.replace(config.command.clear, ""),
+				{ ...ctx.data, user_rigths },
+				command
+			)
 		);
 	});
 });
 
-/**======================ss
- *    Приветствие
- *========================**/
 new Command(
 	{
 		name: "start",
@@ -223,10 +242,11 @@ new Command(
 		hideFromHelpList: true,
 	},
 	(ctx, _args, data) => {
-		ctx.reply(`${data.user.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`);
+		ctx.reply(
+			`${data.user.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
+		);
 	}
 );
-/*========================*/
 
 new Command(
 	{
@@ -235,25 +255,32 @@ new Command(
 		target: "all",
 	},
 	async (ctx) => {
-		let c = false;
-		const a = new Xitext();
+		let message = fmt`Команды:\n`;
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		for (const e of Command.COMMANDS.filter((e) => e.info.prefix.includes("/"))) {
+		for (const e of Command.COMMANDS.filter((e) =>
+			e.info.prefix.includes("/")
+		)) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
-			if (!c) a.text(`Команды:\n`), (c = true);
-			a.text(`  /${e.info.name}`);
-			a.italic(` - ${e.info.description}\n`);
+			message = fmt`${message}  /${e.info.name} - ${italic(
+				e.info.description
+			)}\n`;
 		}
 
-		for (const e of Command.COMMANDS.filter((e) => !e.info.prefix.includes("/"))) {
+		for (const e of Command.COMMANDS.filter(
+			(e) => !e.info.prefix.includes("/")
+		)) {
 			if (Command.cantUse(e, ctx, rigths)) continue;
-			a.text(`  `);
-			a.mono(`${e.info.prefix.length > 1 ? `[${e.info.prefix.join(", ")}]` : e.info.prefix[0]}${e.info.name}`);
-			a.italic(` - ${e.info.description}\n`);
+			message = fmt`${message}  ${code(
+				`${
+					e.info.prefix.length > 1
+						? `[${e.info.prefix.join(", ")}]`
+						: e.info.prefix[0]
+				}${e.info.name}`
+			)} - ${italic(e.info.description)}\n`;
 		}
 
-		if (!a._.text) return ctx.reply("Команды недоступны");
-		ctx.reply(...a._.build());
+		if (message.text === "Команды:\n") return ctx.reply("Команды недоступны");
+		ctx.reply(message);
 	}
 );

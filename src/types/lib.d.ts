@@ -35,108 +35,111 @@ declare namespace CommandTypes {
 }
 
 declare namespace IEvent {
-  type Data = {
-    user: DB.User;
-    group?: DB.Group;
-    scene?: {
-      name: string;
-      state: string;
-    };
-  };
-
-  enum Events {
-    "load.modules",
-    "new.member",
-  }
+	type Data = {
+		user: DB.User;
+		group?: DB.Group;
+		scene?: {
+			name: string;
+			state: string;
+		};
+	};
 }
 
 declare namespace DB {
-  type User = {
-    static: {
-      id: number;
-      nickname: string;
-      name: string;
-    };
-    cache: {
-      nickname?: string;
-      dm?: 1 | 0 | undefined;
-      scene?: string;
-      sceneCache?: Array<string> | Record<string, any>;
-      tag?: string;
-    };
-    needSafe?: true;
-  };
+	type User = {
+		static: {
+			id: number;
+			nickname: string;
+			name: string;
+		};
+		cache: {
+			nickname?: string;
+			dm?: 1 | 0 | undefined;
+			scene?: string;
+			sceneCache?: Array<string> | Record<string, any>;
+			tag?: string;
+		};
+		needSafe?: true;
+	};
 
-  type Group = {
-    static: {
-      id: number;
-      title: string;
-    };
-    cache: {
-      members: Array<number>;
-      silentMembers: Record<string, string>;
-      titleAnimation?: Array<string>;
-      titleAnimationSpeed?: number;
-      lastCall?: number;
-      pin?: {
-        date?: number;
-        message_id?: number;
-        lastPins?: Record<number, number>;
-      };
-      artRepost?: 1;
-    };
-  };
+	type Group = {
+		static: {
+			id: number;
+			title: string;
+		};
+		cache: {
+			members: Array<number>;
+			silentMembers: Record<string, string>;
+			titleAnimation?: Array<string>;
+			titleAnimationSpeed?: number;
+			lastCall?: number;
+			pin?: {
+				date?: number;
+				message_id?: number;
+				lastPins?: Record<number, number>;
+			};
+			artRepost?: 1;
+		};
+	};
 
-  type Character = {
-    name: string;
-    description: string;
-    fileid: string;
-    path?: string;
-    filepath?: string;
-  };
+	type Character = {
+		name: string;
+		description: string;
+		fileid: string;
+		path?: string;
+		filepath?: string;
+	};
 }
 
 type QueryCallback = (
-  ctx: Context & {
-    callbackQuery: import("telegraf/types").CallbackQuery.DataQuery;
-  },
-  path: string[],
-  edit: (
-    text: string,
-    extra?: import("telegraf/types").Convenience.ExtraEditMessageText
-  ) => Promise<any>
+	ctx: Context & {
+		callbackQuery: import("telegraf/types").CallbackQuery.DataQuery;
+	},
+	path: string[],
+	edit: (
+		text: string,
+		extra?: import("telegraf/types").Convenience.ExtraEditMessageText
+	) => Promise<any>
 ) => void;
 
 type ServiceData = typeof import("../index.js").data;
 
 type IOnErrorActions = {
-  timer: import("../lib/Class/XTimer.js").XTimer;
-  codes: Record<string | number, (err?: IhandledError) => void>;
-  types: Record<string, (err: IhandledError) => void>;
+	timer: import("../lib/Class/XTimer.js").XTimer;
+	codes: Record<string | number, (err?: IhandledError) => void>;
+	types: Record<string, (err: IhandledError) => void>;
 };
 
 type IhandledError = {
-  stack?: string;
-  name: string;
-  message: string;
-  response?: Record<string, any> & { description: string; error_code?: number };
-  on?: any;
-  code?: string;
-  errno?: string;
+	stack?: string;
+	name: string;
+	message: string;
+	response?: Record<string, any> & { description: string; error_code?: number };
+	on?: any;
+	code?: string;
+	errno?: string;
 };
 
 declare namespace NodeJS {
-  interface ProcessEnv {
-    TOKEN?: string;
-    DB_TOKEN?: string;
-    DB_REPO?: string;
-    E?: string;
-    whereImRunning?: string;
-    dev?: string;
-    ownerID?: string;
-    logID?: string;
-  }
+	interface ProcessEnv {
+		TOKEN?: string;
+		DB_TOKEN?: string;
+		DB_REPO?: string;
+		E?: string;
+		whereImRunning?: string;
+		dev?: string;
+		ownerID?: string;
+		logID?: string;
+	}
+
+	interface Process {
+		on(event: CustomEvents, listener: () => void): this;
+		off(event: CustomEvents, listener: () => void): this;
+		emit(event: CustomEvents): this;
+	}
 }
+
+type CustomEvents = "newMember" | "modulesLoad";
 
 type seconds = number;
 type milliseconds = number;

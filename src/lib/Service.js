@@ -9,178 +9,141 @@ import { bot, database } from "../index.js";
 import "./Class/Command.js";
 import "./Class/Query.js";
 
-import { emit } from "./Class/Events.js";
 import { util } from "./Class/Utils.js";
 import { bold, fmt, FmtString, link } from "./Class/Xitext.js";
 import { XTimer } from "./Class/XTimer.js";
 
 import { handleBotError, handleError } from "./launch/handlers.js";
 import { service_lang as lang } from "./launch/lang.js";
-import { setupDatabase } from "./launch/db.js";
 import { parseError } from "./utils/error.js";
 import { safeLoad } from "./utils/safe.js";
 
 export const data = {
-  v: config.version.join("."),
-  sv: `v${config.version.join(".")}`,
+	v: config.version.join("."),
+	sv: `v${config.version.join(".")}`,
 
-  start_time: Date.now(),
+	start_time: Date.now(),
 
-  isLaunched: false,
-  isStopped: false,
+	isLaunched: false,
+	isStopped: false,
 
-  development: process.env.dev == "true",
-  benchmark: true,
-  private: true,
+	development: process.env.dev == "true",
+	benchmark: true,
+	private: true,
 
-  chatID: {
-    owner: Number(process.env.ownerID),
-    log: Number(process.env.logID),
-  },
+	chatID: {
+		owner: Number(process.env.ownerID),
+		log: Number(process.env.logID),
+	},
 
-  /** @type {Record<number, 'accepted' | 'waiting'>} */
-  joinCodes: {},
-  /** @type {Record<string, any>} */
-  errorLog: {},
-  /** @type {NodeJS.Timer} */
-  relaunchTimer: null,
+	/** @type {Record<number, 'accepted' | 'waiting'>} */
+	joinCodes: {},
+	/** @type {Record<string, any>} */
+	errorLog: {},
+	/** @type {NodeJS.Timer} */
+	relaunchTimer: null,
 };
 
 export const Service = {
-  start,
-  stop,
-  error,
-  message: {
-    development: "development",
-    terminate_you: "terminate_you",
-    terminate_me: "terminate_me",
-  },
-  safeBotLaunch,
-  safeBotStop,
-  handlers: {
-    processError: handleError,
-    bot: handleBotError,
-  },
+	start,
+	stop,
+	error,
+	message: {
+		development: "development",
+		terminate_you: "terminate_you",
+		terminate_me: "terminate_me",
+	},
+	safeBotLaunch,
+	safeBotStop,
+	handlers: {
+		processError: handleError,
+		bot: handleBotError,
+	},
 };
 
-/**
- * TODO Make it use fs.open and WriteStream instead of read/writeFile
- * @param {{text?: {_ :{build(): [string, any]}} | FmtString; consoleMessage?: string; fileName?: string; fileMessage?: string}} param0
- */
-export function newlog({ text, consoleMessage, fileMessage, fileName }) {
-  if (consoleMessage) console.log(consoleMessage);
-
-  // Array with async tasks
-  const tasks = [];
-
-  if (text) {
-    /** @type {[string, any] | [FmtString]} */
-    const doneText = "_" in text ? text._.build() : [text];
-
-    tasks.push(
-      bot.telegram.sendMessage(data.chatID.log, doneText[0], doneText[1])
-    );
-  }
-
-  if (fileMessage)
-    tasks.push(async () => {
-      const p = path.join("logs", fileName ?? "logs.txt");
-      await fs.writeFile(
-        p,
-        `[${new Date().toLocaleString([], {
-          hourCycle: "h24",
-        })}] ${fileMessage}\r` + (await fs.readFile(p)).toString()
-      );
-    });
-
-  return Promise.all(tasks);
-}
-
 function safeBotLaunch() {
-  data.isLaunched = true;
-  data.isStopped = false;
-  bot.launch({dropPendingUpdates: false});
-  data.relaunchTimer = setInterval(() => {
-    if (data.isStopped) return clearInterval(data.relaunchTimer);
-    bot.stop("Relaunch");
-    bot.launch();
-  }, config.update.pollingRelaunchInterval);
+	data.isLaunched = true;
+	data.isStopped = false;
+	bot.launch({ dropPendingUpdates: false });
+	data.relaunchTimer = setInterval(() => {
+		if (data.isStopped) return clearInterval(data.relaunchTimer);
+		bot.stop("Relaunch");
+		bot.launch();
+	}, config.update.pollingRelaunchInterval);
 }
 
 function safeBotStop() {
-  clearInterval(data.relaunchTimer);
-  data.isStopped = true;
-  bot.stop();
+	clearInterval(data.relaunchTimer);
+	data.isStopped = true;
+	bot.stop();
 }
 
 /**
  * Запуск бота
  */
 async function start() {
-  const print = lang.state(8);
+	const print = lang.state(8);
 
-  print(
-    `${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`
-  );
+	print(
+		`${data.development ? clc.yellow("DEV ") : ""}v${config.version.join(".")}`
+	);
 
-  if (data.development)
-    try {
-      await fs.mkdir("logs");
-    } catch {}
+	if (data.development)
+		try {
+			await fs.mkdir("logs");
+		} catch {}
 
-  /**
-   * Setting default get/set values, progress renderers
-   */
-  setupDatabase();
+	/**
+	 * Connecting to main tables:
+	 * db.json, users.json and groups.json
+	 */
+	print("Fetching global db data...");
+	await database.connect();
 
-  /**
-   * Connecting to main tables:
-   * db.json, users.json and groups.json
-   */
-  print("Fetching global db data...");
-  await database.connect();
+	bot.catch(Service.handlers.bot);
+	bot.telegram.sendMessage(data.chatID.log, lang.start());
 
-  bot.catch(Service.handlers.bot);
-  bot.telegram.sendMessage(data.chatID.log, lang.start());
+	/**
+	 * Middlewares
+	 */
+	print("Loading middlewares...");
+	await safeLoad(config.middlewares, (s) =>
+		import(`../middlewares/${s}/index.js`)
+	);
 
-  /**
-   * Middlewares
-   */
-  print("Loading middlewares...");
-  await safeLoad(config.middlewares, (s) =>
-    import(`../middlewares/${s}/index.js`)
-  );
+	/**
+	 * Modules
+	 */
+	print("Loading modules...");
+	await safeLoad(config.modules, (s) => import(`../modules/${s}/index.js`));
 
-  /**
-   * Modules
-   */
-  print("Loading modules...");
-  await safeLoad(config.modules, (s) => import(`../modules/${s}/index.js`));
+	/**
+	 * Connecting to module tables if they exists
+	 */
+	print("Fetching modules db data...");
+	await database.connect();
 
-  /**
-   * Connecting to module tables if they exists
-   */
-  print("Fetching modules db data...");
-  await database.connect();
+	/**
+	 * Command and lists initalization
+	 */
+	print("Launching load.modules...");
+	await new Promise((resolve) => {
+		// Wait till all events are executed
+		process.once("modulesLoad", resolve).emit("modulesLoad");
+	});
 
-  /**
-   * Command and lists initalization
-   */
-  print("Launching load.modules...");
-  await emit("load.modules");
+	/**
+	 * Bot launch
+	 */
+	print("Launching bot...");
+	bot.botInfo = await bot.telegram.getMe();
+	safeBotLaunch();
 
-  /**
-   * Bot launch
-   */
-  print("Launching bot...");
-  bot.botInfo = await bot.telegram.getMe();
-  safeBotLaunch();
-
-  print(
-    `Ready to work in ${styles.highlight(
-      ((Date.now() - data.start_time) / 1000).toFixed(2)
-    )}s`
-  );
+	print(
+		`Ready to work in ${styles.highlight(
+			((Date.now() - data.start_time) / 1000).toFixed(2)
+		)}s`
+	);
 }
 
 /**
@@ -190,31 +153,31 @@ async function start() {
  * @param {boolean} sendMessage
  */
 async function stop(reason = "Остановка", mode = "none", sendMessage = true) {
-  console.log(styles.state("Bot", "Stopping..."));
+	console.log(styles.state("Bot", "Stopping..."));
 
-  let message = fmt`${link(bold`✕`, "https://t.me")}  ${mode}. ${reason}`;
-  message = fmt`${message}\n${data.sv} ${bold(process.env.whereImRunning)}`;
+	let message = fmt`${link(bold`✕`, "https://t.me")}  ${mode}. ${reason}`;
+	message = fmt`${message}\n${data.sv} ${bold(process.env.whereImRunning)}`;
 
-  // Skip on dev terminal stop
-  const send = !(data.development && ["SIGINT", "SIGTERM"].includes(reason));
-  if (send) {
-    const [fullreason, info] = message.text.split("\n");
-    console.log(styles.error(fullreason) + "\n" + clc.redBright(info));
+	// Skip on dev terminal stop
+	const send = !(data.development && ["SIGINT", "SIGTERM"].includes(reason));
+	if (send) {
+		const [fullreason, info] = message.text.split("\n");
+		console.log(styles.error(fullreason) + "\n" + clc.redBright(info));
 
-    if (data.isLaunched && sendMessage)
-      await bot.telegram.sendMessage(data.chatID.log, message);
-  }
+		if (data.isLaunched && sendMessage)
+			await bot.telegram.sendMessage(data.chatID.log, message);
+	}
 
-  if (mode !== "none" && data.isLaunched && !data.isStopped) {
-    data.isStopped = true;
-    bot.stop(reason);
-  }
+	if (mode !== "none" && data.isLaunched && !data.isStopped) {
+		data.isStopped = true;
+		bot.stop(reason);
+	}
 
-  if (mode === "ALL") {
-    if (!database.closed) await database.commitAll();
-    console.log(styles.state("Bot", "Stopping done."));
-    process.exit(0);
-  }
+	if (mode === "ALL") {
+		if (!database.closed) await database.commitAll();
+		console.log(styles.state("Bot", "Stopping done."));
+		process.exit(0);
+	}
 }
 
 const ERROR_TIMER = new XTimer(5);
@@ -224,36 +187,36 @@ const ERROR_TIMER = new XTimer(5);
  * @param {IhandledError} error
  */
 async function error(error) {
-  if (ERROR_TIMER.isExpired())
-    try {
-      if (!error.stack) error.stack = Error().stack;
-      const [type, message, stack, extra] = parseError(error);
+	if (ERROR_TIMER.isExpired())
+		try {
+			if (!error.stack) error.stack = Error().stack;
+			const [type, message, stack, extra] = parseError(error);
 
-      console.warn(" ");
-      console.warn(clc.red(type).trim() + clc.white(message));
-      console.warn(stack);
-      console.warn(" ");
+			console.warn(" ");
+			console.warn(clc.red(type).trim() + clc.white(message));
+			console.warn(stack);
+			console.warn(" ");
 
-      if (!data.isLaunched || data.isStopped) return;
+			if (!data.isLaunched || data.isStopped) return;
 
-      const text = fmt`${link(type, "https://t.me/")}${bold(
-        message
-      )}\n${stack}`;
+			const text = fmt`${link(type, "https://t.me/")}${bold(
+				message
+			)}\n${stack}`;
 
-      await bot.telegram.sendMessage(data.chatID.log, text, {
-        disable_web_page_preview: true,
-      });
+			await bot.telegram.sendMessage(data.chatID.log, text, {
+				disable_web_page_preview: true,
+			});
 
-      if (extra) {
-        await util.sendSeparatedMessage(
-          extra,
-          async (a) =>
-            await bot.telegram.sendMessage(data.chatID.log, a, {
-              disable_web_page_preview: true,
-            })
-        );
-      }
-    } catch (e) {
-      console.warn(new Error(e.message, { cause: error }));
-    }
+			if (extra) {
+				await util.sendSeparatedMessage(
+					extra,
+					async (a) =>
+						await bot.telegram.sendMessage(data.chatID.log, a, {
+							disable_web_page_preview: true,
+						})
+				);
+			}
+		} catch (e) {
+			console.warn(new Error(e.message, { cause: error }));
+		}
 }

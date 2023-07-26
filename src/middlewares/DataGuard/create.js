@@ -1,7 +1,6 @@
-import { newlog } from "../../index.js";
-import { emit } from "../../lib/Class/Events.js";
 import { util } from "../../lib/Class/Utils.js";
 import { fmt } from "../../lib/Class/Xitext.js";
+import { GuardLogger } from "./index.js";
 
 /** @type {Record<number, DB.User>} */
 const CREATED_USERS = {};
@@ -23,14 +22,13 @@ export function CreateUser(ctx) {
 	const text = `Новый пользователь!\n Имя: ${name}\n ID: ${id}${
 		nickname ? `\n @${nickname}` : ""
 	}`;
-	newlog({
+	GuardLogger.log({
 		consoleMessage: text,
 		text: fmt(text),
 		fileMessage: text,
-		fileName: "groups.txt",
 	});
 
-	emit("new.member");
+	process.emit("newMember");
 
 	const user = {
 		static: {
@@ -55,11 +53,10 @@ export function CreateUser(ctx) {
 export function CreateGroup(id, title, members = []) {
 	if (CREATES_GROUPS[id]) return CREATES_GROUPS[id];
 	const text = `Новая группа!\n Название: ${title}\n ID: ${id}`;
-	newlog({
+	GuardLogger.log({
 		consoleMessage: text,
 		text: fmt(text),
 		fileMessage: text,
-		fileName: "groups.txt",
 	});
 
 	/** @type {DB.Group} */

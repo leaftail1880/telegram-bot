@@ -1,10 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "paths": {},
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true
-  },
-  "include": ["src/api", "src/server"],
-  "exclude": []
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"composite": true,
+		"paths": {},
+		"noEmit": false,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"declarationDir": "disk",
+		"skipLibCheck": true,
+		"allowImportingTsExtensions": true
+	},
+	"include": ["src/api", "src/server"],
+	"exclude": []
 }

@@ -1,7 +1,6 @@
 import config from "./config.js";
 import { bot, data, database, Service, tables } from "./index.js";
 import { u, util } from "./lib/Class/Utils.js";
-import { Xitext } from "./lib/Class/Xitext.js";
 
 /**
  *
@@ -10,8 +9,7 @@ import { Xitext } from "./lib/Class/Xitext.js";
  * @param {unknown} Data
  */
 export async function sudo(ctx, _, Data) {
-	const args =
-		"help, ctx, data, edata, Xitext, util, r, d, keys, rr, bot, tb, db";
+	const args = "help, ctx, data, edata, util, r, d, keys, rr, bot, tb, db";
 	const code = `(async () => {\n${ctx.message.text.replace(
 		config.command.clear,
 		""
@@ -23,7 +21,6 @@ export async function sudo(ctx, _, Data) {
 			ctx,
 			data, // bot data
 			Data, // event data
-			Xitext,
 			util,
 			(/** @type {unknown} */ m) =>
 				util.sendSeparatedMessage(util.inspect(m), (r) => ctx.reply(r)),

@@ -1,11 +1,11 @@
 import { Telegraph } from "better-telegraph";
-import { DatabaseTable } from "leafy-db";
+import { LeafyDBTable } from "leafy-db";
 import { database, tables } from "../../index.js";
 import { pack, unpack } from "./Pack.js";
 import { u, util } from "./Utils.js";
 
 /**
- * @type {DatabaseTable<string>}
+ * @type {LeafyDBTable<string>}
  */
 const TELEGRAPH_DB = database.table("modules/telegraph.json");
 

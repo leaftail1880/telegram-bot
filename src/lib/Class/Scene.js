@@ -1,6 +1,5 @@
 import { bot, tables } from "../../index.js";
 import { Command } from "./Command.js";
-import { on } from "./Events.js";
 import { u } from "./Utils.js";
 
 /**
@@ -11,7 +10,8 @@ function MakeScene(ctx, scene, i = 0) {
 	ctx.scene = {
 		next() {
 			const step = i + 1;
-			if (!(step in scene.mappedHandlers)) throw new Error("No next function specified");
+			if (!(step in scene.mappedHandlers))
+				throw new Error("No next function specified");
 
 			return scene.enter(ctx.from.id, step.toString());
 		},
@@ -63,10 +63,12 @@ export class Scene {
 
 		if (handlers.length > 0) {
 			this.isWizardScene = true;
-			const mappedHandlers = handlers.map((fn) => (typeof fn === "function" ? { middleware: fn } : fn));
+			const mappedHandlers = handlers.map((fn) =>
+				typeof fn === "function" ? { middleware: fn } : fn
+			);
 			this.mappedHandlers = mappedHandlers;
 
-			on("load.modules", () => {
+			process.on("modulesLoad", () => {
 				/**
 				 * @type {Record<string, {
 				 *   middleware: MiddlewareFn;
@@ -127,7 +129,8 @@ export class Scene {
 	 * @returns {string | false}
 	 */
 	step(data) {
-		if (!data?.scene || data.scene.name !== this.name || "group" in data) return false;
+		if (!data?.scene || data.scene.name !== this.name || "group" in data)
+			return false;
 
 		return data.scene.state;
 	}

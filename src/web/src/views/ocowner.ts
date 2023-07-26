@@ -1,48 +1,57 @@
-import { button, p, div, a, br } from "@fusorjs/dom/html";
-import type { OCOwner } from "./ocs.ts";
 import { Link } from "../web/router.ts";
+import { LoadOCOwners, OCowners, type OCowner } from "./ocs.ts";
 
-export function CharacterOwner(owner: OCOwner) {
-  const wrapper = div(
-    { style: "padding: 0px;" },
-    button(owner.name, {
-      click$e() {
-        if (!("nextElementSibling" in this)) return;
-        const c = this.nextElementSibling as HTMLDivElement;
-        c.style.maxHeight =
-          c.style.maxHeight === "0px" ? c.scrollHeight + "px" : "0px";
+export async function LoadOwnerOCS(ownerid: string) {
+	if (!OCowners[ownerid]) {
+		await LoadOCOwners();
+		if (!OCowners[ownerid]) throw new Error(i18n`Unknown owner`);
+	}
 
-        wrapper.update();
-
-        api<OCOwner["ocs"]>("oc/owner", {
-          body: { ownerid: owner.id },
-          token: true,
-        })
-          .then((res) => {
-            owner.ocs = res;
-            wrapper.update();
-          })
-          .catch(alert);
-      },
-    }),
-    div(
-      {
-        style:
-          "max-height: 0; overflow: hidden; transition: max-height 0.2s ease-in-out; padding: 0px 0px;",
-      },
-      () => (owner.ocs.length ? OC(owner) : p(i18n`Loading...`))
-    )
-  );
-  return wrapper;
+	OCowners[ownerid].ocs = await api<OCowner["ocs"]>("oc/owner", {
+		body: { ownerid },
+		token: true,
+	});
 }
 
-function OC(owner: OCOwner) {
-  const ocs = [];
-  for (const [i, e] of owner.ocs.entries()) {
-    ocs.push(Link(`/oc/${owner.id}/${i}`, e.name));
-    ocs.push(br());
-  }
-  ocs.push(br());
+export function OCownerButton(ownerid: string) {
+	const list = div(
+		{
+			style: "max-height: 0px;",
+			class: "closable",
+		},
+		() =>
+			Object.keys(OCowners[ownerid]?.ocs).length
+				? OCList(OCowners[ownerid], ownerid)
+				: [br(), a(i18n`Loading...`), br(), br()]
+	);
+	const wrapper = div(
+		button(() => OCowners[ownerid].name, {
+			class: "ocbutton",
+			click$e() {
+				wrapper.update();
+				const l = list.element;
+				l.style.maxHeight =
+					l.style.maxHeight === "0px" ? l.scrollHeight + "px" : "0px";
+				if (!Object.keys(OCowners[ownerid]?.ocs).length)
+					LoadOwnerOCS(ownerid).then(() => {
+						wrapper.update();
+						const l = list.element;
+						l.style.maxHeight =
+							l.style.maxHeight !== "0px" ? l.scrollHeight + "px" : "0px";
+					});
+			},
+		}),
+		list
+	);
+	return wrapper;
+}
 
-  return div(...ocs);
+function OCList(owner: OCowner, ownerid: string) {
+	const ocs = [br()] as any[];
+	for (const [i, e] of Object.entries(owner.ocs)) {
+		ocs.push(Link(`/oc/${ownerid}/${i}`, e.name));
+		ocs.push(br());
+	}
+	ocs.push(br());
+	return ocs;
 }

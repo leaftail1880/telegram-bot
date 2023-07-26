@@ -1,6 +1,9 @@
 import { bot, tables } from "../../index.js";
+import { Logger } from "../../lib/utils/logger.js";
 import { getGroup, getUser } from "./get.js";
 import "./queries.js";
+
+export const GuardLogger = new Logger("guard.txt")
 
 bot.use(async (ctx, next) => {
 	if (!ctx.from || !ctx.chat) return next();

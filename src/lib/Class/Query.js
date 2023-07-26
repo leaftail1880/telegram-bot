@@ -1,11 +1,12 @@
 import clc from "cli-color";
-import { bot, newlog } from "../../index.js";
+import { bot } from "../../index.js";
+import { Logger } from "../utils/logger.js";
 import { safeRun } from "../utils/safe.js";
-import { on } from "./Events.js";
 import { u, util } from "./Utils.js";
 import { XTimer } from "./XTimer.js";
 
 export class Query {
+	static Logger = new Logger();
 	/**
 	 * @type {Record<string, Query>}
 	 */
@@ -40,7 +41,7 @@ export class Query {
 	static Log(ctx, message = null) {
 		const name = util.getName(null, ctx.from);
 		const text = `${name}: ${message}`;
-		newlog({
+		this.Logger.log({
 			consoleMessage: clc.blackBright("Q> ") + text,
 			fileMessage: text,
 		});
@@ -73,7 +74,7 @@ function isQuery(ctx) {
 
 const Q_TIMER = new XTimer(0.3, true);
 
-on("load.modules", () => {
+process.on("modulesLoad", () => {
 	bot.on("callback_query", async (ctx, next) => {
 		if (!isQuery(ctx)) return;
 		const data = ctx.callbackQuery.data;

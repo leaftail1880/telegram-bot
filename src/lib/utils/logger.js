@@ -1,0 +1,34 @@
+import fs from "fs";
+import path from "path";
+import { FmtString } from "telegraf/format";
+import { data } from "../Service.js";
+import { bot } from "../launch/telegraf.js";
+
+export class Logger {
+	constructor(fileName = "logs.txt") {
+		const filePath = path.join("logs", fileName ?? "logs.txt");
+		this.stream = fs.createWriteStream(filePath, "utf-8");
+	}
+	/**
+	 * @param {{
+	 * 	text?: FmtString;
+	 *  textExtra?: import("telegraf/types").Convenience.ExtraReplyMessage
+	 * 	consoleMessage?: string;
+	 * 	fileMessage?: string
+	 * }} param0
+	 */
+	async log({ text, consoleMessage, fileMessage, textExtra }) {
+		if (consoleMessage) console.log(consoleMessage);
+
+		if (fileMessage)
+			this.stream.write(
+				`[${new Date().toLocaleString([], {
+					hourCycle: "h24",
+				})}] ${fileMessage}\r`
+			);
+
+		if (text) {
+			bot.telegram.sendMessage(data.chatID.log, text, textExtra);
+		}
+	}
+}

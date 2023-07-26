@@ -1,38 +1,28 @@
-import { data, newlog, tables } from "../../index.js";
+import { data, tables } from "../../index.js";
 import { u, util } from "../../lib/Class/Utils.js";
-import { btn, FmtString, Xitext } from "../../lib/Class/Xitext.js";
+import { Markup, bold, btn, code, fmt, link } from "../../lib/Class/Xitext.js";
 import { CreateGroup, CreateUser } from "./create.js";
-
-/**
- *
- * @param {FmtString | { _: { build(): [string, any]; text: string }; }} XT
- */
-function logReq(XT) {
-	const text = "text" in XT ? XT.text : XT._.text;
-	newlog({
-		text: XT,
-		consoleMessage: text,
-		fileMessage: text,
-		fileName: "addReq.txt",
-	});
-}
+import { GuardLogger } from "./index.js";
 
 /**
  *
  * @param {Context} ctx
  */
 function logNotAccepted(ctx) {
-	const XT = new Xitext()
-		.text("Лс (NoReg) ")
-		.url(
-			util.getTelegramName(ctx.from),
-			ctx.from.username
-				? `https://t.me/${ctx.from.username}`
-				: u.userLink(ctx.from.id)
-		);
+	const message = fmt`${
+		ctx.chat.type === "private" ? "Лс" : "Группа"
+	} (new) ${link(
+		util.getTelegramName(ctx.from),
+		ctx.from.username
+			? `https://t.me/${ctx.from.username}`
+			: u.userLink(ctx.from.id)
+	)}${ctx.message && "text" in ctx.message ? `: ${ctx.message.text}` : ""}`;
 
-	if (ctx.message && "text" in ctx.message) XT.text(`: ${ctx.message.text}`);
-	logReq(XT);
+	GuardLogger.log({
+		text: message,
+		consoleMessage: message.text,
+		fileMessage: message.text,
+	});
 }
 
 /**
@@ -47,24 +37,29 @@ export async function getUser(ctx) {
 			if (!(ctx.from.id in data.joinCodes)) {
 				data.joinCodes[ctx.from.id] = "waiting";
 
-				const XT = new Xitext()
-					.text("Запрос на лс от ")
-					.url(util.getTelegramName(ctx.from), u.userLink(ctx.from.id))
-					.text("\nID: ")
-					.mono(ctx.from.id)
-					.inlineKeyboard(
-						[btn("Принять", "N", "accept", ctx.from.id)],
-						[btn("Игнорировать", "all", "delmsg")]
-					);
+				const message = fmt`Запрос на лс от ${link(
+					util.getTelegramName(ctx.from),
+					u.userLink(ctx.from.id)
+				)}\nID: ${code(ctx.from.id.toString())}`;
 
-				logReq(XT);
+				GuardLogger.log({
+					text: message,
+					textExtra: {
+						...Markup.inlineKeyboard([
+							[btn("Принять", "N", "accept", ctx.from.id)],
+							[btn("Игнорировать", "all", "delmsg")],
+						]),
+					},
+					fileMessage: message.text,
+					consoleMessage: message.text,
+				});
+
 				logNotAccepted(ctx);
-
 				return false;
 			} else if (data.joinCodes[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно приняты в список разрешенных пользователей.");
 
-				// 9.0.7 Fix: Memory leak
+				// 9.0.7 Fix: leak
 				delete data.joinCodes[ctx.from.id];
 			} else if (data.joinCodes[ctx.from.id] === "waiting") {
 				logNotAccepted(ctx);
@@ -118,33 +113,28 @@ export async function getGroup(ctx) {
 			if (!(ctx.chat.id in data.joinCodes)) {
 				data.joinCodes[ctx.chat.id] = "waiting";
 
-				const XT = new Xitext()
-					.text("Запрос на добавление группы:\n")
-					.bold(ctx.chat.title)
-					.text("\n")
-					.mono(ctx.chat.id)
-					.text("\n\nКод: ")
-					.mono(ctx.chat.id.toString(16))
-					.inlineKeyboard(
-						[btn("Принять", "N", "group", ctx.chat.id)],
-						[btn("Игнорировать", "all", "delmsg")]
-					);
+				const id = ctx.chat.id;
+				const message = fmt`Запрос на добавление группы:\n${bold(
+					ctx.chat.title
+				)}\n${code(id.toString())}\n\nКод: ${code(id.toString(16))}`;
 
-				newlog({
-					text: XT,
-					consoleMessage: XT._.text,
-					fileMessage: XT._.text,
-					fileName: "addReq.txt",
+				GuardLogger.log({
+					text: message,
+					textExtra: {
+						...Markup.inlineKeyboard([
+							[btn("Принять", "N", "group", ctx.chat.id)],
+							[btn("Игнорировать", "all", "delmsg")],
+						]),
+					},
+					consoleMessage: message.text,
+					fileMessage: message.text,
 				});
 
 				if (ctx.botInfo.can_read_all_group_messages)
 					await ctx.reply(
-						...new Xitext()
-							.text(
-								"К сожалению, я не настроен для работы с этой группой. Если мой создатель разрешил вам, то отправьте ему код снизу. А теперь прошу извинить, мне нужно идти.\n\nКод вашей группы: "
-							)
-							.mono(ctx.from.id.toString(16))
-							._.build()
+						fmt`К сожалению, я не настроен для работы с этой группой. Если мой создатель разрешил вам, то отправьте ему код снизу. А теперь прошу извинить, мне нужно идти.\n\nКод вашей группы: ${code(
+							ctx.from.id.toString(16)
+						)}`
 					);
 				ctx.leaveChat();
 				return false;

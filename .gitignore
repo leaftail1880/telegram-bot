@@ -3,7 +3,7 @@
 
 # Folder whitelist
 !src/
-!leafs/
+!scripts/
 
 # Root files whitelist
 !package.json

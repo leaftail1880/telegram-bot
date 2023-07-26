@@ -1,38 +1,37 @@
-import { section, h1, button, div } from "@fusorjs/dom/html";
 import { Component } from "@fusorjs/dom";
-import { Navigate } from "../web/router.ts";
-import { CharacterOwner } from "./ocowner.ts";
+import { Buttons } from "../web/router.ts";
+import { OCownerButton } from "./ocowner.ts";
 
-export interface OCOwner {
-  id: string;
-  name: string;
-  ocs: { fileid: string; description: string, name: string }[];
+export interface OCowner {
+	name: string;
+	ocs: Record<string, { description: string; name: string }>;
+}
+
+export const OCowners: Record<string, OCowner> = {};
+
+export async function LoadOCOwners() {
+	const newOwners = await api<Record<string, string>>("oc/owners", {
+		token: true,
+	});
+
+	Object.keys(OCowners).forEach((e) => delete OCowners[e]);
+	Object.entries(newOwners).forEach(([id, name]) => {
+		OCowners[id] = { name, ocs: {} };
+	});
 }
 
 export function OCs() {
-  const reloadButton = button({ click$e: fetchOCs }, i18n`Reload`);
-  let ownersData: OCOwner[] = [];
-  let owners: Component<any>[] = [reloadButton];
-  
-  const wrapper = section(
-    h1(i18n`Characters`),
-    button(Navigate("/home"), i18n`Home`),
-    () => div({style: "padding: 0px;"}, ...owners)
-  );
+	const reloadButton = button({ click$e: LoadOCOwners }, i18n`Reload`);
+	let ownerButtons: Component<any>[] = [reloadButton];
+	console.log(Buttons.home);
+	const wrapper = section(h1(i18n`Characters`), Buttons.home, () =>
+		div(...ownerButtons)
+	);
 
-  async function fetchOCs() {
-    const fetchedOwners = await api<[string, string][]>("oc/owners", {
-      token: true,
-    });
+	LoadOCOwners().then(() => {
+		ownerButtons = Object.keys(OCowners).map(OCownerButton);
+		wrapper.update();
+	});
 
-    ownersData = fetchedOwners.map(([id, name]) => {
-      return { id, name, ocs: [] };
-    });
-    owners = ownersData.map(CharacterOwner);
-    wrapper.update();
-  }
-
-  fetchOCs().catch(alert);
-
-  return wrapper;
+	return wrapper;
 }

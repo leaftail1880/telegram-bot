@@ -1,7 +1,6 @@
 import { parseMarkdown, upload } from "better-telegraph";
-import { DatabaseTable } from "leafy-db";
 import { Context, Markup } from "telegraf";
-import { bot, database, newlog, tables} from "../../index.js";
+import { bot, tables } from "../../index.js";
 import { getAccount } from "../../lib/Class/Telegraph.js";
 import { util } from "../../lib/Class/Utils.js";
 import { fmt } from "../../lib/Class/Xitext.js";
@@ -16,11 +15,11 @@ export const OC_DB = tables.ocs;
  */
 export function oclog(from, message) {
 	message = `OC> ${from ? ` ${util.getName(null, from)}` : ""} ${message}`;
-	newlog({
+	const a = {
 		fileMessage: message,
 		consoleMessage: message,
 		text: fmt(message),
-	});
+	};
 }
 
 /**
@@ -48,7 +47,7 @@ export async function CreateProgressManager(ctx, firstProgress) {
 export async function saveOC(user, OC, progress = () => void 0, index) {
 	const { data: OCs, save } = OC_DB.work(user.id);
 
-	/** @type {StoredCharacter} */
+	/** @type {any} */
 	const saveOC = {};
 	const prevOC = OCs[index];
 	let ref_link;

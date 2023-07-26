@@ -1,7 +1,8 @@
+import { bold } from "cli-color";
 import { data } from "../../../index.js";
 import { Command } from "../../../lib/Class/Command.js";
 import { u } from "../../../lib/Class/Utils.js";
-import { Xitext } from "../../../lib/Class/Xitext.js";
+import { fmt, link } from "../../../lib/Class/Xitext.js";
 
 new Command(
 	{
@@ -14,13 +15,9 @@ new Command(
 	},
 	(ctx) => {
 		ctx.reply(
-			...new Xitext()._.group(data.sv)
-				.url(null, u.guide(8))
-				.bold()
-				._.group()
-				.text(` `)
-				.bold(process.env.whereImRunning)
-				._.build()
+			fmt`${link(bold(data.sv), u.guide(8))} ${bold(
+				process.env.whereImRunning
+			)}`
 		);
 	}
 );

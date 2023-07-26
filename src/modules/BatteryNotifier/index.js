@@ -1,6 +1,5 @@
 import { exec } from "leafy-utils";
 import { bot, data } from "../../index.js";
-import { on } from "../../lib/Class/Events.js";
 
 /**
  *
@@ -22,7 +21,7 @@ async function getStatus() {
 }
 
 let notified = false;
-on("load.modules", async () => {
+process.on("modulesLoad", async () => {
 	const status = await getStatus();
 
 	if (status === "NOT_A_PHONE") {
