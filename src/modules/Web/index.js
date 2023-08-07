@@ -1,3 +1,1 @@
-process.on("loaded", () =>
-  setTimeout(() => import("../../web/dist/server/app.js"), 10000)
-);
+process.on("loaded", () => import("../../web/dist/server/app.js"));
