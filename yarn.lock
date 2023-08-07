@@ -193,17 +193,17 @@ is-fullwidth-code-point@^3.0.0:
   resolved "https://registry.yarnpkg.com/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz#f116f8064fe90b3f7844a38997c0b75051269f1d"
   integrity sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==
 
-leafy-db@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/leafy-db/-/leafy-db-3.0.3.tgz#60f71114c922ea1f3015555972dce6da79fcaefd"
-  integrity sha512-YmGBfSVFaZsEdPkLsmgpEIl/uKTUEpKbgG3qCf4vCVq8mfYvhFe7UJ04cQEfl3hp7JGXOeec17sMXZHj59JM/w==
+leafy-db@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/leafy-db/-/leafy-db-3.1.0.tgz#ebf3bab70d798eb6e15aeb54a4d5fdf97ada381f"
+  integrity sha512-LQm/MzVlK9WTENNQ+HR0oUkP6p3+GwlVMZ6vRVdphm0sIaOcqrAGiJH4IVUVONSL8NieU5NDLJ3fmghX9K5WxA==
   dependencies:
-    node-fetch "3.3.1"
+    node-fetch "3.x || 2.x"
 
-leafy-utils@5.1.3:
-  version "5.1.3"
-  resolved "https://registry.yarnpkg.com/leafy-utils/-/leafy-utils-5.1.3.tgz#d595baf2ceae65432db455c089e851e876996175"
-  integrity sha512-0urgYndSDVrhETmdeessjrjm1pyx2YCa0pNm0VKoiwToK58BuPzkPFhIfoxZxzMeOgrxayawM8sn7FU2WA/HoQ==
+leafy-utils@^5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/leafy-utils/-/leafy-utils-5.1.4.tgz#7644597dee52ca77f3244ecdbe50cf1759957a79"
+  integrity sha512-RPguW8iLmKcT6q09PQoBIukOVe7I6VyVgofDm5kR3w8S139G++Nn8qoFzLdU3KSGwmFF4vqm66ArSkJJgF5pAw==
 
 linkify-it@^4.0.1:
   version "4.0.1"
@@ -243,10 +243,10 @@ node-domexception@^1.0.0:
   resolved "https://registry.yarnpkg.com/node-domexception/-/node-domexception-1.0.0.tgz#6888db46a1f71c0b76b3f7555016b63fe64766e5"
   integrity sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==
 
-node-fetch@3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.3.1.tgz#b3eea7b54b3a48020e46f4f88b9c5a7430d20b2e"
-  integrity sha512-cRVc/kyto/7E5shrWca1Wsea4y6tL9iYJE5FBCius3JQfb/4P4I295PfhgbJQBLTx6lATE4z+wK0rPM4VS2uow==
+"node-fetch@3.x || 2.x":
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.3.2.tgz#d1e889bacdf733b4ff3b2b243eb7a12866a0b78b"
+  integrity sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==
   dependencies:
     data-uri-to-buffer "^4.0.0"
     fetch-blob "^3.1.4"

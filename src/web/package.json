@@ -21,6 +21,7 @@
 		"@fusorjs/dom": "^2.0.1",
 		"@twa-dev/types": "^6.7.0",
 		"@types/quill": "^2.0.10",
-		"leafy-i18n": "^0.0.9"
+		"leafy-i18n": "^0.0.9",
+		"serveonet": "^0.0.1"
 	}
 }

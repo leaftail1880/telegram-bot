@@ -1,1 +1,3 @@
-process.on("modulesLoad", () => import("../../web/dist/server/app.js"));
+process.on("loaded", () =>
+  setTimeout(() => import("../../web/dist/server/app.js"), 10000)
+);

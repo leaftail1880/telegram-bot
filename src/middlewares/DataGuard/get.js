@@ -66,10 +66,10 @@ export async function getUser(ctx) {
 				logNotAccepted(ctx);
 				return false;
 			}
-		} else {
+		}
 			user = CreateUser(ctx);
 			user.needSafe = true;
-		}
+		
 	}
 
 	/**

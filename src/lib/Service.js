@@ -118,6 +118,7 @@ export const Service = {
 				((Date.now() - Service.startTime) / 1000).toFixed(2)
 			)}s`
 		);
+	  process.emit("loaded")
 	},
 	/**
 	 * @param {string} reason

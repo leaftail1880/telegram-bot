@@ -132,7 +132,7 @@ declare namespace NodeJS {
 	}
 }
 
-type CustomEvents = "newMember" | "modulesLoad";
+type CustomEvents = "newMember" | "modulesLoad" | "loaded";
 
 type seconds = number;
 type milliseconds = number;
