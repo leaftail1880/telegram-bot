@@ -1,12 +1,22 @@
 import { fmt, link } from "telegraf/format";
-import { bot, data, tables } from "../../index.js";
-import { Command } from "../../lib/Class/Command.js";
-import { u, util } from "../../lib/Class/Utils.js";
+import { Service, bot, tables } from "../../index.js";
+import { u, util } from "../../lib/utils/index.js";
+import { Command } from "../../lib/сommand.js";
 
 bot.use(async (ctx, next) => {
 	if (!ctx.data?.group?.cache?.silentMembers || !ctx.message) return next();
 
 	const silent = ctx.data.group.cache.silentMembers;
+
+	if (ctx.from.id in silent) {
+		delete silent[ctx.from.id];
+		tables.groups.set(ctx.chat.id, ctx.data.group);
+		return notSleeping(
+			ctx,
+			link(util.getName(ctx.data.user), u.httpsUserLink(ctx.from.username))
+		);
+	}
+
 	const reply = "reply_to_message" in ctx.message;
 	let reason, ping_id;
 	if (reply) ping_id = ctx.message.reply_to_message.from.id;
@@ -32,7 +42,7 @@ bot.use(async (ctx, next) => {
 	if (!reason) return next();
 	const dbuser = tables.users.get(ping_id);
 
-	await ctx.forwardMessage(data.chatID.log);
+	await ctx.forwardMessage(Service.chat.log);
 	await ctx.deleteMessage(ctx.message.message_id);
 	ctx.reply(
 		fmt`${link(
@@ -45,6 +55,19 @@ bot.use(async (ctx, next) => {
 	);
 });
 
+/**
+ *
+ * @param {Context} ctx
+ * @param {Text} l
+ */
+function notSleeping(ctx, l) {
+	ctx.reply(fmt`${l} снова с нами!`, {
+		reply_to_message_id: ctx.message.message_id,
+		allow_sending_without_reply: true,
+		disable_web_page_preview: true,
+	});
+}
+
 new Command(
 	{
 		name: "sleep",
@@ -52,24 +75,19 @@ new Command(
 		description: "Режим 'Не беспокоить'",
 	},
 	(ctx, input) => {
-		const members = ctx.data.group.cache.silentMembers;
+		const silent = ctx.data.group.cache.silentMembers;
 		const l = link(
 			util.getName(ctx.data.user),
 			u.httpsUserLink(ctx.from.username)
 		);
-		if (members[ctx.from.id]) {
-			ctx.reply(fmt`${l} снова с нами!`, {
-				reply_to_message_id: ctx.message.message_id,
-				allow_sending_without_reply: true,
-				disable_web_page_preview: true,
-			});
-
-			delete members[ctx.from.id];
+		if (silent[ctx.from.id]) {
+			notSleeping(ctx, l);
+			delete silent[ctx.from.id];
 		} else {
 			ctx.reply(fmt`${l} отдыхает от чата.`, {
 				disable_web_page_preview: true,
 			});
-			members[ctx.from.id] = input
+			silent[ctx.from.id] = input
 				? input
 				: "так спешил(а), что даже не сказал(а) почему...";
 		}

@@ -1,6 +1,5 @@
-import { Query } from "./Query.js";
-import { u } from "./Utils.js";
-import { Button, CreateNamespacedButton } from "./Xitext.js";
+import { Query } from "./query.js";
+import { u } from "./utils/index.js";
 
 export class MultiMenu {
 	static get config() {
@@ -20,15 +19,7 @@ export class MultiMenu {
 		this.prefix = prefix;
 		this.config = MultiMenu.config;
 	}
-	/**
-	 *
-	 * @param {string} methodName
-	 * @param  {...any} args
-	 * @returns {string}
-	 */
-	link(methodName, ...args) {
-		return u.query(this.prefix, methodName, ...args);
-	}
+
 	/**
 	 *
 	 * @param {Object} options
@@ -39,7 +30,13 @@ export class MultiMenu {
 	 * @param {number} [options.buttonLimit]
 	 * @returns
 	 */
-	generatePageSwitcher({ buttons, queryName, backButton = null, pageTo = 1, buttonLimit = this.config.maxRows }) {
+	generatePageSwitcher({
+		buttons,
+		queryName,
+		backButton = null,
+		pageTo = 1,
+		buttonLimit = this.config.maxRows,
+	}) {
 		const page = Number(pageTo);
 		const qNext = Math.ceil(buttons.length / buttonLimit) - 1 >= page;
 		const qBack = page > 1;
@@ -52,8 +49,12 @@ export class MultiMenu {
 
 		if (backButton) menu.push(backButton);
 
-		if (qBack) menu.unshift(Button(this.config.pageBack, this.link(queryName, page - 1)));
-		if (qNext) menu.push(Button(this.config.pageNext, this.link(queryName, page + 1)));
+		if (qBack)
+			menu.unshift(
+				u.btn(this.config.pageBack, this.prefix, queryName, page - 1)
+			);
+		if (qNext)
+			menu.push(u.btn(this.config.pageNext, this.prefix, queryName, page + 1));
 
 		btns.push(menu);
 
@@ -70,7 +71,18 @@ export class MultiMenu {
 	query(info, callback) {
 		return new Query({ prefix: this.prefix, ...info }, callback);
 	}
-	createButtonMaker() {
-		return CreateNamespacedButton(this.prefix);
+
+	buttonMaker() {
+		return (
+			/**
+			 * @type {StringLike}
+			 */ text,
+			/**
+			 * @type {StringLike}
+			 */ method,
+			/**
+			 * @type {StringLike[]}
+			 */ ...args
+		) => u.btn(text, this.prefix, method, ...args);
 	}
 }

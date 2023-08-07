@@ -1,6 +1,6 @@
-import { Command } from "../../../lib/Class/Command.js";
-import { util } from "../../../lib/Class/Utils.js";
-import { Xitext } from "../../../lib/Class/Xitext.js";
+import { fmt, mention } from "telegraf/format";
+import { util } from "../../../lib/utils/index.js";
+import { Command } from "../../../lib/сommand.js";
 
 new Command(
 	{
@@ -9,20 +9,24 @@ new Command(
 		description: "Вызывает админов",
 	},
 	async (ctx) => {
-		const admins = (await ctx.getChatAdministrators()).filter((e) => !e.user.is_bot);
+		const admins = (await ctx.getChatAdministrators()).filter(
+			(e) => !e.user.is_bot
+		);
 		const perMessage = Math.min(3, admins.length);
-		let res = new Xitext();
+		let res = fmt``;
 
 		for (const [i, admin] of admins.entries()) {
-			res.text("\n").mention(util.getName(null, admin.user), admin.user);
+			res = fmt`${res}\n$${mention(
+				util.getName(null, admin.user),
+				admin.user
+			)}`;
 			if (i % perMessage === 0) {
-				await ctx.reply(res._.text, {
+				await ctx.reply(res, {
 					reply_to_message_id: ctx.message.message_id,
 					allow_sending_without_reply: true,
 					disable_notification: false,
-					entities: res._.entities,
 				});
-				res = new Xitext();
+				res = fmt``;
 			}
 		}
 	}

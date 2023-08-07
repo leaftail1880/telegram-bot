@@ -1,18 +1,19 @@
 import crypto from "crypto";
+import { logger } from "../server/utils.js";
 
-export const POST: Route<{ hash: string; user: string }> = (req, res, next) => {
-	if (hashIsValid(req.body?.hash)) {
-		console.log("Auth from '" + req.body?.user + "'!");
-		return { valid: true, token: generateToken() };
+export const POST: Route<{ hash: string }> = (req) => {
+	const user = hashIsValid(req.body?.hash)
+	if (user) {
+		logger.success("Auth from '" + user.username + "'!");
+		return { valid: true, token: generateToken(user.id) };
 	} else {
-		console.log("Invalid auth.");
+		logger.info("Invalid auth.");
 		return { valid: false };
 	}
 };
 
 function hashIsValid(telegramInitData: string) {
 	const urlParams = new URLSearchParams(telegramInitData);
-
 	const hash = urlParams.get("hash");
 	urlParams.delete("hash");
 	urlParams.sort();
@@ -31,29 +32,39 @@ function hashIsValid(telegramInitData: string) {
 		.update(dataCheckString)
 		.digest("hex");
 
-	return calculatedHash === hash;
+	if (calculatedHash === hash) {
+		try {
+			const user = JSON.parse(urlParams.get("user"));
+			if (tables.users.has(user.id)) return user
+		} catch (e) {
+			logger.error(e, urlParams.get("user"));
+			return false;
+		}
+	} else return false;
 }
 
-const tokens: Record<string, number> = {};
+const tokens: Record<string, {timestamp: number, id: string}> = {};
 
-function generateToken() {
+function generateToken(userid: string) {
 	const timestamp = Date.now();
 	const hash = crypto
 		.createHash("sha256")
 		.update(timestamp.toString())
 		.digest("hex");
-	tokens[hash] = timestamp;
+	tokens[hash] = {timestamp, id: userid};
 	return hash;
 }
 
 export function tokenIsValid(token: string) {
-	const timestamp = tokens[token];
-	if (!timestamp || Date.now() - timestamp >= 1000 * 60 * 60 * 6) return false;
-	return true;
+	const data = tokens[token]
+	if (!data || Date.now() - data.timestamp >= 1000 * 60 * 60 * 6) return false;
+	return data.id
 }
 
-export const auth: Route<{ token: string }> = (req, _res, next) => {
-	return next();
-	if (tokenIsValid(req.body?.token)) return next();
-	else throw new Error("Invalid token!");
+export const auth: Route = (req, res, next) => {
+	const token = req.headers["authorization"];
+	if (tokenIsValid(token)) return next();
+	else if (!token)
+		{res.writeHead(400, "No token on " + req.method + req.path).end();return}
+	else {res.writeHead(400, "Invalid token on " + req.method + req.path).end();return}
 };

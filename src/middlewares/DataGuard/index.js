@@ -6,7 +6,7 @@ import "./queries.js";
 export const GuardLogger = new Logger("guard.txt")
 
 bot.use(async (ctx, next) => {
-	if (!ctx.from || !ctx.chat) return next();
+	if (!ctx.from || !ctx.chat || ctx.from.is_bot) return next();
 
 	ctx.data ??= {};
 

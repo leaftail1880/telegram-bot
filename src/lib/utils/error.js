@@ -1,4 +1,4 @@
-import { util } from "../Class/Utils.js";
+import { util } from "./index.js";
 
 /**
  * @type {[RegExp | string, string?, number?][]}

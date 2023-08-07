@@ -28,12 +28,12 @@ async function main() {
 					try {
 						// @ts-expect-error Again
 						let value = await cb(req, res, next);
-						if (value) {
+						if (value && !(value instanceof Promise)) {
 							res.send(value);
 						}
 					} catch (error) {
-						logger.error("Internal server error: " + error);
-						res.writeHead(400, "Internal server error: " + error).end();
+						logger.error("Internal Server " + error);
+						res.writeHead(400, "Internal Server " + error).end();
 					}
 				}
 			};

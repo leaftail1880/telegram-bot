@@ -1,6 +1,7 @@
-import { data, tables } from "../../index.js";
-import { Query } from "../../lib/Class/Query.js";
-import { btn, code, fmt } from "../../lib/Class/Xitext.js";
+import { code, fmt } from "telegraf/format";
+import { Service, tables } from "../../index.js";
+import { Query } from "../../lib/query.js";
+import { u } from "../../lib/utils/index.js";
 
 new Query(
 	{
@@ -8,11 +9,13 @@ new Query(
 		name: "accept",
 	},
 	(ctx, path) => {
-		data.joinCodes[Number(path[0])] = "accepted";
+		Service.joins[Number(path[0])] = "accepted";
 		const text = fmt`Запрос на лс принят ${code(path[0])}`;
 		ctx.editMessageText(text.text, {
 			entities: text.entities,
-			reply_markup: { inline_keyboard: [[btn("Удалить", "N", "del", "u", path[0])]] },
+			reply_markup: {
+				inline_keyboard: [[u.btn("Удалить", "N", "del", "u", path[0])]],
+			},
 		});
 	}
 );
@@ -23,11 +26,13 @@ new Query(
 		name: "group",
 	},
 	(ctx, path) => {
-		data.joinCodes[Number(path[0])] = "accepted";
+		Service.joins[Number(path[0])] = "accepted";
 		const text = fmt`Запрос на группу принят ${code(path[0])}`;
 		ctx.editMessageText(text.text, {
 			entities: text.entities,
-			reply_markup: { inline_keyboard: [[btn("Удалить", "N", "del", "g", path[0])]] },
+			reply_markup: {
+				inline_keyboard: [[u.btn("Удалить", "N", "del", "g", path[0])]],
+			},
 		});
 	}
 );

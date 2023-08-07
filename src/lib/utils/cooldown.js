@@ -1,7 +1,7 @@
 /**
  * @template [MODE=false]
  */
-export class XTimer {
+export class Cooldown {
 	/**
 	 * Cooldown time in ms
 	 * @type {number}
@@ -28,7 +28,10 @@ export class XTimer {
 	 */
 	isExpired(key) {
 		let time;
-		const keyIsValid = typeof key === "string" || typeof key === "number" || typeof key === "symbol";
+		const keyIsValid =
+			typeof key === "string" ||
+			typeof key === "number" ||
+			typeof key === "symbol";
 
 		if (keyIsValid && typeof this.lastUse === "object") {
 			// Timer is for key: time type

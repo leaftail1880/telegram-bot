@@ -16,7 +16,7 @@ export const util = {
 	},
 	/**
 	 * @param {{
-	 *   reply(s: string | ReturnType<import("./Xitext.js").fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
+	 *   reply(s: string | ReturnType<import("telegraf/format").fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
 	 *   message: { message_id: number; reply_to_message?: {message_id?: number}}
 	 * }} ctx
 	 * @param {'reply' | 'direct'} prefer
@@ -33,7 +33,8 @@ export const util = {
 				allow_sending_without_reply: true,
 				reply_to_message_id:
 					(more_prefer ?? prefer) === "reply"
-						? ctx.message?.reply_to_message?.message_id ?? ctx.message.message_id
+						? ctx.message?.reply_to_message?.message_id ??
+						  ctx.message.message_id
 						: ctx.message.message_id,
 				disable_web_page_preview: true,
 			});
@@ -55,7 +56,8 @@ export const util = {
 	getTelegramName(user) {
 		let name = String(user.first_name ?? user.username ?? user.id);
 
-		if (user.last_name && name.length + user.last_name.length < 10) name += user.last_name;
+		if (user.last_name && name.length + user.last_name.length < 10)
+			name += user.last_name;
 
 		return name;
 	},
@@ -68,7 +70,10 @@ export const util = {
 	 */
 	getName(dbuser, user, id) {
 		if (!dbuser) dbuser = tables.users.get(user?.id ?? id);
-		let name = dbuser?.cache?.nickname ?? dbuser?.static?.name ?? dbuser?.static?.nickname;
+		let name =
+			dbuser?.cache?.nickname ??
+			dbuser?.static?.name ??
+			dbuser?.static?.nickname;
 
 		if (!name && user) name = util.getTelegramName(user);
 		return name;
@@ -139,11 +144,19 @@ export const util = {
 
 export const u = {
 	/**
-	 * Creates ```${prefix}::${name}``` string
-	 * @param {StringLike} prefix
-	 * @param {StringLike} name
+	 *
+	 * @param {StringLike} text
+	 * @param {StringLike} namespace
+	 * @param {StringLike} method
+	 * @param {...StringLike} args
+	 * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
 	 */
-	pn: (prefix, name) => `${prefix}::${name}`,
+	btn(text, namespace, method, ...args) {
+		return {
+			text: text.toString(),
+			callback_data: u.query(namespace, method, ...args),
+		};
+	},
 	/**
 	 * Creates link to guide group
 	 * @param {number} index
@@ -194,7 +207,9 @@ export const u = {
 	 */
 	query: (prefix, name, ...args) =>
 		`${prefix}${u.separator.link}${name}${
-			args ? `${u.separator.linkToData}${u.safeJoin(args, u.separator.data)}` : ""
+			args
+				? `${u.separator.linkToData}${u.safeJoin(args, u.separator.data)}`
+				: ""
 		}`,
 
 	separator: {

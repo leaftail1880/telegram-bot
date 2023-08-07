@@ -1,7 +1,7 @@
 import config from "../../config.js";
-import { bot, data, database, Service } from "../../index.js";
-import { XTimer } from "../Class/XTimer.js";
+import { Service, bot, database } from "../../index.js";
 import styles from "../styles.js";
+import { Cooldown } from "../utils/cooldown.js";
 
 const CONNECT = {
 	/** @type {NodeJS.Timer} */
@@ -12,14 +12,14 @@ const CONNECT = {
 	Promise: null,
 };
 
-const ERROR_TIMER = new XTimer(config.NoConnectionLogCooldown);
+const ERROR_TIMER = new Cooldown(config.NoConnectionLogCooldown);
 
 /**
  * @param {string} [type]
  */
 export async function noConnection(type) {
-	if (data.isLaunched && !data.isStopped) {
-		data.isStopped = true;
+	if (Service.launched && !Service.stopped) {
+		Service.stopped = true;
 		bot.stop("NOCONNECTION");
 	}
 	database.closed = true;
@@ -49,7 +49,7 @@ export async function noConnection(type) {
 }
 
 async function timer() {
-	if (!data.isStopped) return;
+	if (!Service.stopped) return;
 
 	try {
 		// Checking if external services are avaible
@@ -62,7 +62,7 @@ async function timer() {
 	}
 
 	await database.reconnect();
-	Service.safeBotLaunch();
+	Service.startPollingWithRestart();
 
 	console.log(styles.connectionResolved("Подключение восстановлено!"));
 

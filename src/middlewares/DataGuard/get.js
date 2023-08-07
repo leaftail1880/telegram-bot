@@ -1,6 +1,7 @@
-import { data, tables } from "../../index.js";
-import { u, util } from "../../lib/Class/Utils.js";
-import { Markup, bold, btn, code, fmt, link } from "../../lib/Class/Xitext.js";
+import { Markup } from "telegraf";
+import { bold, code, fmt, link } from "telegraf/format";
+import { Service, tables } from "../../index.js";
+import { u, util } from "../../lib/utils/index.js";
 import { CreateGroup, CreateUser } from "./create.js";
 import { GuardLogger } from "./index.js";
 
@@ -33,9 +34,9 @@ export async function getUser(ctx) {
 	let user = tables.users.get(ctx.from.id);
 
 	if (!user) {
-		if (ctx.chat.type === "private" && data.private) {
-			if (!(ctx.from.id in data.joinCodes)) {
-				data.joinCodes[ctx.from.id] = "waiting";
+		if (ctx.chat.type === "private" && Service.private) {
+			if (!(ctx.from.id in Service.joins)) {
+				Service.joins[ctx.from.id] = "waiting";
 
 				const message = fmt`Запрос на лс от ${link(
 					util.getTelegramName(ctx.from),
@@ -46,8 +47,8 @@ export async function getUser(ctx) {
 					text: message,
 					textExtra: {
 						...Markup.inlineKeyboard([
-							[btn("Принять", "N", "accept", ctx.from.id)],
-							[btn("Игнорировать", "all", "delmsg")],
+							[u.btn("Принять", "N", "accept", ctx.from.id)],
+							[u.btn("Игнорировать", "all", "delmsg")],
 						]),
 					},
 					fileMessage: message.text,
@@ -56,12 +57,12 @@ export async function getUser(ctx) {
 
 				logNotAccepted(ctx);
 				return false;
-			} else if (data.joinCodes[ctx.from.id] === "accepted") {
+			} else if (Service.joins[ctx.from.id] === "accepted") {
 				ctx.reply("Вы успешно приняты в список разрешенных пользователей.");
 
 				// 9.0.7 Fix: leak
-				delete data.joinCodes[ctx.from.id];
-			} else if (data.joinCodes[ctx.from.id] === "waiting") {
+				delete Service.joins[ctx.from.id];
+			} else if (Service.joins[ctx.from.id] === "waiting") {
 				logNotAccepted(ctx);
 				return false;
 			}
@@ -106,12 +107,12 @@ export async function getGroup(ctx) {
 	let update = false;
 
 	if (!group) {
-		if (data.private) {
-			if (ctx.chat.id === data.chatID.log)
-				data.joinCodes[ctx.chat.id] = "accepted";
+		if (Service.private) {
+			if (ctx.chat.id === Service.chat.log)
+				Service.joins[ctx.chat.id] = "accepted";
 
-			if (!(ctx.chat.id in data.joinCodes)) {
-				data.joinCodes[ctx.chat.id] = "waiting";
+			if (!(ctx.chat.id in Service.joins)) {
+				Service.joins[ctx.chat.id] = "waiting";
 
 				const id = ctx.chat.id;
 				const message = fmt`Запрос на добавление группы:\n${bold(
@@ -122,8 +123,8 @@ export async function getGroup(ctx) {
 					text: message,
 					textExtra: {
 						...Markup.inlineKeyboard([
-							[btn("Принять", "N", "group", ctx.chat.id)],
-							[btn("Игнорировать", "all", "delmsg")],
+							[u.btn("Принять", "N", "group", ctx.chat.id)],
+							[u.btn("Игнорировать", "all", "delmsg")],
 						]),
 					},
 					consoleMessage: message.text,
@@ -138,7 +139,7 @@ export async function getGroup(ctx) {
 					);
 				ctx.leaveChat();
 				return false;
-			} else if (data.joinCodes[ctx.chat.id] === "accepted") {
+			} else if (Service.joins[ctx.chat.id] === "accepted") {
 				ctx.reply("Группа успешно добавлена в список разрешенных.");
 			} else {
 				ctx.leaveChat();

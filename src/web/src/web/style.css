@@ -5,7 +5,7 @@
 }
 
 .ocbutton {
-	margin: 5px
+	margin: 5px;
 }
 
 .margin0 {
@@ -36,15 +36,19 @@
 	position: absolute;
 	display: inline-block;
 	right: 0;
-	width: 40px;
+	width: 20px;
 }
 
 .tl_blocks .buttons button {
-	margin: 0;
-	background-color: rgba(0, 0, 0, 0);
-	background-image: url(https://telegra.ph/images/icons_2x.png?1);
-	background-position: -8px -422px;
-	background-size: 40px 487px;
+	margin: 10px 0;
+	padding: 0 0 0 0;
+	height: 20px;
+	width: 20px;
+	background: none;
+}
+
+.tl_blocks .buttons svg {
+	fill: var(--tg-theme-text-color, white)
 }
 
 .oc {
@@ -65,6 +69,11 @@
 .ql-bubble .ql-tooltip-editor input[type="text"] {
 	margin: 0px;
 }
+
+.ql-editor.ql-blank::before{
+	color: var(--tg-theme-hint-color, #ccc);
+}
+
 
 .ql-container {
 	font-size: inherit !important;
@@ -167,6 +176,7 @@ input[type="text"],
 	color: var(--tg-theme-text-color, #222222);
 	text-align: start;
 }
+
 input[type="text"]::-webkit-input-placeholder {
 	color: var(--tg-theme-hint-color, #ccc);
 }

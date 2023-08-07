@@ -1,8 +1,8 @@
 import { Telegraph } from "better-telegraph";
 import { LeafyDBTable } from "leafy-db";
 import { database, tables } from "../../index.js";
-import { pack, unpack } from "./Pack.js";
-import { u, util } from "./Utils.js";
+import { u, util } from "./index.js";
+import { pack, unpack } from "./pack.js";
 
 /**
  * @type {LeafyDBTable<string>}

@@ -1,7 +1,14 @@
-import { bot, data, database, Service, tables } from "../../../index.js";
-import { Command } from "../../../lib/Class/Command.js";
-import { u, util } from "../../../lib/Class/Utils.js";
-import { bold, fmt, link } from "../../../lib/Class/Xitext.js";
+import {
+	Service,
+	bold,
+	bot,
+	database,
+	fmt,
+	link,
+	tables,
+} from "../../../index.js";
+import { u, util } from "../../../lib/utils/index.js";
+import { Command } from "../../../lib/сommand.js";
 
 new Command(
 	{
@@ -11,7 +18,8 @@ new Command(
 		target: "group",
 	},
 	async (ctx, input, data) => {
-		if (!data.group || !("cache" in data.group)) throw new TypeError("Pin cannot be called in non-group chats");
+		if (!data.group || !("cache" in data.group))
+			throw new TypeError("Pin cannot be called in non-group chats");
 
 		const repl = util.makeReply(ctx, "direct");
 		const group = data.group;
@@ -25,7 +33,9 @@ new Command(
 		if (cooldown >= Date.now()) {
 			const { parsedTime, type } = util.toRemainingTime(cooldown - Date.now());
 
-			return ctx.reply(fmt`Подожди еще ${bold("", link(parsedTime, u.guide(7)))} ${type}`);
+			return ctx.reply(
+				fmt`Подожди еще ${bold("", link(parsedTime, u.guide(7)))} ${type}`
+			);
 		}
 
 		const msgToPin = ctx.message.reply_to_message?.message_id;
@@ -44,7 +54,8 @@ new Command(
 			.map(Number)
 			.forEach((e) => (raw_num *= e));
 
-		const time = isNaN(raw_num) || raw_num < 1 ? 1000 * 60 * 60 * 5 : raw_num * 1000;
+		const time =
+			isNaN(raw_num) || raw_num < 1 ? 1000 * 60 * 60 * 5 : raw_num * 1000;
 
 		ctx.pinChatMessage(msgToPin, { disable_notification: true });
 		group.cache.pin.message_id = msgToPin;
@@ -56,7 +67,7 @@ new Command(
 );
 
 setInterval(async () => {
-	if (data.isStopped || database.closed) return;
+	if (Service.stopped || database.closed) return;
 	for (const key of tables.groups.keys()) {
 		const { data: group, save } = tables.groups.work(key);
 

@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 11, 8],
+	version: [9, 12, 0],
 
 	command: {
 		/**
@@ -79,12 +79,5 @@ export default {
 		"Scene",
 	],
 
-	modules: [
-		"Command",
-		// "OC",
-		"BatteryNotifier",
-		// "Subscribe",
-		// "Migrate",
-		// "Animation"
-	],
+	modules: ["Command", "BatteryNotifier", "Subscribe", "Animation", "Web"],
 };

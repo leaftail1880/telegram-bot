@@ -13,6 +13,7 @@ dist-ssr
 *.local
 
 # Test files
+telegra.html
 example.html
 test.js
 

@@ -1,10 +1,10 @@
 import { upload } from "better-telegraph";
 import { fmt, link } from "telegraf/format";
 import { bot } from "../../../index.js";
-import { Command } from "../../../lib/Class/Command.js";
-import { hasDocument } from "../../../lib/Class/Filters.js";
-import { Scene } from "../../../lib/Class/Scene.js";
-import { u } from "../../../lib/Class/Utils.js";
+import { Scene } from "../../../lib/scene.js";
+import { hasDocument } from "../../../lib/utils/filters.js";
+import { u } from "../../../lib/utils/index.js";
+import { Command } from "../../../lib/сommand.js";
 
 const FILES = fmt`
 Отправляй мне изображения ${link(

@@ -1,6 +1,5 @@
-import { bot, tables } from "../../index.js";
-import { Command } from "./Command.js";
-import { u } from "./Utils.js";
+import { bot, tables } from "../index.js";
+import { Command } from "./сommand.js";
 
 /**
  * @param {DataContext & {scene?: {leave(): any; next(): any; data: any}}} ctx
@@ -98,14 +97,14 @@ export class Scene {
 	 * Entering an user to specified scene
 	 * @param {string | number | DB.User} user
 	 * @param {string} [scene]
-	 * @param {Optional<SceneData>} [cache]
+	 * @param {Partial<SceneData>} [cache]
 	 * @returns {Promise<void>}
 	 */
 	enter(user, scene = "0", cache) {
 		if (typeof user === "number") user = tables.users.get(user);
 		if (!user || typeof user !== "object") return;
 
-		user.cache.scene = u.pn(this.name, scene);
+		user.cache.scene = `${this.name}::${scene}`;
 		if (cache) user.cache.sceneCache = cache;
 
 		tables.users.set(user.static.id, user);
@@ -148,7 +147,9 @@ new Command(
 	async (ctx, _args, data) => {
 		const user = data.user;
 		if (user?.cache?.scene || user?.cache?.sceneCache) {
-			await ctx.reply(`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`);
+			await ctx.reply(
+				`Вы вышли из меню ${user.cache.scene.replace("::", " ")}`
+			);
 			delete user.cache.scene;
 			delete user.cache.sceneCache;
 			tables.users.set(ctx.from.id, user);
@@ -174,7 +175,8 @@ new Command(
 		const scene = Scene.scenes[data.scene.name];
 		if (!scene) return no_menu();
 
-		if (typeof scene.nextHandlers[data.scene.state] !== "function") return no_skip();
+		if (typeof scene.nextHandlers[data.scene.state] !== "function")
+			return no_skip();
 
 		MakeScene(ctx, scene, parseInt(data.scene.state));
 		// 9.1.16

@@ -1,5 +1,5 @@
-import { util } from "../../lib/Class/Utils.js";
-import { fmt } from "../../lib/Class/Xitext.js";
+import { fmt } from "telegraf/format";
+import { util } from "../../lib/utils/index.js";
 import { GuardLogger } from "./index.js";
 
 /** @type {Record<number, DB.User>} */

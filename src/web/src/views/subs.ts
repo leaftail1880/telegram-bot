@@ -1,4 +1,5 @@
 import { Buttons } from "../web/router.ts";
+import { SaveButton } from "../web/utils.ts";
 
 export function Subscriptions() {
 	type SubKey = import("../../../modules/Subscribe/db.js").SubKey;
@@ -16,57 +17,27 @@ export function Subscriptions() {
 	};
 
 	let subs: Record<string, boolean> = {};
-
-	async function fetchSubscriptions() {
-		subs = await api<Record<SubKey, boolean>>("subs", {
-			token: true,
-			body: { id: Telegram.WebApp.initDataUnsafe.user?.id },
-		});
-
+	api<Record<SubKey, boolean>>("subs", {
+		token: true,
+		body: { id: Telegram.WebApp.initDataUnsafe.user?.id },
+	}).then((res) => {
+		subs = res;
 		wrapper.update();
-	}
+	});
 
-	fetchSubscriptions();
-
-	const statuses = {
-		save: i18n`Save!`,
-		saving: i18n`Saving...`,
-		done: i18n`Saved!`,
-		error: i18n`Error, retry again.`,
-	};
-	let status: keyof typeof statuses = "done";
-
+	const { saveButton, needSave } = SaveButton({
+		status: "done",
+		save: () =>
+			api("subs", {
+				method: "PATCH",
+				token: true,
+				body: { id: Telegram.WebApp.initDataUnsafe.user?.id, data: subs },
+			}),
+	});
 	const wrapper = section(
 		h1(i18n`Subscriptions`),
 		Buttons.home,
-		button(
-			{ disabled: () => status === "done" },
-			() =>
-				status === "save"
-					? span("(!) ", { class: "hint", style: "color: yellow" })
-					: "",
-			() => statuses[status],
-			{
-				async click$e() {
-					status = "saving";
-					wrapper.update();
-					api("subs", {
-						method: "PATCH",
-						token: true,
-						body: { id: Telegram.WebApp.initDataUnsafe.user?.id, data: subs },
-					})
-						.then(() => {
-							status = "done";
-						})
-						.catch(() => {
-							status = "error";
-						})
-						.finally(() => {
-							wrapper.update();
-						});
-				},
-			}
-		),
+		saveButton,
 		() =>
 			div(
 				...Object.keys(subs).map((key) => {
@@ -80,7 +51,7 @@ export function Subscriptions() {
 							{
 								click$e() {
 									subs[key] = !subs[key];
-									status = "save";
+									needSave();
 									wrapper.update();
 								},
 							}

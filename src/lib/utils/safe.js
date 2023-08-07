@@ -7,7 +7,7 @@ import styles from "../styles.js";
  * @param {string} runnerName
  * @returns
  */
-export async function safeRun(runnerName, callback) {
+export async function runWithCatch(runnerName, callback) {
 	try {
 		await callback();
 		return true;
@@ -24,14 +24,14 @@ export async function safeRun(runnerName, callback) {
 /**
  * It loads all the files in a folder and logs the time it took to load each file
  * @param {string[]} folderArray - An array of folders to load.
- * @param {(file: string) => Promise<void | {wait: Promise<void>}>} importFN - The folder that the files are in.
+ * @param {(file: string) => Promise<void | {wait: Promise<void>}>} loadFN - Function that loads.
  */
-export async function safeLoad(folderArray, importFN, log = true) {
+export async function importMultiple(folderArray, loadFN, log = true) {
 	for (const file of folderArray) {
 		try {
 			const start = performance.now();
 
-			const module = await importFN(file);
+			const module = await loadFN(file);
 			if (module && "wait" in module) await module.wait;
 
 			if (log)
@@ -44,6 +44,7 @@ export async function safeLoad(folderArray, importFN, log = true) {
 			console.log(`${styles.loadError}${file}`);
 			await Service.error(e);
 			Service.stop("Error while loading", "ALL", false);
+			throw new Error("Stop");
 		}
 	}
 }

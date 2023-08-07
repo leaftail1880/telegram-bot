@@ -1,9 +1,9 @@
-import clc from "cli-color";
-import { bot } from "../../index.js";
-import { Logger } from "../utils/logger.js";
-import { safeRun } from "../utils/safe.js";
-import { u, util } from "./Utils.js";
-import { XTimer } from "./XTimer.js";
+import chalk from "chalk";
+import { bot } from "../index.js";
+import { Cooldown } from "./utils/cooldown.js";
+import { u, util } from "./utils/index.js";
+import { Logger } from "./utils/logger.js";
+import { runWithCatch } from "./utils/safe.js";
 
 export class Query {
 	static Logger = new Logger();
@@ -42,7 +42,7 @@ export class Query {
 		const name = util.getName(null, ctx.from);
 		const text = `${name}: ${message}`;
 		this.Logger.log({
-			consoleMessage: clc.blackBright("Q> ") + text,
+			consoleMessage: chalk.blackBright("Q> ") + text,
 			fileMessage: text,
 		});
 	}
@@ -72,7 +72,7 @@ function isQuery(ctx) {
 	return "data" in ctx.callbackQuery;
 }
 
-const Q_TIMER = new XTimer(0.3, true);
+const Q_TIMER = new Cooldown(0.3, true);
 
 process.on("modulesLoad", () => {
 	bot.on("callback_query", async (ctx, next) => {
@@ -98,7 +98,7 @@ process.on("modulesLoad", () => {
 				.map((e) => `'${e}'`)
 				.join(" ")}`
 		);
-		await safeRun("Q", () =>
+		await runWithCatch("Q", () =>
 			query.callback(ctx, args, (text, extra) =>
 				ctx.editMessageText(text, extra)
 			)

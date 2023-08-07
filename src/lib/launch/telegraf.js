@@ -1,5 +1,8 @@
 import { Telegraf } from "telegraf";
 export * from "telegraf";
+export * from "telegraf/filters";
+export * from "telegraf/format";
+export * from "telegraf/future";
 
 if (!process.env.TOKEN || !process.env.DB_TOKEN || !process.env.DB_REPO)
 	throw new ReferenceError("No tokens in env found!");

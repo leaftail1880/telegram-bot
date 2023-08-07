@@ -1,8 +1,11 @@
-// We need to load env before db because it depends on it
-// Also botApiLink are used to link api from bot
 import dotenv from "dotenv";
 import fs from "fs";
+import path from "path";
 import serveonet from "serveonet";
+import url from "url";
+import util from "util";
+
+export const SERVER_DIR = url.fileURLToPath(new URL(".", import.meta.url));
 
 export class Logger {
 	constructor({ filePath = "logs/log.txt", prefix = "" }) {
@@ -17,43 +20,42 @@ export class Logger {
 	 * }} message
 	 */
 	log({ consoleMessage, fileMessage, color = "yellow" }) {
-		const timestamp = `${this.prefix}[${new Date().toLocaleString([], {
-			hourCycle: "h24",
-		})}] `;
-
 		if (consoleMessage)
 			console.log(
-				Logger.colors[color] + timestamp + "\x1b[0m" + consoleMessage
+				`${this.prefix}${Logger.colors[color]}[${new Date().toLocaleString([], {
+					hourCycle: "h24",
+					timeStyle: "medium",
+				})}]\x1b[0m ${consoleMessage}`
 			);
-		if (fileMessage) this.stream.write(timestamp + fileMessage + "\r");
+
+		if (fileMessage)
+			this.stream.write(`[${new Date().toLocaleString()}] ${fileMessage}\r`);
 	}
 
 	/**
-	 * @param {string} arg
-	 * @param {string} context
+	 * @param {...any} [context]
 	 */
-	error(arg, context = "") {
-		this.log({
-			color: "red",
-			consoleMessage: arg,
-			fileMessage: arg + " " + context,
-		});
-	}
-
-	/**
-	 *
-	 * @param {string} arg
-	 */
-	info(arg) {
-		this.log({ color: "cyan", fileMessage: arg, consoleMessage: arg });
+	error(...context) {
+		const msg = util.format(...context);
+		this.log({ color: "red", consoleMessage: msg, fileMessage: msg });
 	}
 
 	/**
 	 *
-	 * @param {string} arg
+	 * @param {...any} arg
 	 */
-	success(arg) {
-		this.log({ color: "green", fileMessage: arg, consoleMessage: arg });
+	info(...arg) {
+		const msg = util.format(...arg);
+		this.log({ color: "cyan", fileMessage: msg, consoleMessage: msg });
+	}
+
+	/**
+	 *
+	 * @param {...any} arg
+	 */
+	success(...arg) {
+		const msg = util.format(...arg);
+		this.log({ color: "green", fileMessage: msg, consoleMessage: msg });
 	}
 
 	static colors = {
@@ -66,12 +68,13 @@ export class Logger {
 		cyan: "\x1b[36m",
 		white: "\x1b[37m",
 		gray: "\x1b[90m",
+		reset: "\x1b[0m",
 	};
 }
 
 export const logger = new Logger({
-	filePath: "../../logs/web.txt",
-	prefix: Logger.colors.black + "[WEB]",
+	filePath: path.join(SERVER_DIR, "../../../../logs/web.txt"),
+	prefix: Logger.colors.black + "[WEB]" + Logger.colors.reset,
 });
 
 export function botApiEnv() {
@@ -85,7 +88,7 @@ export async function botApiLink() {
 	);
 
 	// @ts-ignore
-	const { util } = await import("../../../lib/Class/Utils.js");
+	const { util } = await import("../../../lib/utils/index.js");
 
 	// @ts-ignore
 	const { SubDB } = await import("../../../modules/Subscribe/db.js");
@@ -97,7 +100,7 @@ export async function botApiLink() {
 		util,
 		SubDB,
 	});
-	logger.success("[api] Bot api linked successfully!");
+	logger.success("Bot api linked successfully!");
 }
 
 export function botHostExpose() {
@@ -107,24 +110,35 @@ export function botHostExpose() {
 		localPort: 8888,
 		remoteSubdomain: "koboldie",
 		remotePort: 80,
-		serverAliveInterval: 60,
-		serverAliveCountMax: 3,
+		serverAliveInterval: 5,
+		serverAliveCountMax: 1,
 	})
-		.on("error", (err) => {
-			console.log(err.message);
+		.on("connect", (connection) => {
+			logger.success(
+				"Forwarding to local port " +
+					connection.localPort +
+					", ssh pid: " +
+					connection.pid
+			);
+		})
+		.on("data", (args) => {
+			logger.info(args);
 		})
 		.on("timeout", (connection) => {
-			console.log("Connection to " + connection.host + " timed out.");
+			logger.error("Connection to " + connection.host + " timed out.");
 		})
-		.on("connect", (connection) => {
-			console.log("Tunnel established on port " + connection.localPort);
-			console.log("pid: " + connection.pid);
+		.on("error", (event) => {
+			logger.error(event.message);
+		})
+		.on("close", (event) => {
+			logger.error("SSH exited with code " + event.code);
+			event.onrestart = () => logger.info("Restarted");
 		});
 }
 
 export function isBrowserSupported(nAgt = "") {
-	/** @type {keyof typeof browsers} */
-	var browserName = "Chrome";
+	/** @type {keyof typeof browsers | "Unknown"} */
+	var browserName = "Unknown";
 	var fullVersion = "0";
 	var majorVersion = 0;
 	var verOffset, ix;
@@ -168,24 +182,27 @@ export function isBrowserSupported(nAgt = "") {
 		majorVersion = 0;
 	}
 
-	console.log(
-		"\n" +
-			"Browser name  = " +
-			browserName +
-			"\n" +
-			"Full version  = " +
-			fullVersion +
-			"\n" +
-			"Major version = " +
-			majorVersion +
-			"\n" +
-			nAgt
-	);
+	// console.log(
+	// 	"\n" +
+	// 		"Browser name  = " +
+	// 		browserName +
+	// 		"\n" +
+	// 		"Full version  = " +
+	// 		fullVersion +
+	// 		"\n" +
+	// 		"Major version = " +
+	// 		majorVersion +
+	// 		"\n" +
+	// 		nAgt
+	// );
 
-	const minVer = browsers[browserName];
-
-	// If browser is unknown its maybe parse error
-	return minVer ? majorVersion >= minVer : true;
+	if (browserName !== "Unknown") {
+		const minVer = browsers[browserName];
+		return majorVersion >= minVer;
+	} else {
+		// Maybe parser error
+		return true;
+	}
 }
 
 const browsers = {

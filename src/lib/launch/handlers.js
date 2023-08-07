@@ -1,13 +1,13 @@
-import { bot, data, Service } from "../../index.js";
-import { XTimer } from "../Class/XTimer.js";
+import { bot, Service } from "../../index.js";
 import styles from "../styles.js";
+import { Cooldown } from "../utils/cooldown.js";
 import { noConnection } from "./noConnection.js";
 
 /**
  * @type {IOnErrorActions}
  */
 const ON_ERROR = {
-	timer: new XTimer(5),
+	timer: new Cooldown(5),
 	codes: {
 		ECONNRESET: () => noConnection("Err CONNECTION RESET"),
 		ERR_MODULE_NOT_FOUND: (err) => {
@@ -43,8 +43,8 @@ export async function handleError(err) {
 		code_action(err);
 	} else Service.error(err);
 
-	data.errorLog[err?.name] = data.errorLog[err?.name] ?? [];
-	data.errorLog[err?.name].push(err);
+	Service.errors[err?.name] = Service.errors[err?.name] ?? [];
+	Service.errors[err?.name].push(err);
 }
 
 /**

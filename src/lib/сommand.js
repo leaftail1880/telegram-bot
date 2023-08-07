@@ -1,12 +1,11 @@
-import clc, { italic } from "cli-color";
+import chalk from "chalk";
 import { Context } from "telegraf";
-import config from "../../config.js";
-import { bot, data as Data } from "../../index.js";
-import { Logger } from "../utils/logger.js";
-import { safeRun } from "../utils/safe.js";
-import { hasText } from "./Filters.js";
-import { u, util } from "./Utils.js";
-import { bold, code, fmt, link } from "./Xitext.js";
+import { bold, code, fmt, link } from "telegraf/format";
+import config from "../config.js";
+import { Service, bot, message } from "../index.js";
+import { u, util } from "./utils/index.js";
+import { Logger } from "./utils/logger.js";
+import { runWithCatch } from "./utils/safe.js";
 
 export class Command {
 	/**
@@ -85,7 +84,7 @@ export class Command {
 			["administrator", "creator"].includes(chatMember.status);
 		const permission_owner =
 			command.info.permission === "bot_owner" &&
-			ctx.from.id == Data.chatID.owner;
+			ctx.from.id == Service.chat.owner;
 
 		return !(
 			(location_all || location_group || location_private) &&
@@ -105,7 +104,7 @@ export class Command {
 		const name = util.getName(dbuser, ctx.from);
 
 		const url =
-			ctx.from.id !== Data.chatID.owner
+			ctx.from.id !== Service.chat.owner
 				? u.userLink(ctx.from.id)
 				: u.httpsUserLink(ctx.from.username);
 
@@ -113,10 +112,10 @@ export class Command {
 			message ? ` ${message}` : ""
 		}: ${ctx.message.text}`;
 
-		if (ctx.chat.id !== Data.chatID.log)
+		if (ctx.chat.id !== Service.chat.log)
 			this.logger.log({
 				text: log,
-				consoleMessage: clc.blackBright("C> ") + log.text,
+				consoleMessage: chalk.blackBright("C> ") + log.text,
 				fileMessage: log.text,
 			});
 	}
@@ -174,11 +173,10 @@ process.on("modulesLoad", () => {
 	addIfExists(privateCommands, { type: "all_private_chats" });
 	addIfExists(botAdminCommands.concat(privateCommands), {
 		type: "chat",
-		chat_id: Data.chatID.owner,
+		chat_id: Service.chat.owner,
 	});
 
-	bot.on("message", async (ctx, next) => {
-		if (!hasText(ctx)) return next();
+	bot.on(message("text"), async (ctx, next) => {
 		const text = ctx.message.text;
 		function reply(/** @type {string} */ text) {
 			ctx.reply(text, {
@@ -223,7 +221,7 @@ process.on("modulesLoad", () => {
 			return reply("Не здесь. /help");
 
 		Command.Log(ctx, ctx.data.user);
-		await safeRun(`Command`, () =>
+		await runWithCatch(`Command`, () =>
 			command.callback(
 				ctx,
 				text.replace(config.command.clear, ""),
@@ -262,7 +260,7 @@ new Command(
 			e.info.prefix.includes("/")
 		)) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
-			message = fmt`${message}  /${e.info.name} - ${italic(
+			message = fmt`${message}  /${e.info.name} - ${chalk.italic(
 				e.info.description
 			)}\n`;
 		}
@@ -277,7 +275,7 @@ new Command(
 						? `[${e.info.prefix.join(", ")}]`
 						: e.info.prefix[0]
 				}${e.info.name}`
-			)} - ${italic(e.info.description)}\n`;
+			)} - ${chalk.italic(e.info.description)}\n`;
 		}
 
 		if (message.text === "Команды:\n") return ctx.reply("Команды недоступны");

@@ -14,9 +14,7 @@ To run this project, you will need to add the following environment variables to
 
 `TOKEN` Telegram bot token. You can get your own in [@BotFather](https://t.me/BotFather)
 
-`REDIS_URL` Redis database url. You can create your own [here](https://dashboard.render.com)
-
-`VK_TOKEN` (For MultiPublish module) Token of your VK application
+`DB_TOKEN` Read more [here](https://www.npmjs.org/package/leafy-db)
 
 `ownerID` Your telegram id
 

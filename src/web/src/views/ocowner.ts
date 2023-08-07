@@ -1,19 +1,7 @@
 import { Link } from "../web/router.ts";
-import { LoadOCOwners, OCowners, type OCowner } from "./ocs.ts";
+import { LoadOwnerOCS, OCowners, type OCowner } from "./ocs.ts";
 
-export async function LoadOwnerOCS(ownerid: string) {
-	if (!OCowners[ownerid]) {
-		await LoadOCOwners();
-		if (!OCowners[ownerid]) throw new Error(i18n`Unknown owner`);
-	}
-
-	OCowners[ownerid].ocs = await api<OCowner["ocs"]>("oc/owner", {
-		body: { ownerid },
-		token: true,
-	});
-}
-
-export function OCownerButton(ownerid: string) {
+export function OCownerButton(ownerid: string, name?: string) {
 	const list = div(
 		{
 			style: "max-height: 0px;",
@@ -25,7 +13,7 @@ export function OCownerButton(ownerid: string) {
 				: [br(), a(i18n`Loading...`), br(), br()]
 	);
 	const wrapper = div(
-		button(() => OCowners[ownerid].name, {
+		button(() => name ?? OCowners[ownerid].name, {
 			class: "ocbutton",
 			click$e() {
 				wrapper.update();

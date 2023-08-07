@@ -1,5 +1,6 @@
+import { LeafyDBTable } from "leafy-db";
 import { message } from "telegraf/filters";
-import { bot, data, database, tables } from "../../index.js";
+import { bot, database } from "../../index.js";
 
 bot.on(message("new_chat_title"), (ctx, next) => {
 	ctx.deleteMessage(ctx.message.message_id);
@@ -7,51 +8,35 @@ bot.on(message("new_chat_title"), (ctx, next) => {
 });
 
 /**
- * @type {Record<string, {
- *   timer: NodeJS.Timer;
- *   titleAnimation: string[];
- *   titleAnimationSpeed: number;
- *   stage: number;
- * }>}
+ * @type {Record<string, {timer: NodeJS.Timer, stage: number}>}
  */
-const ACTIVE = {};
+const ANIMATORS = {};
 
 /**
- *
- * @param {DB.Group} group
+ * @typedef {{
+ *   titles: string[],
+ *   interval: number
+ * }} AnimationSettings
  */
-function Animate(group) {
-	const id = group.static.id;
-	if (ACTIVE[id]) {
-		clearInterval(ACTIVE[id].timer);
-		delete ACTIVE[id];
-	}
-	const timer = setInterval(() => {
-		if (data.isStopped || database.closed) return;
-		ACTIVE[id].stage++;
-		if (!group.cache.titleAnimation[ACTIVE[id].stage]) ACTIVE[id].stage = 0;
-		bot.telegram.setChatTitle(id, group.cache.titleAnimation[ACTIVE[id].stage]);
-	}, Math.round(group.cache.titleAnimationSpeed * 1000));
-	ACTIVE[id] = {
-		timer: timer,
-		titleAnimation: group.cache.titleAnimation,
-		titleAnimationSpeed: group.cache.titleAnimationSpeed,
-		stage: 0,
-	};
-}
 
-export async function SetAnimations() {
-	const groups = Object.values(tables.groups.collection());
-	for (const group of groups) {
-		if (
-			group?.cache?.titleAnimation[0] &&
-			group.cache?.titleAnimationSpeed?.toFixed &&
-			group.cache.titleAnimationSpeed >= 5 &&
-			group.cache.titleAnimationSpeed <= 1000 &&
-			!ACTIVE[group.static.id]
-		)
-			Animate(group);
-	}
-}
+/**
+ * @type {LeafyDBTable<AnimationSettings>}
+ */
+const DB = database.table("modules/animate.json");
 
-SetAnimations();
+process.on("modulesLoad", () => {
+	for (const [id, options] of Object.entries(DB.collection())) {
+		ANIMATORS[id] = {
+			timer: setInterval(() => {
+				let title = options.titles[ANIMATORS[id].stage++];
+				if (!title) {
+					ANIMATORS[id].stage = 0;
+					title = options.titles[0];
+				}
+
+				bot.telegram.setChatTitle(id, title);
+			}, options.interval),
+			stage: 0,
+		};
+	}
+});

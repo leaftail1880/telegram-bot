@@ -1,49 +1,50 @@
+import { bot, fmt, message, tables } from "../../index.js";
+import { u, util } from "../../lib/utils/index.js";
 import { SubDB } from "./db.js";
 
 export const Subscriptions = {
 	/**
-	 * @param {number} id
-	 */
-	get(id) {
-		return SubDB.get(id);
-	},
-	/**
-	 *
-	 * @param {number} id
-	 * @param {import("./db.js").SubKey} key
-	 * @param {boolean} value
-	 */
-	set(id, key, value) {
-		const { data: settings, save } = SubDB.work(id);
-		settings[key] = value;
-		save();
-	},
-	/**
-	 *
+	 * Get setting
 	 * @param {number} id
 	 * @param {import("./db.js").SubKey} key
 	 * @return {boolean} value
 	 */
-	q(id, key) {
-		const settings = this.get(id);
+	getUserSetting(id, key) {
+		const settings = SubDB.get(id);
 		return settings[key];
 	},
 	/**
-	 *
 	 * @param {import("./db.js").SubKey} key
-	 * @param {number[] | undefined} [IDs]
-	 * @param {*} [searchValue]
 	 * @returns {number[]}
 	 */
-	list(key, IDs, searchValue = true) {
-		const users = Array.isArray(IDs) ? IDs : SubDB.keys().map(Number);
+	list(key, { searchValue = true } = {}) {
+		const users = SubDB.keys().map(Number);
 		const passed = [];
 
 		for (const user of users) {
-			const subs = this.get(user);
+			const subs = SubDB.get(user);
 			if (subs[key] === searchValue) passed.push(user);
 		}
 
 		return passed;
 	},
 };
+
+bot.on(message("new_chat_members"), async (ctx) => {
+	if (!tables.groups.get(ctx.chat.id).cache.workGroup) return;
+	for (const id of Subscriptions.list("newMembers")) {
+		if (!tables.users.get(id).cache.dm) return;
+
+		const members = u.langJoin(
+			ctx.message.new_chat_members.map((user) => util.getTelegramName(user))
+		);
+		const one = members.length === 1;
+
+		await bot.telegram.sendMessage(
+			id,
+			fmt`В подвале нов${one ? "ый" : "ые"} участни${
+				one ? "к" : "ки"
+			}!\n${members}`
+		);
+	}
+});

@@ -32,9 +32,11 @@ declare function loadImage(file: Blob | string, callback: Function, options: obj
 	| FileReader
 	| Promise<HTMLImageElement | HTMLCanvasElement>;
 
+
 declare const Telegram: import("@twa-dev/types").Telegram;
 declare const Quill: typeof import("quill").Quill;
-declare const lbr: HTMLBRElement;
+declare var quillE: import("quill").Quill;
+declare type Component = import("@fusorjs/dom").Component;
 declare const {
 	a,
 	abbr,

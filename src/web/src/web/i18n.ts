@@ -10,19 +10,17 @@ window.i18n = Object.assign(
 			.map((e) => (typeof e === "number" ? args[e] : e))
 			.join("");
 	},
-	{
-		db: {},
-		locale: Telegram?.WebApp?.initDataUnsafe?.user?.language_code ?? "en",
-		codeLocale: "en",
-	},
-	EventLoader()
+	EventLoader({
+		context: {
+			db: {},
+			locale: Telegram?.WebApp?.initDataUnsafe?.user?.language_code ?? "en",
+			codeLocale: "en",
+		},
+	})
 );
 
-api<{
-	c: string;
-	db: Record<string, (number | string)[]>;
-}>("i18n/" + i18n.locale).then(({ c: codeLocale, db }) => {
-	i18n.codeLocale = codeLocale;
+api<i18nLocaleResponse>("i18n/" + i18n.locale).then(({ c, db }) => {
+	i18n.codeLocale = c;
 	i18n.db = Object.fromEntries(
 		Object.entries(db).map((e) => {
 			return [e[0], { [i18n.locale]: e[1] }];
@@ -31,3 +29,8 @@ api<{
 	// @ts-expect-error
 	i18n.emit();
 });
+
+interface i18nLocaleResponse {
+	c: string;
+	db: Record<string, (number | string)[]>;
+}

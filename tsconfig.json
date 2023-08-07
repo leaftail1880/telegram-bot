@@ -3,17 +3,13 @@
 		"alwaysStrict": true,
 		"allowJs": true,
 		"checkJs": true,
-		
+
 		"target": "es2022",
 		"lib": ["ES2022"],
 		"module": "Node16",
 		"skipLibCheck": true,
-		"paths": {
-			"vk-io": ["./node_modules/vk-io/lib/index.d.ts"]
-		},
-		"maxNodeModuleJsDepth": 0,
 		"allowSyntheticDefaultImports": true,
-		
+
 		"noImplicitAny": true,
 		"noEmit": true
 	},

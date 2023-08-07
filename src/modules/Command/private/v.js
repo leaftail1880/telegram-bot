@@ -1,8 +1,7 @@
-import { bold } from "cli-color";
-import { data } from "../../../index.js";
-import { Command } from "../../../lib/Class/Command.js";
-import { u } from "../../../lib/Class/Utils.js";
-import { fmt, link } from "../../../lib/Class/Xitext.js";
+import { bold, fmt, link } from "telegraf/format";
+import { Service } from "../../../index.js";
+import { u } from "../../../lib/utils/index.js";
+import { Command } from "../../../lib/сommand.js";
 
 new Command(
 	{
@@ -15,7 +14,7 @@ new Command(
 	},
 	(ctx) => {
 		ctx.reply(
-			fmt`${link(bold(data.sv), u.guide(8))} ${bold(
+			fmt`${link(bold(Service.sv), u.guide(8))} ${bold(
 				process.env.whereImRunning
 			)}`
 		);

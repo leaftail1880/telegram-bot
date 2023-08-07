@@ -1,6 +1,5 @@
-import { EventLoader } from "./utils";
+import { Authentication, EventLoader } from "./utils";
 
-let quill: import("quill").Quill;
 type UploadData = {
 	type: string;
 	base64_data: string;
@@ -8,145 +7,165 @@ type UploadData = {
 
 export const TextEditor = EventLoader();
 
-document.getElementById("quill")!.addEventListener("load", () => {
-	let BlockEmbed = Quill.import("blots/block/embed");
-	class ImageBlot extends BlockEmbed {
-		constructor(domNode: HTMLElement, value: Record<string, any>) {
-			console.log("image blot created with value:", value);
-			super(domNode);
-			this.domWrapper = div();
+let BlockEmbed = Quill.import("blots/block/embed");
+class ImageBlot extends BlockEmbed {
+	node: HTMLElement;
+	constructor(node: HTMLElement, value: Record<string, any>) {
+		console.log("ImageBlot created with value:", value);
+		super(node);
+		this.node = node;
 
-			let upload_data: undefined | UploadData;
-			if (value.image) {
-				let image = img({ src: this.sanitize(value.image) });
-				this.domWrapper.appendChild(image);
-				upload_data = this.uploadData(value.image);
-			} else if (value.video) {
-				let vid = video({
+		let uploadData: undefined | UploadData;
+		if (value.image) {
+			this.node.appendChild(img({ src: this.sanitize(value.image) }));
+			uploadData = this.uploadData(value.image);
+		} else if (value.video) {
+			this.node.appendChild(
+				video({
 					src: this.sanitize(value.video),
 					preload: "auto",
 					controls: "controls",
-				});
-				this.domWrapper.appendChild(vid);
-				upload_data = this.uploadData(value.video);
-			}
+				})
+			);
+			uploadData = this.uploadData(value.video);
+		}
 
-			if (upload_data) {
-				const domProgressBar = div({ class: "file_progress_bar" });
+		if (uploadData) {
+			const progressBar = div({ class: "file_progress_bar" });
 
-				this.domWrapper.classList.add("loading");
-				this.domWrapper.appendChild(
-					div({ class: "file_progress" }),
-					this.domProgressBar
-				);
+			this.node.classList.add("loading");
+			this.node.appendChild(div({ class: "file_progress" }));
+			this.node.appendChild(progressBar);
 
-				uploadFile(
-					upload_data,
-					(loaded, total) => {
-						let persent = 0;
-						if (total && loaded) {
-							persent = (loaded * 100) / total;
-							persent = Math.min(100, persent);
+			uploadFile(
+				uploadData,
+				(loaded, total) => {
+					let persent = 0;
+					if (total && loaded) {
+						persent = (loaded * 100) / total;
+						persent = Math.min(100, persent);
+					}
+					progressBar.style.width = persent + "%";
+				},
+				(data) => {
+					console.log(data);
+					if (data?.src) {
+						if (uploadData!.type.startsWith("video/")) {
+							this.add(data.src, "video", video);
+						} else {
+							this.add(data.src, "img", img);
 						}
-						domProgressBar.style.width = persent + "%";
-					},
-					(data) => {
-						if (data) {
-							let src = this.sanitize(data.src);
-							if (upload_data!.type.startsWith("video/")) {
-								let video = this.domWrapper.querySelector("video");
-								video.setAttribute("src", src);
-							} else {
-								let image = this.domWrapper.querySelector("img");
-								image.setAttribute("src", src);
-							}
-							this.domWrapper.classList.remove("loading");
-						}
-					},
+						this.node.classList.remove("loading");
+					}
+				}, //,
 					(error) => {
-						quill.deleteText(
-							this.offset(quill.scroll),
+						quillE.deleteText(
+							this.offset(quillE.scroll),
 							this.length(),
 							Quill.sources.SILENT
 						);
 						return console.error(error);
 					}
-				);
-			}
-		}
-
-		uploadData(url: string) {
-			const match = url.match(
-				/^data:(image\/gif|image\/jpe?g|image\/png|video\/mp4);base64,(.*)$/
 			);
-
-			if (match) {
-				return { type: match[1], base64_data: match[2] };
-			}
-		}
-
-		sanitize(url: string) {
-			return sanitize(url, ["http", "https", "data"]) ? url : "//:0";
-		}
-
-		/**
-		 * From HTMLElement back to quill value
-		 * @param domNode
-		 * @returns
-		 */
-		static value(domNode: HTMLElement) {
-			const value: Record<string, any> = {
-				caption: "",
-			};
-			const image = domNode.querySelector("img");
-			if (image) {
-				value.image = image.src;
-			}
-			const video = domNode.querySelector("video");
-			if (video) {
-				value.video = video.src;
-			}
-			return value;
 		}
 	}
-	ImageBlot.blotName = "image";
-	ImageBlot.tagName = "figure";
-	Quill.register(ImageBlot, true);
 
-	function uploadFile(
-		file_data: UploadData,
-		onProgress: (a: number, b: number) => any,
-		onSuccess: (data: any) => any,
-		onError: (error: any) => any
+	add(
+		src: string,
+		tagName: string,
+		creator: () => HTMLImageElement | HTMLVideoElement
 	) {
-		if (!file_data) return;
-		var data = new FormData();
-		data.append("file", uploadDataToBlob(file_data));
-		var xhr = new XMLHttpRequest();
-		xhr.upload.addEventListener("progress", function (event) {
-			if (event.lengthComputable) {
-				onProgress && onProgress(event.loaded, event.total);
-			}
-		});
-		xhr.addEventListener("load", (data) => {
-			console.log(data);
-			onSuccess(data);
-		});
-		xhr.addEventListener("error", () => {
-			return onError && onError("Network error");
-		});
+		let element = this.node.querySelector(tagName) as
+			| HTMLImageElement
+			| HTMLVideoElement;
 
-		xhr.open("POST", "/api/upload");
-		onProgress && onProgress(0, 1);
-		xhr.send(data);
+		if (element!.src.startsWith("https://telegra.ph")) {
+			element = creator();
+			this.node.appendChild(element);
+		}
+		element!.setAttribute("src", "https://telegra.ph" + src);
 	}
 
-	TextEditor.emit();
-});
+	uploadData(url: string) {
+		const match = url.match(
+			/^data:(image\/gif|image\/jpe?g|image\/png|video\/mp4);base64,(.*)$/
+		);
+
+		if (match) {
+			return { type: match[1], base64_data: match[2] };
+		}
+	}
+
+	sanitize(url: string) {
+		return sanitize(url, ["http", "https", "data"]) ? url : "//:0";
+	}
+
+	/**
+	 * From HTMLElement back to quill value
+	 * @param domNode
+	 * @returns
+	 */
+	static value(domNode: HTMLElement) {
+		const value: Record<string, any> = {
+			caption: "",
+		};
+		const image = domNode.querySelector("img");
+		if (image) {
+			value.image = image.src;
+		}
+		const video = domNode.querySelector("video");
+		if (video) {
+			value.video = video.src;
+		}
+		return value;
+	}
+}
+ImageBlot.blotName = "image";
+ImageBlot.tagName = "figure";
+Quill.register(ImageBlot, true);
+
+function uploadFile(
+	file_data: UploadData,
+	onProgress: (a: number, b: number) => any,
+	onSuccess: (data: any) => any,
+	onError: (error: any) => any
+) {
+	if (!file_data) return;
+	var data = new FormData();
+	data.append("file", uploadDataToBlob(file_data));
+	var xhr = new XMLHttpRequest();
+	xhr.upload.addEventListener("progress", function (event) {
+		if (event.lengthComputable) {
+			onProgress(event.loaded, event.total);
+		}
+	});
+	xhr.addEventListener("load", (data) => {
+		if (data.target && "response" in data.target) {
+			try {
+				const json = JSON.parse(data.target.response as string);
+				if (Array.isArray(json)) json.forEach(onSuccess);
+				else throw new Error("Got unexpected result: " + data.target.response);
+			} catch (e) {
+				onError(e);
+				console.error(data.target.response);
+			}
+		}
+	});
+	xhr.addEventListener("error", () => {
+		return onError("Network error");
+	});
+
+	xhr.open("POST", "/api/upload");
+	xhr.setRequestHeader("authorization", Authentication.token);
+	onProgress && onProgress(0, 1);
+	xhr.send(data);
+}
+
+TextEditor.emit();
 
 function sanitize(url: string, protocols: string[]) {
 	const link = new URL(url);
-	return protocols.includes(link.protocol);
+	return protocols.includes(link.protocol.replace(/:$/, ""));
 }
 
 function uploadDataToBlob(file_data: UploadData) {
@@ -158,7 +177,7 @@ function uploadDataToBlob(file_data: UploadData) {
 	return new Blob([new Uint8Array(array)], { type: file_data.type });
 }
 
-export function updatePhoto(file: Blob): Promise<Blob> {
+export function localPhotoParse(file: Blob): Promise<Blob> {
 	return new Promise((callback) => {
 		console.log("updating photo:", file);
 		if (file.type === "image/jpg" || file.type === "image/jpeg") {
@@ -169,7 +188,6 @@ export function updatePhoto(file: Blob): Promise<Blob> {
 					toBlob(cb: (file: Blob) => void, idk: string): void;
 					toDataURL(a: string): string;
 				}) => {
-					console.log(canvas);
 					if (canvas.type === "error") {
 						callback(file);
 					} else {

@@ -1,5 +1,5 @@
 // Setup
-import { AuthToken } from "./web/utils.ts";
+import { Authentication } from "./web/utils.ts";
 
 import "./web/i18n.ts";
 import "./web/style.css";
@@ -18,7 +18,7 @@ i18n.onload(async () => {
 	});
 	Telegram.WebApp.MainButton.onClick(Telegram.WebApp.close);
 
-	AuthToken.onload(() => {
+	Authentication.onload(() => {
 		document.getElementById("root")!.appendChild(
 			Router({
 				"/home": Home(),

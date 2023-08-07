@@ -1,27 +1,27 @@
-import clc from "cli-color";
+import chalk from "chalk";
 
-const highlight = clc.cyanBright;
+const highlight = chalk.cyanBright;
 
 export default {
 	highlight,
-	number: clc.yellowBright,
-	error: clc.white.bgRed,
-	noConnection: clc.redBright,
-	connectionResolved: clc.greenBright,
-	progressBar: clc.cyanBright,
+	number: chalk.yellowBright,
+	error: chalk.white.bgRed,
+	noConnection: chalk.redBright,
+	connectionResolved: chalk.greenBright,
+	progressBar: chalk.cyanBright,
 	progress: {
-		bar: clc.cyanBright,
-		completeChar: clc.greenBright("█"),
-		incompleteChar: clc.blackBright("▒"),
+		bar: chalk.cyanBright,
+		completeChar: chalk.greenBright("█"),
+		incompleteChar: chalk.blackBright("▒"),
 	},
 
-	loadError: clc.redBright(" [-] "),
+	loadError: chalk.redBright(" [-] "),
 	load: highlight(" [+] "),
 	/**
 	 * @param {string} state
 	 * @param {string} message
 	 */
 	state(state, message) {
-		return clc.blackBright(`[${state}] `) + clc.white(message);
+		return chalk.blackBright(`[${state}] `) + chalk.white(message);
 	},
 };

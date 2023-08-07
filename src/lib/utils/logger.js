@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { FmtString } from "telegraf/format";
-import { data } from "../Service.js";
+import { Service } from "../Service.js";
 import { bot } from "../launch/telegraf.js";
 
 export class Logger {
@@ -28,7 +28,7 @@ export class Logger {
 			);
 
 		if (text) {
-			bot.telegram.sendMessage(data.chatID.log, text, textExtra);
+			bot.telegram.sendMessage(Service.chat.log, text, textExtra);
 		}
 	}
 }

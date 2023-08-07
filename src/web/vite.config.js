@@ -4,10 +4,10 @@ import { pluginAPI } from "vite-plugin-api";
 // https://vitejs.dev/config/
 export default defineConfig({
 	build: {
-		minify: true,
+		minify: false,
 		outDir: "dist/client",
 		rollupOptions: {
-			external: ["express", "dotenv", "quill"],
+			external: ["express", "dotenv", "quill", "serveonet"],
 		},
 		modulePreload: { polyfill: false },
 	},
@@ -22,7 +22,7 @@ export default defineConfig({
 				default: "use",
 				GET: "get",
 				POST: "post",
-				DELETE: "delete",
+				PUT: "put",
 			},
 		}),
 	],

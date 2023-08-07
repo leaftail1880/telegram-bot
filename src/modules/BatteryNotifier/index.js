@@ -1,5 +1,5 @@
 import { exec } from "leafy-utils";
-import { bot, data } from "../../index.js";
+import { bot, Service } from "../../index.js";
 
 /**
  *
@@ -26,7 +26,7 @@ process.on("modulesLoad", async () => {
 
 	if (status === "NOT_A_PHONE") {
 		bot.telegram.sendMessage(
-			data.chatID.log,
+			Service.chat.log,
 			"Статус зарядки не отслеживается."
 		);
 		return;
@@ -50,12 +50,12 @@ process.on("modulesLoad", async () => {
 		if (notified) return;
 
 		bot.telegram.sendMessage(
-			data.chatID.log,
+			Service.chat.log,
 			(status.percentage < 40
 				? "Телефон требуется зарядить. ("
 				: status.percentage > 70
 				? "Телефон можно снять с зарядки. ("
-				: "Error231") +
+				: "40 < perc < 70: ") +
 				status.percentage +
 				"%)"
 		);

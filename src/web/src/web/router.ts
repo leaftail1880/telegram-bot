@@ -1,16 +1,18 @@
 import { Component, type Child, type StaticChild } from "@fusorjs/dom";
 
 let currentRoute: string;
+let currentQuery: URLSearchParams;
 let app: Component<any>;
 
-export interface PageNavigationData {
-	currentRoute: string;
+export interface CurrentRoute {
+	path: string;
+	query: URLSearchParams;
 	params: Record<string, string>;
 }
 type Route =
 	| Child
 	| StaticChild
-	| ((data: PageNavigationData) => Child | StaticChild);
+	| ((data: CurrentRoute) => Child | StaticChild);
 
 export function Router(map: Record<string, Route>) {
 	const defaultPage = Object.keys(map)[0];
@@ -19,6 +21,7 @@ export function Router(map: Record<string, Route>) {
 		routes.set(key.startsWith("^\\/") ? new RegExp(key) : key, comp);
 	}
 	currentRoute = location.pathname;
+	currentQuery = new URLSearchParams(location.search);
 	app = section({ id: "top_sect", class: "second" }, () => {
 		let params: Record<string, any> | null = {};
 		const Page =
@@ -31,7 +34,11 @@ export function Router(map: Record<string, Route>) {
 		return Page instanceof Component
 			? Page
 			: typeof Page === "function"
-			? Page({ currentRoute, params: params.groups ? params.groups : params })
+			? Page({
+					path: currentRoute,
+					query: currentQuery,
+					params: params.groups ? params.groups : params,
+			  })
 			: Page;
 	});
 
@@ -40,6 +47,7 @@ export function Router(map: Record<string, Route>) {
 		"popstate",
 		() => {
 			currentRoute = location.pathname;
+			currentQuery = new URLSearchParams(currentQuery);
 			app.update();
 		},
 		false
@@ -61,14 +69,15 @@ export function Link(to: string, ...childrens: any) {
 	);
 }
 
-export function Open(path: string) {
+export function Open(path: string, query = new URLSearchParams("")) {
 	currentRoute = path;
+	if (query) currentQuery = query;
 	history.pushState(null, "", path);
 	app.update();
 }
 
-export function Navigate(path: string) {
-	return { click$e: () => Open(path) };
+export function Navigate(path: string, query?: URLSearchParams) {
+	return { click$e: () => Open(path, query) };
 }
 
 type ButtonsNames = "home" | "back";
@@ -77,14 +86,15 @@ export const Buttons: Partial<
 > = {};
 i18n.onload(() => {
 	Object.assign(Buttons, {
-		home: button(Navigate("/home"), i18n`Home`),
-		back: button(
-			{
-				click$e() {
-					history.go(-1);
+		home: () => button(Navigate("/home"), i18n`Home`),
+		back: () =>
+			button(
+				{
+					click$e() {
+						history.go(-1);
+					},
 				},
-			},
-			i18n`< Back`
-		),
+				i18n`< Back`
+			),
 	});
 });

@@ -1,5 +1,5 @@
 import config from "../../../config.js";
-import { Command } from "../../../lib/Class/Command.js";
+import { Command } from "../../../lib/сommand.js";
 
 new Command(
 	{

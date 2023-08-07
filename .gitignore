@@ -11,3 +11,4 @@
 !tsconfig.json
 !env.sample
 !.gitignore
+!yarn.lock

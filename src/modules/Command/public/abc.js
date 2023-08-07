@@ -1,6 +1,6 @@
-import { Command } from "../../../lib/Class/Command.js";
-import { util } from "../../../lib/Class/Utils.js";
-import { bold, fmt } from "../../../lib/Class/Xitext.js";
+import { bold, fmt } from "../../../index.js";
+import { util } from "../../../lib/utils/index.js";
+import { Command } from "../../../lib/сommand.js";
 
 /**
  * @type {Record<string, string>}
@@ -74,7 +74,10 @@ new Command(
 		/** @type {{text?: string; caption?: string; message_id: number}} */
 		const msg = ctx.message.reply_to_message;
 
-		if (!msg) return repl(fmt`${bold("Ответь")} на сообщение, раскладку которого хочешь перевести`);
+		if (!msg)
+			return repl(
+				fmt`${bold("Ответь")} на сообщение, раскладку которого хочешь перевести`
+			);
 
 		if (!msg.text && !msg.caption) return repl("Я не могу это перевести!");
 
