@@ -1,10 +1,14 @@
 import { bot, Service } from "../../index.js";
 import styles from "../styles.js";
 import { Cooldown } from "../utils/cooldown.js";
-import { noConnection } from "./noConnection.js";
+import { noConnection } from "./error.js";
 
 /**
- * @type {IOnErrorActions}
+ * @type {{
+ *   timer: import("../utils/cooldown.js").Cooldown;
+ *   codes: Record<string | number, (err?: RealError) => void>;
+ *   types: Record<string, (err: RealError) => void>;
+ * }}
  */
 const ON_ERROR = {
 	timer: new Cooldown(5),
@@ -31,7 +35,7 @@ const ON_ERROR = {
 };
 
 /**
- * @param {IhandledError} err
+ * @param {RealError} err
  */
 export async function handleError(err) {
 	const code_action = ON_ERROR.codes[err?.response?.error_code];

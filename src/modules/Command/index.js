@@ -14,7 +14,6 @@ const PUBLIC = [
 for (const cmd of PUBLIC) import(`./public/${cmd}.js`);
 
 const PRIVATE = [
-	"stop",
 	"sudo",
 	"v",
 	"ping",

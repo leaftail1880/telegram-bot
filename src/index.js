@@ -1,8 +1,7 @@
-import "dotenv/config"
-
-export * from "./lib/launch/db.js"
 export * from "./lib/launch/telegraf.js";
+
 export * from "./lib/Service.js";
+export * from "./lib/launch/database.js";
 
 import { Service } from "./lib/Service.js";
 
@@ -19,4 +18,3 @@ Service.start().catch((e) => {
 	Service.error(e);
 	process.exit(1);
 });
-

@@ -19,7 +19,7 @@ declare namespace CommandTypes {
 		input: string,
 		data: State & { user_rigths: import("telegraf/types").ChatMember },
 		self: Stored
-	) => void;
+	) => any | Promise<any>;
 
 	type Target = "group" | "private" | "all" | "channel";
 	type Permission = "all" | "group_admins" | "bot_owner";
@@ -93,17 +93,9 @@ type QueryCallback = (
 		text: string,
 		extra?: import("telegraf/types").Convenience.ExtraEditMessageText
 	) => Promise<any>
-) => void;
+) => void | Promise<void>;
 
-type ServiceData = typeof import("./index.js").Service;
-
-type IOnErrorActions = {
-	timer: import("./lib/utils/cooldown.js").Cooldown;
-	codes: Record<string | number, (err?: IhandledError) => void>;
-	types: Record<string, (err: IhandledError) => void>;
-};
-
-type IhandledError = {
+type RealError = {
 	stack?: string;
 	name: string;
 	message: string;

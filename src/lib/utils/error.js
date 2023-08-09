@@ -1,13 +1,20 @@
-import { util } from "./index.js";
+import chalk from "chalk";
+import util from "util";
 
 /**
- * @type {[RegExp | string, string?, number?][]}
+ * @type {[RegExp | string, string?][]}
  */
 const FITLERS = [
+	[/^\s+at\s/],
 	[/\\/g, "/"],
-	["<anonymous>", "</>", 0],
-	[/file:.*src\/(.*)/, "src/$1"],
-	[/file:.*node_modules\/(.*)/, "node_modules/$1"],
+	[/<anonymous>/g, chalk.blackBright("</>")],
+	[
+		/.+src\/web\/node_modules\/(.*)/,
+		chalk.blackBright("src/web/node_modules/$1"),
+	],
+	[/.+src\/web\/src\/(.*)/, chalk.blackBright("src/web/src/$1")],
+	[/.+node_modules\/(.*)/, chalk.blackBright("node_modules/$1")],
+	[/.+src\/(.*)/, chalk.blackBright("src/$1")],
 	[/.*Telegram\.callApi.*/, "Telegram.callApi()"],
 	[/.*node:.*/],
 ];
@@ -16,26 +23,20 @@ const FITLERS = [
  * @param {string} line
  */
 function parseStackLine(line) {
-	for (const [regexp, replacer, count] of FITLERS) {
-		if (typeof line !== "string") continue;
-		const replaceAll = count === 0;
-
-		if (replaceAll)
-			line = line.replace(new RegExp(regexp, "g"), replacer ?? "");
-		else line = line.replace(regexp, replacer ?? "");
+	for (const [regexp, replacer] of FITLERS) {
+		if (typeof line !== "string" || !line) break;
+		line = line.replace(regexp, replacer ?? "");
 	}
 	return line;
 }
 
 /**
- * @param {{name?: string; stack?: string; message: string; on?: object;}} err
- * @returns {[string, string, string, string]}
+ * @param {RealError} err
  */
 export function parseError(err) {
 	let message = err.message;
-	if (typeof message !== "string")
-		message = "NOT_A_STRING_MESSAGE: " + JSON.stringify(message);
-	let stack = err.stack.replace(err.message, "").split("\n");
+	if (typeof message !== "string") message = util.inspect(message);
+	let stack = err.stack.replace(message, "").split("\n");
 	let type = err.name;
 	if (!stack[0].match(/^\s+at\s/)) type = stack.shift();
 
@@ -44,17 +45,14 @@ export function parseError(err) {
 		message = message.split(": ").slice(1).join(": ");
 	}
 
-	const stringStack = [
-		...new Set(
-			stack
-				.map((e) => e.replace(/^\s+at\s/, ""))
-				.map(parseStackLine)
-				.filter((e) => e)
-				.map((e) => ` ${e}\n`)
-		).values(),
-	].join("");
+	const parsedStack = stack
+		.map(parseStackLine)
+		.filter((e) => e)
+		.map((e) => ` ${e}\n`);
 
-	const extra = err.on ? util.inspect(err.on) : undefined;
+	const stringColoredStack = [...new Set(parsedStack).values()].join("");
+	const stringStack = stringColoredStack.replace(/\x1b\[\d+m/g, "");
+	const extra = err.on && util.inspect(err.on);
 
-	return [type, message, stringStack, extra];
+	return { type, message, stringStack, stringColoredStack, extra };
 }

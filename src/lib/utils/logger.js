@@ -15,7 +15,7 @@ export class Logger {
 	 *  textExtra?: import("telegraf/types").Convenience.ExtraReplyMessage
 	 * 	consoleMessage?: string;
 	 * 	fileMessage?: string
-	 * }} param0
+	 * }} log
 	 */
 	async log({ text, consoleMessage, fileMessage, textExtra }) {
 		if (consoleMessage) console.log(consoleMessage);

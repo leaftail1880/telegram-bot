@@ -1,23 +1,22 @@
 import node_utils from "util";
-import { tables } from "../launch/db.js";
+import { tables } from "../launch/database.js";
 
 export const util = {
 	/**
 	 * Safly gets key from object **and triggers** [[Get]] listener
-	 * @template {object} S
+	 * @template {Record<any, any>} S
 	 * @param {S} source
 	 * @param {keyof S | string} key
 	 * @returns {any}
 	 */
 	get(source, key) {
 		if (!(source && typeof source === "object" && key in source)) return;
-		// @ts-expect-error We already used in statement to check this.
 		return source[key];
 	},
 	/**
 	 * @param {{
-	 *   reply(s: string | ReturnType<import("telegraf/format").fmt>, extra: import("telegraf/types").Convenience.ExtraReplyMessage): any;
-	 *   message: { message_id: number; reply_to_message?: {message_id?: number}}
+	 *   reply: import("telegraf").Context["reply"]
+	 *   message: import("telegraf").Context["message"]
 	 * }} ctx
 	 * @param {'reply' | 'direct'} prefer
 	 */
@@ -33,8 +32,9 @@ export const util = {
 				allow_sending_without_reply: true,
 				reply_to_message_id:
 					(more_prefer ?? prefer) === "reply"
-						? ctx.message?.reply_to_message?.message_id ??
-						  ctx.message.message_id
+						? "reply_to_message" in ctx.message
+							? ctx.message.reply_to_message.message_id
+							: ctx.message.message_id
 						: ctx.message.message_id,
 				disable_web_page_preview: true,
 			});
@@ -81,12 +81,12 @@ export const util = {
 	/**
 	 *
 	 * @param {string} msg
-	 * @param {(s: string) => Promise<unknown> | unknown} method
+	 * @param {(s: string) => Promise<any> | any} method
 	 */
-	async sendSeparatedMessage(msg, method, limit = 4000, safeCount = 5) {
+	async sendSeparatedMessage(msg, method, limit = 4000, count = 5) {
 		if (msg.length < limit) return method(msg);
 
-		for (let p = 1; p <= Math.ceil(msg.length / limit) && p <= safeCount; p++) {
+		for (let p = 1; p <= Math.ceil(msg.length / limit) && p <= count; p++) {
 			await method(msg.substring(p * limit - limit, p * limit));
 		}
 	},
@@ -179,7 +179,7 @@ export const u = {
 	 * @param {StringLike[]} arr - The array to join
 	 * @param {string} separator - Separator to be escaped
 	 */
-	safeJoin(arr, separator) {
+	escapeJoin(arr, separator) {
 		return arr
 			.map(String)
 			.map((e) => e.replaceAll(separator, "\\" + separator))
@@ -208,7 +208,7 @@ export const u = {
 	query: (prefix, name, ...args) =>
 		`${prefix}${u.separator.link}${name}${
 			args
-				? `${u.separator.linkToData}${u.safeJoin(args, u.separator.data)}`
+				? `${u.separator.linkToData}${u.escapeJoin(args, u.separator.data)}`
 				: ""
 		}`,
 

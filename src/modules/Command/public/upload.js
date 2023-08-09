@@ -1,8 +1,7 @@
 import { upload } from "better-telegraph";
 import { fmt, link } from "telegraf/format";
-import { bot } from "../../../index.js";
+import { message } from "../../../index.js";
 import { Scene } from "../../../lib/scene.js";
-import { hasDocument } from "../../../lib/utils/filters.js";
 import { u } from "../../../lib/utils/index.js";
 import { Command } from "../../../lib/сommand.js";
 
@@ -33,12 +32,13 @@ new Command(
 );
 
 const SCENE = new Scene("загрузка файла", async (ctx) => {
-	if (!hasDocument(ctx))
+	if (!message("document")(ctx.update))
 		return ctx.reply(WRONG_TYPE, { disable_web_page_preview: true });
-	const message = await ctx.reply("Загрузка началась...");
-	const progress = (/** @type {string} */ m) => ctx.telegram.editMessageText(ctx.chat.id, message.message_id, null, m);
 
-	const telegram_link = (await bot.telegram.getFileLink(ctx.message.document.file_id)).toString();
-	const ref_link = await upload(telegram_link);
-	await progress(ref_link);
+	const status = await ctx.reply("Загрузка началась...");
+	const tgLink = await ctx.telegram.getFileLink(
+		ctx.update.message.document.file_id
+	);
+	const thLink = await upload(tgLink.toString());
+	ctx.telegram.editMessageText(ctx.chat.id, status.message_id, null, thLink);
 });

@@ -5,7 +5,6 @@ import config from "../config.js";
 import { Service, bot, message } from "../index.js";
 import { u, util } from "./utils/index.js";
 import { Logger } from "./utils/logger.js";
-import { runWithCatch } from "./utils/safe.js";
 
 export class Command {
 	/**
@@ -49,7 +48,7 @@ export class Command {
 	 * @param {string} message
 	 * @returns {CommandTypes.Stored | "not_found" | boolean}
 	 */
-	static getCmd(message) {
+	static getCommandFromMessage(message) {
 		if (!message) return false;
 		const match = message.match(config.command.get);
 		if (!match) return false;
@@ -185,7 +184,7 @@ process.on("modulesLoad", () => {
 			});
 		}
 
-		const command = Command.getCmd(text);
+		const command = Command.getCommandFromMessage(text);
 
 		if (command === "not_found" && ctx.chat.type === "private") {
 			if (ctx.data.scene) return next();
@@ -221,14 +220,20 @@ process.on("modulesLoad", () => {
 			return reply("Не здесь. /help");
 
 		Command.Log(ctx, ctx.data.user);
-		await runWithCatch(`Command`, () =>
-			command.callback(
+		try {
+			await command.callback(
 				ctx,
 				text.replace(config.command.clear, ""),
 				{ ...ctx.data, user_rigths },
 				command
-			)
-		);
+			);
+		} catch (error) {
+			Service.error({
+				name: `CommandError: `,
+				message: error.message,
+				stack: error.stack,
+			});
+		}
 	});
 });
 
@@ -241,7 +246,7 @@ new Command(
 	},
 	(ctx, _args, data) => {
 		ctx.reply(
-			`${data.user.static.name} Кобольдя очнулся. Список доступных Вам команд: /help`
+			`${data.user.static.name}, кобольдя очнулся. /help`
 		);
 	}
 );

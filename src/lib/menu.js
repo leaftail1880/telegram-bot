@@ -2,22 +2,19 @@ import { Query } from "./query.js";
 import { u } from "./utils/index.js";
 
 export class MultiMenu {
-	static get config() {
-		return {
-			maxRows: 6,
-			maxButtonsPerRow: 6,
-			backButtonSymbol: "↩️",
-			pageBack: "«",
-			pageNext: "»",
-		};
-	}
+	config = {
+		maxRows: 6,
+		maxButtonsPerRow: 6,
+		backButtonSymbol: "↩️",
+		pageBack: "«",
+		pageNext: "»",
+	};
+
 	/**
-	 *
 	 * @param {string} prefix
 	 */
 	constructor(prefix) {
 		this.prefix = prefix;
-		this.config = MultiMenu.config;
 	}
 
 	/**
@@ -31,34 +28,39 @@ export class MultiMenu {
 	 * @returns
 	 */
 	generatePageSwitcher({
-		buttons,
+		buttons: allButtons,
 		queryName,
 		backButton = null,
 		pageTo = 1,
 		buttonLimit = this.config.maxRows,
 	}) {
 		const page = Number(pageTo);
-		const qNext = Math.ceil(buttons.length / buttonLimit) - 1 >= page;
+		const qNext = Math.ceil(allButtons.length / buttonLimit) - 1 >= page;
 		const qBack = page > 1;
 
 		const start = buttonLimit * page - buttonLimit;
 		const end = buttonLimit * page;
 
-		const btns = buttons.slice(start, end);
-		const menu = [];
+		const buttons = allButtons.slice(start, end);
+		const switchPageMenu = [];
 
-		if (backButton) menu.push(backButton);
-
-		if (qBack)
-			menu.unshift(
+		if (qBack) {
+			switchPageMenu.push(
 				u.btn(this.config.pageBack, this.prefix, queryName, page - 1)
 			);
-		if (qNext)
-			menu.push(u.btn(this.config.pageNext, this.prefix, queryName, page + 1));
+		}
+		if (backButton) {
+			switchPageMenu.push(backButton);
+		}
+		if (qNext) {
+			switchPageMenu.push(
+				u.btn(this.config.pageNext, this.prefix, queryName, page + 1)
+			);
+		}
 
-		btns.push(menu);
+		buttons.push(switchPageMenu);
 
-		return btns;
+		return buttons;
 	}
 	/**
 	 * Создает команду

@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -8,6 +9,7 @@ import util from "util";
 export const SERVER_DIR = url.fileURLToPath(new URL(".", import.meta.url));
 
 export class Logger {
+	chalk = chalk;
 	constructor({ filePath = "logs/log.txt", prefix = "" }) {
 		this.stream = fs.createWriteStream(filePath, "utf-8");
 		this.prefix = prefix;
@@ -16,20 +18,20 @@ export class Logger {
 	 * @param {{
 	 * consoleMessage?: string,
 	 * fileMessage?: string,
-	 * color: keyof typeof Logger.colors
+	 * color: (...text: string[]) => string
 	 * }} message
 	 */
-	log({ consoleMessage, fileMessage, color = "yellow" }) {
+	log({ consoleMessage, fileMessage, color = chalk.yellow }) {
 		if (consoleMessage)
 			console.log(
-				`${this.prefix}${Logger.colors[color]}[${new Date().toLocaleString([], {
+				`\x1b[0m${new Date().toLocaleString([], {
 					hourCycle: "h24",
 					timeStyle: "medium",
-				})}]\x1b[0m ${consoleMessage}`
+				})} ${color(this.prefix)} ${consoleMessage}`
 			);
 
 		if (fileMessage)
-			this.stream.write(`[${new Date().toLocaleString()}] ${fileMessage}\r`);
+			this.stream.write(`[${new Date().toLocaleString()}] ${fileMessage.replace(/\x1b\[\d+m/g, "")}\r`);
 	}
 
 	/**
@@ -37,7 +39,7 @@ export class Logger {
 	 */
 	error(...context) {
 		const msg = util.format(...context);
-		this.log({ color: "red", consoleMessage: msg, fileMessage: msg });
+		this.log({ color: chalk.red, consoleMessage: msg, fileMessage: msg });
 	}
 
 	/**
@@ -46,7 +48,7 @@ export class Logger {
 	 */
 	info(...arg) {
 		const msg = util.format(...arg);
-		this.log({ color: "cyan", fileMessage: msg, consoleMessage: msg });
+		this.log({ color: chalk.cyan, fileMessage: msg, consoleMessage: msg });
 	}
 
 	/**
@@ -55,26 +57,17 @@ export class Logger {
 	 */
 	success(...arg) {
 		const msg = util.format(...arg);
-		this.log({ color: "green", fileMessage: msg, consoleMessage: msg });
+		this.log({
+			color: chalk.greenBright,
+			fileMessage: msg,
+			consoleMessage: msg,
+		});
 	}
-
-	static colors = {
-		black: "\x1b[30m",
-		red: "\x1b[31m",
-		green: "\x1b[32m",
-		yellow: "\x1b[33m",
-		blue: "\x1b[34m",
-		magenta: "\x1b[35m",
-		cyan: "\x1b[36m",
-		white: "\x1b[37m",
-		gray: "\x1b[90m",
-		reset: "\x1b[0m",
-	};
 }
 
 export const logger = new Logger({
 	filePath: path.join(SERVER_DIR, "../../../../logs/web.txt"),
-	prefix: Logger.colors.black + "[WEB]" + Logger.colors.reset,
+	prefix: chalk.bold("web"),
 });
 
 export function botApiEnv() {
@@ -84,7 +77,7 @@ export function botApiEnv() {
 export async function botApiLink() {
 	const { tables, database } = await import(
 		// @ts-ignore
-		"../../../lib/launch/db.js"
+		"../../../lib/launch/database.js"
 	);
 
 	// @ts-ignore
@@ -103,12 +96,17 @@ export async function botApiLink() {
 	logger.success("Bot api linked successfully!");
 }
 
+/** @type {Route} */
+export const noopRoute = (_, __, next) => {
+	return next();
+};
+
 export function botHostExpose() {
 	// ssh -R koboldie:80:localhost:8888 serveo.net  -o ServerAliveInterval=15
 	serveonet({
 		localHost: "localhost",
 		localPort: 8888,
-		remoteSubdomain: "koboldie",
+		remoteSubdomain: process.env.SERVEO_SUBDOMAIN ?? "",
 		remotePort: 80,
 		serverAliveInterval: 5,
 		serverAliveCountMax: 1,
@@ -134,6 +132,42 @@ export function botHostExpose() {
 			logger.error("SSH exited with code " + event.code);
 			event.onrestart = () => logger.info("Restarted");
 		});
+}
+
+/**
+ * @param {Express.Application} server
+ * @param {import("virtual:vite-plugin-api:router")['applyRouters']} applyRouters
+ */
+export async function bootstrapAPI(server, applyRouters) {
+	applyRouters(
+		({ method, route, cb }) => {
+			if (cb === noopRoute) return logger.info("skipped:", method, route);
+			if (method in server) {
+				logger.info(method.toUpperCase() + " " + route);
+				// @ts-expect-error
+				server[method](route, cb);
+			} else {
+				logger.error("Method '" + method + "' is unsupported in express");
+			}
+		},
+		/** @returns {Route} */
+		(cb) =>
+			// @ts-expect-error
+			async (req, res, next) => {
+				if (!res.writableEnded) {
+					try {
+						// @ts-expect-error
+						let value = await cb(req, res, next);
+						if (value && !(value instanceof Promise)) {
+							res.send(value);
+						}
+					} catch (error) {
+						logger.error("Internal Server " + error);
+						res.writeHead(400, "Internal Server " + error).end();
+					}
+				}
+			}
+	);
 }
 
 export function isBrowserSupported(nAgt = "") {

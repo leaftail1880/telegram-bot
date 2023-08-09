@@ -2,36 +2,16 @@ import { Service } from "../../index.js";
 import styles from "../styles.js";
 
 /**
- *
- * @param {Function} callback
- * @param {string} runnerName
- * @returns
- */
-export async function runWithCatch(runnerName, callback) {
-	try {
-		await callback();
-		return true;
-	} catch (error) {
-		Service.error({
-			name: `${runnerName} error: `,
-			message: error.message,
-			stack: error.stack,
-		});
-		return false;
-	}
-}
-
-/**
  * It loads all the files in a folder and logs the time it took to load each file
  * @param {string[]} folderArray - An array of folders to load.
- * @param {(file: string) => Promise<void | {wait: Promise<void>}>} loadFN - Function that loads.
+ * @param {(file: string) => Promise<void | {wait: Promise<void>}>} importFN - Function that loads.
  */
-export async function importMultiple(folderArray, loadFN, log = true) {
+export async function importMultiple(folderArray, importFN, log = true) {
 	for (const file of folderArray) {
 		try {
 			const start = performance.now();
 
-			const module = await loadFN(file);
+			const module = await importFN(file);
 			if (module && "wait" in module) await module.wait;
 
 			if (log)

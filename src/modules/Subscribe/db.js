@@ -1,5 +1,5 @@
 import { LeafyDBTable } from "leafy-db";
-import { database } from "../../lib/launch/db.js";
+import { database } from "../../lib/launch/database.js";
 import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
 
 /**

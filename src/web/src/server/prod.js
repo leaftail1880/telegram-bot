@@ -1,16 +1,15 @@
-import dotenv from "dotenv";
 import express from "express";
 import path from "path";
-import { applyRouters } from "virtual:vite-plugin-api:router";
 import {
 	SERVER_DIR,
+	bootstrapAPI,
 	botApiLink,
 	botHostExpose,
 	isBrowserSupported,
 	logger,
 } from "./utils.js";
+import { applyRouters } from "virtual:vite-plugin-api:router";
 
-dotenv.config();
 const {
 	PORT = 8888,
 	CLIENT_DIR = path.resolve(SERVER_DIR, "import.meta.env.CLIENT_DIR"),
@@ -25,39 +24,11 @@ server.use(express.static(CLIENT_DIR, { acceptRanges: false }));
 server.use(express.json());
 
 async function main() {
-	botHostExpose();
 	await botApiLink();
-	applyRouters(
-		({ method, path, cb }) => {
-			if (method in server) {
-				logger.info(method.toUpperCase() + " " + path);
-				// @ts-expect-error
-				server[method](path, cb);
-			} else {
-				logger.error("Not support '" + method + "' in express");
-			}
-		},
-		// @ts-expect-error Wrong plugin types.
-		(cb) => {
-			/** @type {Route} */
-			return async (req, res, next) => {
-				if (!res.writableEnded) {
-					try {
-						// @ts-expect-error Again
-						let value = await cb(req, res, next);
-						if (value && !(value instanceof Promise)) {
-							res.send(value);
-						}
-					} catch (error) {
-						logger.error("Internal Server " + error);
-						res.writeHead(400, "Internal Server " + error).end();
-					}
-				}
-			};
-		}
-	);
+	botHostExpose();
+	await bootstrapAPI(server, applyRouters);
 
-	server.use((req, res) => {
+	server.use((_, res) => {
 		res.sendFile(path.join(CLIENT_DIR, "index.html"));
 	});
 

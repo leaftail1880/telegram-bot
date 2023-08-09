@@ -15,7 +15,7 @@ import { util } from "./utils/index.js";
 import { handleBotError, handleError } from "./launch/handlers.js";
 
 import { parseError } from "./utils/error.js";
-import { importMultiple } from "./utils/safe.js";
+import { importMultiple } from "./utils/import.js";
 
 export const Service = {
 	v: config.version.join("."),
@@ -118,7 +118,7 @@ export const Service = {
 				((Date.now() - Service.startTime) / 1000).toFixed(2)
 			)}s`
 		);
-	  process.emit("loaded")
+		process.emit("loaded");
 	},
 	/**
 	 * @param {string} reason
@@ -126,18 +126,16 @@ export const Service = {
 	 * @param {boolean} sendMessage
 	 */
 	async stop(reason = "Остановка", mode = "none", sendMessage = true) {
-		let message = fmt`${link(bold`✕`, "https://t.me")}  ${mode}. ${reason}`;
-		message = fmt`${message}\n${Service.sv} ${bold(
-			process.env.whereImRunning
-		)}`;
+		let message = fmt`${link(bold`✕`, "https://t.me")}  ${mode}. ${reason} ${
+			Service.sv
+		} ${bold(process.env.whereImRunning)}`;
 
 		// Skip on dev terminal stop
 		const send = !(
 			Service.development && ["SIGINT", "SIGTERM"].includes(reason)
 		);
 		if (send) {
-			const [fullreason, info] = message.text.split("\n");
-			console.log(styles.error(fullreason) + "\n" + chalk.redBright(info));
+			console.log(styles.error(message.text));
 
 			if (Service.launched && sendMessage)
 				await bot.telegram.sendMessage(Service.chat.log, message);
@@ -159,36 +157,35 @@ export const Service = {
 	},
 	/**
 	 *
-	 * @param {IhandledError} error
+	 * @param {RealError} error
 	 */
 	async error(error) {
 		if (ERROR_TIMER.isExpired())
 			try {
 				if (!error.stack) error.stack = Error().stack;
-				const [type, message, stack, extra] = parseError(error);
+				const { type, message, stringStack, stringColoredStack, extra } =
+					parseError(error);
 
 				console.warn(" ");
 				console.warn(chalk.red(type).trim() + chalk.white(message));
-				console.warn(stack);
+				console.warn(stringColoredStack);
 				console.warn(" ");
 
 				if (!Service.launched || Service.stopped) return;
 
 				const text = fmt`${link(type, "https://t.me/")}${bold(
 					message
-				)}\n${stack}`;
+				)}\n${stringStack}`;
 
 				await bot.telegram.sendMessage(Service.chat.log, text, {
 					disable_web_page_preview: true,
 				});
 
 				if (extra) {
-					await util.sendSeparatedMessage(
-						extra,
-						async (a) =>
-							await bot.telegram.sendMessage(Service.chat.log, a, {
-								disable_web_page_preview: true,
-							})
+					await util.sendSeparatedMessage(extra, (a) =>
+						bot.telegram.sendMessage(Service.chat.log, a, {
+							disable_web_page_preview: true,
+						})
 					);
 				}
 			} catch (e) {

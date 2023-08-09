@@ -1,9 +1,8 @@
 import chalk from "chalk";
-import { bot } from "../index.js";
+import { Service, bot, callbackQuery } from "../index.js";
 import { Cooldown } from "./utils/cooldown.js";
 import { u, util } from "./utils/index.js";
 import { Logger } from "./utils/logger.js";
-import { runWithCatch } from "./utils/safe.js";
 
 export class Query {
 	static Logger = new Logger();
@@ -38,7 +37,7 @@ export class Query {
 	 * @param {Context} ctx
 	 * @param {string} message
 	 */
-	static Log(ctx, message = null) {
+	static Log(ctx, message) {
 		const name = util.getName(null, ctx.from);
 		const text = `${name}: ${message}`;
 		this.Logger.log({
@@ -46,41 +45,30 @@ export class Query {
 			fileMessage: text,
 		});
 	}
-}
-
-/**
- * @param {string} data
- */
-function parseQueryData(data) {
-	const unparsed = data.split(u.separator.linkToData);
-	const escaper = Date.now().toString(16);
-	const args = unparsed[1]
-		? unparsed[1]
-				.replaceAll("\\" + u.separator.link, escaper)
-				.split(u.separator.data)
-				.map((e) => e.replace(escaper, u.separator.link))
-		: [];
-	return { query: Query.queries[unparsed[0]], args };
-}
-
-/**
- *
- * @param {Context} ctx
- * @returns {ctx is Context & { callbackQuery: import("telegraf/types").CallbackQuery.DataQuery }}
- */
-function isQuery(ctx) {
-	return "data" in ctx.callbackQuery;
+	/**
+	 * @param {string} data
+	 */
+	static parseQueryData(data) {
+		const unparsed = data.split(u.separator.linkToData);
+		const escaper = Date.now().toString(16);
+		const args = unparsed[1]
+			? unparsed[1]
+					.replaceAll("\\" + u.separator.link, escaper)
+					.split(u.separator.data)
+					.map((e) => e.replace(escaper, u.separator.link))
+			: [];
+		return { query: Query.queries[unparsed[0]], args };
+	}
 }
 
 const Q_TIMER = new Cooldown(0.3, true);
 
 process.on("modulesLoad", () => {
-	bot.on("callback_query", async (ctx, next) => {
-		if (!isQuery(ctx)) return;
+	bot.on(callbackQuery("data"), async (ctx, next) => {
 		const data = ctx.callbackQuery.data;
 		if (!Q_TIMER.isExpired(data)) return;
 
-		const { query, args } = parseQueryData(data);
+		const { query, args } = Query.parseQueryData(data);
 		if (!query) {
 			ctx.answerCbQuery(
 				"Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.",
@@ -98,11 +86,16 @@ process.on("modulesLoad", () => {
 				.map((e) => `'${e}'`)
 				.join(" ")}`
 		);
-		await runWithCatch("Q", () =>
-			query.callback(ctx, args, (text, extra) =>
-				ctx.editMessageText(text, extra)
-			)
-		);
+
+		try {
+			await query.callback(ctx, args, ctx.editMessageText.bind(ctx));
+		} catch (error) {
+			Service.error({
+				name: `QueryError: `,
+				message: error.message,
+				stack: error.stack,
+			});
+		}
 		if (query.info.message) ctx.answerCbQuery(query.info.message);
 	});
 });
@@ -114,7 +107,6 @@ new Query(
 		message: "Выход...",
 	},
 	(ctx) => {
-		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
-		ctx.deleteMessage(ctx.callbackQuery.message.message_id);
+		ctx.deleteMessage(ctx.callbackQuery.message.message_id)
 	}
 );
