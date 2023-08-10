@@ -8,7 +8,7 @@ export function OCownerButton(ownerid: string, name?: string) {
 			class: "closable",
 		},
 		() =>
-			Object.keys(OCowners[ownerid]?.ocs).length
+			Object.keys(OCowners[ownerid]?.ocs ?? {}).length
 				? OCList(OCowners[ownerid], ownerid)
 				: [br(), a(i18n`Loading...`), br(), br()]
 	);

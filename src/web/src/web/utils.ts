@@ -7,27 +7,40 @@ window.api = async function (
 	path,
 	{ method = "GET", body = void 0, headers = {}, token = false } = {}
 ) {
-	let newbody;
-	if (token) {
-		headers["Authorization"] = Authentication.token;
-	}
-	if (body) {
-		newbody = JSON.stringify(body);
-		if (method === "GET" || method === "HEAD") method = "POST";
-		headers["Content-Type"] = "application/json";
-	}
-	const request = await fetch("/api/" + path, {
-		method,
-		body: newbody,
-		headers,
-	});
+	try {
+		if (token) {
+			headers["Authorization"] = Authentication.token;
+		}
+		if (body) {
+			if (method === "GET" || method === "HEAD") method = "POST";
+			headers["Content-Type"] = "application/json";
+		}
 
-	if (!request.ok) {
-		throw new FetchError(request.statusText);
-	} else return request.json();
+		const request = await fetch("/api/" + path, {
+			method,
+			body: body && JSON.stringify(body),
+			headers,
+		});
+
+		if (!request.ok) {
+			throw `${request.status} ${request.statusText}`;
+		} else {
+			const data = await request.text();
+			if (data.startsWith("<")) {
+				throw `Got XML instead of JSON: ${data.slice(0, 50)}...`;
+			} else return JSON.parse(data);
+		}
+	} catch (e: any) {
+		throw new FetchError(
+			`${e.name ? e.name + " " : ""}${method} /api/${path} ${e.message ?? e}`
+		);
+	}
 } as typeof api;
 
-export class EventEmitter<Arg = any, Callback extends Function = (arg?: Arg) => void> {
+export class EventEmitter<
+	Arg = any,
+	Callback extends Function = (arg?: Arg) => void
+> {
 	private events = new Set<Callback>();
 
 	on(callback: Callback) {
@@ -87,12 +100,11 @@ export const Authentication = EventLoader({
 		if (response.valid) this.token = response.token;
 		this.emit();
 
-		document.body.append(
-			section(
-				p(
-					{ class: response.valid ? "hint" : "hint err" },
-					response.valid ? "Valid token." : "Invalid token."
-				)
+		const to = document.getElementById("token") ?? document.body;
+		to.append(
+			p(
+				{ class: response.valid ? "hint" : "hint err" },
+				response.valid ? "Valid token." : "Invalid token."
 			)
 		);
 	},

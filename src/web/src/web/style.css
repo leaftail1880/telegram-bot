@@ -209,11 +209,13 @@ section {
 	text-align: center;
 	background-color: var(--bg-color, #ffffff);
 }
-section#top_sect {
-	background-color: var(--tg-theme-bg-color, #ffffff);
-}
-section#top_sect.second {
+section.root {
+	display: flex; 
+	justify-content: center;
 	background-color: var(--tg-theme-secondary-bg-color, #efefef);
+}
+section.root section {
+	background-color: var(--tg-theme-bg-color, #ffffff);
 }
 section .sect_row {
 	margin: 10px 0;

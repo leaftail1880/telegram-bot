@@ -11,4 +11,7 @@ async function main() {
 }
 
 if (process.argv[2] !== "host") main();
-else botHostExpose();
+else {
+	botApiEnv();
+	botHostExpose();
+}

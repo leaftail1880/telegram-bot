@@ -2,7 +2,7 @@ import { Component, type Child, type StaticChild } from "@fusorjs/dom";
 
 let currentRoute: string;
 let currentQuery: URLSearchParams;
-let app: Component<any>;
+let app: Component<HTMLDivElement>;
 
 export interface CurrentRoute {
 	path: string;
@@ -22,7 +22,7 @@ export function Router(map: Record<string, Route>) {
 	}
 	currentRoute = location.pathname;
 	currentQuery = new URLSearchParams(location.search);
-	app = section({ id: "top_sect", class: "second" }, () => {
+	app = div(() => {
 		let params: Record<string, any> | null = {};
 		const Page =
 			[...routes.entries()].find(([route]) =>

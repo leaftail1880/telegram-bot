@@ -27,11 +27,16 @@ export class Logger {
 				`\x1b[0m${new Date().toLocaleString([], {
 					hourCycle: "h24",
 					timeStyle: "medium",
-				})} ${color(this.prefix)} ${consoleMessage}`
+				})} ${color(this.prefix)} ${consoleMessage}\x1b[0m`
 			);
 
 		if (fileMessage)
-			this.stream.write(`[${new Date().toLocaleString()}] ${fileMessage.replace(/\x1b\[\d+m/g, "")}\r`);
+			this.stream.write(
+				`[${new Date().toLocaleString()}] ${fileMessage.replace(
+					/\x1b\[\d+m/g,
+					""
+				)}\r`
+			);
 	}
 
 	/**
@@ -71,7 +76,7 @@ export const logger = new Logger({
 });
 
 export function botApiEnv() {
-	dotenv.config({ path: "../../.env" });
+	dotenv.config({ path: "../../.dev.env" });
 }
 
 export async function botApiLink() {

@@ -10,29 +10,12 @@ const fileSizeLimit = 5 * 1024 * 1024;
 let image = "";
 
 export function OC() {
-	// This calls once
 	let i: string;
 	let ownerid: string;
 	let root: HTMLDivElement;
 	let state = "see" as "create" | "edit" | "see";
 	let fallbackContent = i18n`Loading...`;
 	let handleImage = () => Telegram.WebApp.showAlert("Wait untill full load");
-
-	const editor = div({ class: "oc" }, () => {
-		if (root && state !== "create") {
-			root.innerHTML = OCowners[ownerid]?.ocs?.[i]?.description ?? "";
-		} else root && (root.innerHTML = "");
-	});
-
-	const blocks = div(
-		{ class: "tl_blocks" },
-		div(
-			{ class: "buttons" },
-			button({
-				click$e: () => handleImage(),
-			})
-		)
-	) as unknown as HTMLDivElement;
 
 	const headers: Record<typeof state, any> = {
 		see: h1(
@@ -60,6 +43,22 @@ export function OC() {
 			});
 		},
 	});
+
+	const editor = div({ class: "oc" }, () => {
+		if (root && state !== "create") {
+			root.innerHTML = OCowners[ownerid]?.ocs?.[i]?.description ?? "";
+		} else root && (root.innerHTML = "");
+	});
+
+	const blocks = div(
+		{ class: "tl_blocks" },
+		div(
+			{ class: "buttons" },
+			button({
+				click$e: () => handleImage(),
+			})
+		)
+	) as unknown as HTMLDivElement;
 
 	const wrapper = section(
 		() => headers[state],
@@ -198,6 +197,7 @@ export function OC() {
 			: ownerid === Telegram.WebApp.initDataUnsafe.user?.id?.toString()
 			? "edit"
 			: "see";
+		console.log(state);
 		if (window.quillE) quillE.enable(state !== "see");
 
 		// Loading current owner

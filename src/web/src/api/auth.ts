@@ -67,11 +67,11 @@ export const auth: Route = (req, res, next) => {
 	const on = ` on ${req.method} ${req.path}`;
 	if (!token) {
 		logger.error("No token provided" + on);
-		res.writeHead(400, "No token provided" + on).end();
+		res.writeHead(400, "No token provided").end();
 		return;
 	} else {
-		logger.error("Invalid" + on);
-		res.writeHead(400, "Invalid token" + on).end();
+		logger.error("Invalid token" + on);
+		res.writeHead(400, "Invalid token").end();
 		return;
 	}
 };

@@ -19,7 +19,7 @@ i18n.onload(async () => {
 	Telegram.WebApp.MainButton.onClick(Telegram.WebApp.close);
 
 	Authentication.onload(() => {
-		document.getElementById("root")!.appendChild(
+		document.getElementById("router")!.appendChild(
 			Router({
 				"/home": Home(),
 				"/ocs": OCs(),
