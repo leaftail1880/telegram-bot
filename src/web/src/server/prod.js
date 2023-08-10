@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { applyRouters } from "virtual:vite-plugin-api:router";
 import {
 	SERVER_DIR,
 	bootstrapAPI,
@@ -8,7 +9,6 @@ import {
 	isBrowserSupported,
 	logger,
 } from "./utils.js";
-import { applyRouters } from "virtual:vite-plugin-api:router";
 
 const {
 	PORT = 8888,
@@ -26,7 +26,7 @@ server.use(express.json());
 async function main() {
 	await botApiLink();
 	botHostExpose();
-	await bootstrapAPI(server, applyRouters);
+	await bootstrapAPI(server, applyRouters, "global");
 
 	server.use((_, res) => {
 		res.sendFile(path.join(CLIENT_DIR, "index.html"));

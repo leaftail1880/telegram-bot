@@ -17,7 +17,7 @@ export class Logger {
 	 * 	fileMessage?: string
 	 * }} log
 	 */
-	async log({ text, consoleMessage, fileMessage, textExtra }) {
+	async log({ text, consoleMessage, fileMessage, textExtra = {} }) {
 		if (consoleMessage) console.log(consoleMessage);
 
 		if (fileMessage)
@@ -28,9 +28,7 @@ export class Logger {
 			);
 
 		if (text) {
-			if (textExtra) {
-				textExtra.disable_web_page_preview ??= true;
-			}
+			textExtra.disable_web_page_preview ??= true;
 			bot.telegram.sendMessage(Service.chat.log, text, textExtra);
 		}
 	}

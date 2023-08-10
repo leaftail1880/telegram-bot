@@ -96,11 +96,6 @@ export async function botApiLink() {
 	logger.success("Bot api linked successfully!");
 }
 
-/** @type {Route} */
-export const noopRoute = (_, __, next) => {
-	return next();
-};
-
 export function botHostExpose() {
 	// ssh -R koboldie:80:localhost:8888 serveo.net  -o ServerAliveInterval=15
 	serveonet({
@@ -138,10 +133,10 @@ export function botHostExpose() {
  * @param {Express.Application} server
  * @param {import("virtual:vite-plugin-api:router")['applyRouters']} applyRouters
  */
-export async function bootstrapAPI(server, applyRouters) {
+export async function bootstrapAPI(server, applyRouters, to = "relative") {
 	applyRouters(
-		({ method, route, cb }) => {
-			if (cb === noopRoute) return logger.info("skipped:", method, route);
+		({ method, path, route, cb }) => {
+			if (to !== "relative") route = path;
 			if (method in server) {
 				logger.info(method.toUpperCase() + " " + route);
 				// @ts-expect-error
