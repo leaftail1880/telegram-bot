@@ -24,7 +24,7 @@ let notified = false;
 process.on("modulesLoad", async () => {
 	const status = await getStatus();
 
-	if (status === "NOT_A_PHONE") {
+	if (status === "NOT_A_PHONE" && !Service.development) {
 		bot.telegram.sendMessage(
 			Service.chat.log,
 			"Статус зарядки не отслеживается."
