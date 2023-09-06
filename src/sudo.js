@@ -14,8 +14,8 @@ export async function sudo(ctx, _, data) {
 		config.command.clear,
 		""
 	)}\n})();`;
-	const func = new Function(args, code);
 	try {
+		const func = new Function(args, code);
 		await func(
 			args, //help
 			ctx,

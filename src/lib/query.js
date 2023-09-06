@@ -2,10 +2,10 @@ import chalk from "chalk";
 import { Service, bot, callbackQuery } from "../index.js";
 import { Cooldown } from "./utils/cooldown.js";
 import { u, util } from "./utils/index.js";
-import { Logger } from "./utils/logger.js";
+import { MultiLogger } from "./utils/logger.js";
 
 export class Query {
-	static Logger = new Logger();
+	static Logger = new MultiLogger();
 	/**
 	 * @type {Record<string, Query>}
 	 */

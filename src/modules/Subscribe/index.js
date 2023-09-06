@@ -31,7 +31,7 @@ export const Subscriptions = {
 };
 
 bot.on(message("new_chat_members"), async (ctx) => {
-	if (!tables.groups.get(ctx.chat.id).cache.workGroup) return;
+	if (!tables.groups.get(ctx.chat.id).cache.podval) return;
 	for (const id of Subscriptions.list("newMembers")) {
 		if (!tables.users.get(id).cache.dm) return;
 

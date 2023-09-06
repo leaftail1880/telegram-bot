@@ -1,5 +1,8 @@
-import { exec } from "leafy-utils";
+import child_process from "child_process";
+import util from "util";
 import { bot, Service } from "../../index.js";
+
+const exec = util.promisify(child_process.exec);
 
 /**
  *
@@ -33,14 +36,14 @@ process.on("modulesLoad", async () => {
 	}
 
 	const notify = async () => {
-		const status = await getStatus();
+		const battery = await getStatus();
 
-		if (status === "NOT_A_PHONE") return;
+		if (battery === "NOT_A_PHONE") return;
 
 		// Check if phone don't need a charge
 		if (
-			(status.percentage < 40 && status.status === "CHARGING") ||
-			(status.percentage > 70 && status.status !== "CHARGING")
+			(battery.percentage < 40 && battery.status === "CHARGING") ||
+			(battery.percentage > 70 && battery.status !== "CHARGING")
 		) {
 			notified = false;
 			return;
@@ -51,13 +54,11 @@ process.on("modulesLoad", async () => {
 
 		bot.telegram.sendMessage(
 			Service.chat.log,
-			(status.percentage < 40
-				? "Телефон требуется зарядить. ("
-				: status.percentage > 70
-				? "Телефон можно снять с зарядки. ("
-				: "40 < perc < 70: ") +
-				status.percentage +
-				"%)"
+			battery.percentage < 40
+				? `Телефон требуется зарядить. (${battery.percentage}%)`
+				: battery.percentage > 70
+				? `Телефон можно снять с зарядки. (${battery.percentage}%)`
+				: `40 < percentage < 70: ${battery.percentage}, status: ${battery.status}, notified: ${notified}`
 		);
 		notified = true;
 	};

@@ -1,4 +1,5 @@
 import { LeafyDBTable } from "leafy-db";
+import { LeafyLogger } from "leafy-utils";
 import { Hemisphere, Moon } from "lunarphase-js";
 import { message } from "telegraf/filters";
 import { bot, database } from "../../index.js";
@@ -19,12 +20,14 @@ process.on("modulesLoad", () => {
 	}
 });
 
+const TIMEOUT_LIMIT = 1000 * 60 * 30;
+
 /**
  * Consistently update chat title
  * @param {string} id
  * @param {AnimationSettings} options
  */
-function consistentUpdate(id, options, fromTimeout = false) {
+function consistentUpdate(id, options) {
 	options.update ??= 0;
 	// Time remains to update
 	const remaining = Date.now() - options.update;
@@ -41,8 +44,14 @@ function consistentUpdate(id, options, fromTimeout = false) {
 		DB.set(id, options);
 
 		// No update, wait for them
-	} else
-		setTimeout(() => consistentUpdate(id, options, true), -remaining + 1000);
+	} else {
+		const actualTime = -remaining + 1000;
+		setTimeout(
+			() => consistentUpdate(id, options),
+			// For some reason big time like 20 hours will not even trigger
+			Math.min(TIMEOUT_LIMIT, actualTime)
+		);
+	}
 }
 
 bot.on(message("new_chat_title"), (ctx, next) => {
@@ -55,12 +64,7 @@ bot.on(message("new_chat_title"), (ctx, next) => {
  * @param {string} text
  */
 function setLunarTitle(id, text) {
-	console.log(
-		new Date().toLocaleString([], {
-			hourCycle: "h24",
-		}),
-		"Lunar phase check"
-	);
+	logger.log("New phase set");
 	bot.telegram.setChatTitle(
 		id,
 		`${Moon.lunarPhaseEmoji(new Date(), {
@@ -68,3 +72,5 @@ function setLunarTitle(id, text) {
 		})} ${text ?? ""}`
 	);
 }
+
+const logger = new LeafyLogger({ prefix: "lunar" });

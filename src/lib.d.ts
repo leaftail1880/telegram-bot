@@ -71,7 +71,7 @@ declare namespace DB {
 				message_id?: number;
 				lastPins?: Record<number, number>;
 			};
-			workGroup?: 1;
+			podval?: 1;
 		};
 	};
 

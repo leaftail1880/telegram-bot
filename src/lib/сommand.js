@@ -4,7 +4,7 @@ import { bold, code, fmt, link } from "telegraf/format";
 import config from "../config.js";
 import { Service, bot, message } from "../index.js";
 import { u, util } from "./utils/index.js";
-import { Logger } from "./utils/logger.js";
+import { MultiLogger } from "./utils/logger.js";
 
 export class Command {
 	/**
@@ -91,7 +91,7 @@ export class Command {
 		);
 	}
 
-	static logger = new Logger();
+	static logger = new MultiLogger();
 
 	/**
 	 *

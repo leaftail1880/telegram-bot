@@ -4,7 +4,7 @@ import { FmtString } from "telegraf/format";
 import { Service } from "../Service.js";
 import { bot } from "../launch/telegraf.js";
 
-export class Logger {
+export class MultiLogger {
 	constructor(fileName = "logs.txt") {
 		const filePath = path.join("logs", fileName ?? "logs.txt");
 		this.stream = fs.createWriteStream(filePath, "utf-8");
