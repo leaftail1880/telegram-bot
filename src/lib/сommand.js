@@ -263,7 +263,7 @@ new Command(
 			e.info.prefix.includes("/")
 		)) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
-			message = fmt`${message}  /${e.info.name} - ${chalk.italic(
+			message = fmt`${message}  /${e.info.name} - ${italic(
 				e.info.description
 			)}\n`;
 		}
