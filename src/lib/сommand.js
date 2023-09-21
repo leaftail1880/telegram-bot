@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { Context } from "telegraf";
-import { bold, code, fmt, link } from "telegraf/format";
+import { bold, code, fmt, italic, link } from "telegraf/format";
 import config from "../config.js";
 import { Service, bot, message } from "../index.js";
 import { u, util } from "./utils/index.js";
@@ -245,9 +245,7 @@ new Command(
 		hideFromHelpList: true,
 	},
 	(ctx, _args, data) => {
-		ctx.reply(
-			`${data.user.static.name}, кобольдя очнулся. /help`
-		);
+		ctx.reply(`${data.user.static.name}, кобольдя очнулся. /help`);
 	}
 );
 
@@ -280,7 +278,7 @@ new Command(
 						? `[${e.info.prefix.join(", ")}]`
 						: e.info.prefix[0]
 				}${e.info.name}`
-			)} - ${chalk.italic(e.info.description)}\n`;
+			)} - ${italic(e.info.description)}\n`;
 		}
 
 		if (message.text === "Команды:\n") return ctx.reply("Команды недоступны");

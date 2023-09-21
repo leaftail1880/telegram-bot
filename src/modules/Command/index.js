@@ -17,6 +17,7 @@ const PRIVATE = [
 	"sudo",
 	"v",
 	"ping",
+	"co",
 	"repl", //
 ];
 
