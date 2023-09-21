@@ -4,6 +4,7 @@ new Command(
 	{
 		name: "co",
 		description: "Считает",
+		permission: "all",
 	},
 	(ctx, input) => {
 		const [num1, num2] = input

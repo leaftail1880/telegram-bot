@@ -6,6 +6,7 @@ const PUBLIC = [
 	"google",
 	"name",
 	"pin",
+	"co",
 	"admins",
 	"upload",
 	// sleep Moved to middlewares/NoNotify/index.js
@@ -17,7 +18,6 @@ const PRIVATE = [
 	"sudo",
 	"v",
 	"ping",
-	"co",
 	"repl", //
 ];
 
