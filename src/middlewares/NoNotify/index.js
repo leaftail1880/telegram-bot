@@ -17,12 +17,20 @@ bot.use(async (ctx, next) => {
 		);
 	}
 
+	if (Date.now() / 1000 - 60 > ctx.message.date) return next();
+
 	const reply = "reply_to_message" in ctx.message;
-	let reason, ping_id;
-	if (reply) ping_id = ctx.message.reply_to_message.from.id;
+	let ping_id, ping_from_reply;
+	if (reply) {
+		ping_id = ctx.message.reply_to_message.from.id;
+		ping_from_reply = true;
+	}
 	if ("entities" in ctx.message) {
 		ctx.message.entities.forEach((e) => {
-			if (e.type === "text_mention" && e.user.id in silent) ping_id = e.user.id;
+			if (e.type === "text_mention" && e.user.id in silent) {
+				ping_id = e.user.id;
+				ping_from_reply = false;
+			}
 			if (e.type === "mention" && "text" in ctx.message) {
 				const text_ping = ctx.message.text.slice(
 					e.offset + 1,
@@ -33,16 +41,17 @@ bot.use(async (ctx, next) => {
 					.find((e) => e.static.nickname === text_ping);
 				if (!user || !(user.static.id in silent)) return;
 				ping_id = user.static.id;
+				ping_from_reply = false;
 			}
 		});
 	}
 
-	reason ??= silent[ping_id];
+	const reason = silent[ping_id];
 
 	if (!reason) return next();
 	const dbuser = tables.users.get(ping_id);
 
-	await ctx.forwardMessage(Service.chat.log);
+	await ctx.forwardMessage(ping_from_reply ? ctx.chat.id : Service.chat.log);
 	await ctx.deleteMessage(ctx.message.message_id);
 	ctx.reply(
 		fmt`${link(
