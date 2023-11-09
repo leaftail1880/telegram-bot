@@ -151,22 +151,19 @@ export async function bootstrapAPI(server, applyRouters, to = "relative") {
 			}
 		},
 		/** @returns {Route} */
-		(cb) =>
-			// @ts-expect-error
-			async (req, res, next) => {
-				if (!res.writableEnded) {
-					try {
-						// @ts-expect-error
-						let value = await cb(req, res, next);
-						if (value && !(value instanceof Promise)) {
-							res.send(value);
-						}
-					} catch (error) {
-						logger.error("Internal Server " + error);
-						res.writeHead(400, "Internal Server " + error).end();
+		(cb) => async (req, res, next) => {
+			if (!res.writableEnded) {
+				try {
+					let value = await cb(req, res, next);
+					if (value && !(value instanceof Promise)) {
+						res.send(value);
 					}
+				} catch (error) {
+					logger.error("Internal Server " + error);
+					res.writeHead(400, "Internal Server " + error).end();
 				}
 			}
+		}
 	);
 }
 

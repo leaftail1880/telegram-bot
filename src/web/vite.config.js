@@ -1,12 +1,11 @@
 import { defineConfig } from "vite";
 import { pluginAPI } from "vite-plugin-api";
 
-let warnd = false;
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	build: {
-		minify: false,
+		minify: true,
 		outDir: "dist/client",
 		rollupOptions: {
 			external: [
@@ -19,14 +18,6 @@ export default defineConfig({
 				"../../../lib/utils/index.js",
 				"../../../lib/launch/database.js",
 			],
-			onwarn(warning, handler) {
-				if (
-					warning.code === "MISSING_EXPORT" &&
-					warning.id === "virtual:vite-plugin-api:router"
-				)
-					return;
-				handler(warning);
-			},
 		},
 		modulePreload: { polyfill: false },
 	},

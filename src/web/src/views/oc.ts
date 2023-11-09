@@ -159,7 +159,11 @@ export function OC() {
 								if (figure_value) {
 									let range = quillE.getSelection(true);
 									quillE.updateContents(
-										(new (Quill.import("delta"))() as import("quill-delta"))
+										(
+											new (Quill.import(
+												"delta"
+											))() as import("quill-delta").default
+										)
 											.retain(range.index)
 											.delete(range.length)
 											.insert({ image: figure_value }),
