@@ -21,6 +21,7 @@ new Command(
 			let user;
 			try {
 				user = await ctx.getChatMember(member);
+				if (user.status === "left" || user.status === "kicked") continue;
 			} catch (e) {
 				console.error(e);
 				data.group.cache.members = data.group.cache.members.filter(
@@ -31,7 +32,7 @@ new Command(
 			}
 			if (user.user.is_bot) continue;
 			i++;
-			res = fmt`${res}\n$${mention(util.getName(null, user.user), user.user)}`;
+			res = fmt`${res}\n${mention(util.getName(null, user.user), user.user)}`;
 			if (i % perMessage === 0) {
 				await ctx.reply(res, {
 					reply_to_message_id: ctx.message.message_id,

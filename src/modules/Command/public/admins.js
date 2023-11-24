@@ -16,7 +16,7 @@ new Command(
 		let res = fmt``;
 
 		for (const [i, admin] of admins.entries()) {
-			res = fmt`${res}\n$${mention(
+			res = fmt`${res}\n${mention(
 				util.getName(null, admin.user),
 				admin.user
 			)}`;
