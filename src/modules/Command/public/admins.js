@@ -10,7 +10,7 @@ new Command(
 	},
 	async (ctx) => {
 		const admins = (await ctx.getChatAdministrators()).filter(
-			(e) => !e.user.is_bot
+			(e) => !e.user.is_bot && !ctx.data.group.cache.silentMembers[e.user.id]
 		);
 		const perMessage = Math.min(3, admins.length);
 		let res = fmt``;
