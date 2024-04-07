@@ -66,7 +66,7 @@ export const Service = {
 		 * Connecting to main tables:
 		 * db.json, users.json and groups.json
 		 */
-		print("Fetching global db data...");
+		print("Connecting to database...");
 		await database.connect();
 
 		bot.catch(Service.handlers.bot);
@@ -94,13 +94,13 @@ export const Service = {
 		/**
 		 * Connecting to module tables if they exists
 		 */
-		print("Fetching modules db data...");
+		print("Connecting to modules databases...");
 		await database.connect();
 
 		/**
 		 * Command and lists initalization
 		 */
-		print("Launching load.modules...");
+		print("Emitting load.modules...");
 		await new Promise((resolve) => {
 			// Wait till all events are executed
 			process.once("modulesLoad", resolve).emit("modulesLoad");
@@ -196,10 +196,14 @@ export const Service = {
 		Service.launched = true;
 		Service.stopped = false;
 		bot.launch({ dropPendingUpdates: false });
-		Service.pollingTimer = setInterval(() => {
+		Service.pollingTimer = setInterval(async () => {
 			if (Service.stopped) return clearInterval(Service.pollingTimer);
 			bot.stop("Relaunch");
-			bot.launch();
+
+			// Use 1s timeout to prevent from errors about "Terminated by other getUpdates request"
+			setTimeout(() => {
+				bot.launch();
+			}, 1000);
 		}, config.update.pollingRelaunchInterval);
 	},
 	stopPolling() {

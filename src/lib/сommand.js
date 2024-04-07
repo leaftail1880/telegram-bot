@@ -10,7 +10,7 @@ export class Command {
 	/**
 	 * @type {CommandTypes.Stored[]}
 	 */
-	static COMMANDS = [];
+	static commands = [];
 
 	/**
 	 * Creates new command
@@ -41,7 +41,7 @@ export class Command {
 		if (typeof info.prefix === "string") StoreInfo.info.prefix = [info.prefix];
 		if (Array.isArray(info.prefix)) StoreInfo.info.prefix = info.prefix;
 
-		Command.COMMANDS.push(StoreInfo);
+		Command.commands.push(StoreInfo);
 	}
 	/**
 	 *
@@ -55,7 +55,7 @@ export class Command {
 
 		const [, prefix, command] = match;
 		return (
-			Command.COMMANDS.find(
+			Command.commands.find(
 				(с) =>
 					с.info.prefix.includes(prefix) &&
 					(с.info.name === command || с.info.aliases?.includes(command))
@@ -134,7 +134,7 @@ process.on("modulesLoad", () => {
 	const privateCommands = [];
 	const botAdminCommands = [];
 
-	for (const command of Command.COMMANDS.filter((e) =>
+	for (const command of Command.commands.filter((e) =>
 		e.info.prefix.includes("/")
 	)) {
 		if (command.info.hideFromHelpList) continue;
@@ -205,7 +205,7 @@ process.on("modulesLoad", () => {
 				`В сцене ${ctx.data.scene.name} ${
 					ctx.data.scene.state
 				} вам доступны только ${u.langJoin(
-					Command.COMMANDS.filter(
+					Command.commands.filter(
 						(e) => e.info.allowScene && e.info.permission !== "bot_owner"
 					).map((e) => e.info.prefix[0] + e.info.name)
 				)}`
@@ -259,7 +259,7 @@ new Command(
 		let message = fmt`Команды:\n`;
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-		for (const e of Command.COMMANDS.filter((e) =>
+		for (const e of Command.commands.filter((e) =>
 			e.info.prefix.includes("/")
 		)) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
@@ -268,7 +268,7 @@ new Command(
 			)}\n`;
 		}
 
-		for (const e of Command.COMMANDS.filter(
+		for (const e of Command.commands.filter(
 			(e) => !e.info.prefix.includes("/")
 		)) {
 			if (Command.cantUse(e, ctx, rigths)) continue;

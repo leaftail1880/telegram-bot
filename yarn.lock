@@ -1375,10 +1375,10 @@ serve-static@1.15.0:
     parseurl "~1.3.3"
     send "0.18.0"
 
-serveonet@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/serveonet/-/serveonet-0.0.1.tgz#72165c7a10cb6ebca3415413e32d47edec88bec2"
-  integrity sha512-VaR5ipQydS7xn8cy4Z6g/6awd8C9XpwNIAWAAOARtz4l0qN31QyEwK7saBVCPvr/H/xlCma4z17SP/giEReApA==
+serveonet@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/serveonet/-/serveonet-0.0.2.tgz#a85e3a5f733c510fe72b177864ec3941892ee3e0"
+  integrity sha512-43sTvoIgLh90PARs9+NTJ5pszBegznSDX1rjAIaeDHdJsHKPaXssCc6i85GZu8sYo5WVym7Gnqbutvl+eHwtlg==
 
 set-function-length@^1.1.1:
   version "1.1.1"

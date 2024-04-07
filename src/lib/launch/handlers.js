@@ -10,7 +10,7 @@ import { noConnection } from "./error.js";
  *   types: Record<string, (err: RealError) => void>;
  * }}
  */
-const ON_ERROR = {
+const onError = {
 	timer: new Cooldown(5),
 	codes: {
 		ECONNRESET: () => noConnection("Err CONNECTION RESET"),
@@ -26,7 +26,7 @@ const ON_ERROR = {
 			} else Service.error(err);
 		},
 		429: (err) => {
-			if (ON_ERROR.timer.isExpired()) console.warn(err.stack);
+			if (onError.timer.isExpired()) console.warn(err.stack);
 		},
 	},
 	types: {
@@ -38,13 +38,13 @@ const ON_ERROR = {
  * @param {RealError} err
  */
 export async function handleError(err) {
-	const code_action = ON_ERROR.codes[err?.response?.error_code];
-	const type_action = ON_ERROR.types[err?.name];
+	const onCodeAction = onError.codes[err?.response?.error_code];
+	const onTypeAction = onError.types[err?.name];
 
-	if (type_action) {
-		type_action(err);
-	} else if (code_action) {
-		code_action(err);
+	if (onTypeAction) {
+		onTypeAction(err);
+	} else if (onCodeAction) {
+		onCodeAction(err);
 	} else Service.error(err);
 
 	Service.errors[err?.name] = Service.errors[err?.name] ?? [];
@@ -52,9 +52,7 @@ export async function handleError(err) {
 }
 
 /**
- *
  * @param {Error & {code: string; stack: string}} err
- * @returns
  */
 export async function handleBotError(err) {
 	if (err && err.name === "FetchError")
