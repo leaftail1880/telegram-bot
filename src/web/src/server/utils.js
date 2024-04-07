@@ -77,9 +77,7 @@ export const logger = new Logger({
 
 export function botApiEnv() {
 	dotenv.config({
-		path: process.argv.find((e) => e === "dev")
-			? "../../.dev.env"
-			: "../../.env",
+		path: process.argv.find((e) => e === "dev") ? "../../.dev.env" : ".env",
 	});
 }
 
