@@ -1,7 +1,7 @@
 {
   "name": "koboldie",
   "displayName": "Koboldie (TG-bot)",
-  "version": "9.13.10",
+  "version": "9.13.11",
   "main": "src/index.js",
   "scripts": {
     "build": "cd src/web && vite build",
