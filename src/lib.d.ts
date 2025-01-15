@@ -111,6 +111,7 @@ declare namespace NodeJS {
 		DB_TOKEN?: string;
 		DB_REPO?: string;
 		E?: string;
+		BOT_TOKEN?: string;
 		whereImRunning?: string;
 		dev?: string;
 		ownerID?: string;

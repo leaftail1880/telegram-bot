@@ -79,5 +79,12 @@ export default {
 		"Scene",
 	],
 
-	modules: ["Command", "BatteryNotifier", "Subscribe", "Animation", "Web"],
+	modules: [
+		"Command",
+		"BatteryNotifier",
+		"Subscribe",
+		"Animation",
+		"Web",
+		"Discord",
+	],
 };
