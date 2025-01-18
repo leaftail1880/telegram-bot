@@ -18,3 +18,4 @@ Service.start().catch((e) => {
 	Service.error(e);
 	process.exit(1);
 });
+

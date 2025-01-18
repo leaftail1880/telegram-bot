@@ -23,17 +23,20 @@ if (!token) {
 	// Log in to Discord with your client's token
 	client.login(token);
 
-	client.on(Events.VoiceStateUpdate, async (_, newState) => {
+	client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 		const username = newState.member.user.username;
 		const podvalId = tables.groups.values().find((e) => !!e.cache.podval)
 			.static.id;
 
 		if (!podvalId) return logger.error("No podvalid!");
 
-		if (typeof newState.channelId === "string") {
+		if (oldState.channelId === null && typeof newState.channelId === "string") {
 			logger.log(username, "Joined!");
 			await bot.telegram.sendMessage(podvalId, `+${username} войс чат в дс`);
-		} else if (typeof newState.channelId === "object") {
+		} else if (
+			newState.channelId === null &&
+			typeof oldState.channelId === "string"
+		) {
 			logger.log(username, "Left!");
 			await bot.telegram.sendMessage(podvalId, `-${username} войс чат в дс`);
 		}
