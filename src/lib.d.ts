@@ -50,6 +50,7 @@ declare namespace DB {
 		};
 		cache: {
 			nickname?: string;
+			discordId?: string;
 			dm?: 1 | 0 | undefined;
 			scene?: string;
 			sceneCache?: Array<string> | Record<string, any>;
@@ -112,6 +113,8 @@ declare namespace NodeJS {
 		DB_REPO?: string;
 		E?: string;
 		BOT_TOKEN?: string;
+		DISCORD_TOKEN?: string;
+		DISCORD_INVITE_URL?: string;
 		whereImRunning?: string;
 		dev?: string;
 		ownerID?: string;

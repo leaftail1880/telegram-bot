@@ -1,41 +1,47 @@
-import { Service as $data, bold, fmt, tables } from "../../../index.js";
+import { Service, bold, fmt, tables } from "../../../index.js";
 import { util } from "../../../lib/utils/index.js";
 import { Command } from "../../../lib/сommand.js";
 
 new Command(
 	{
 		name: "name",
-		description: "Меняет ник",
+		description: "Меняет ваше имя у бота",
 		permission: "all",
 		target: "all",
 	},
-	async (ctx, input, data) => {
+	async (ctx, newname, data) => {
 		const user = data.user;
-		const name = user.cache.nickname;
-		const default_name = "<Не установлен>";
-		const repl = util.makeReply(ctx);
+		const defaultName = "<Не установлено>";
+		const currentname = user.cache.nickname
+			? `'${user.cache.nickname}'`
+			: defaultName;
 
+		const reply = util.makeReply(ctx);
+
+		// naming someone/asking for their name
 		if (ctx.message.reply_to_message?.from) {
 			const repl_user = tables.users.get(ctx.message.reply_to_message.from.id);
-			if (!input) return repl(repl_user.cache.nickname ?? default_name);
-			if (ctx.from.id !== $data.chat.owner) return repl("Что?");
+			if (!newname) return reply(repl_user.cache.nickname ?? defaultName);
 
-			repl_user.cache.nickname = input;
+			if (ctx.from.id !== Service.chat.owner)
+				return reply("Что? Ты не можешь назвать другого участника");
+
+			repl_user.cache.nickname = newname;
 			tables.users.set(repl_user.static.id, repl_user);
-			return repl(
-				`Хиля назвал тебя ${input}. Ты можешь сменить ник в любой момент.`
+			return reply(
+				`Хиля назвал тебя ${newname}. Ты можешь сменить ник в любой момент.`
 			);
 		}
 
-		if (!input) return repl(name ?? default_name);
+		// asking for self name
+		if (!newname) return reply(currentname);
 
-		if (input.length >= 10)
-			return repl(
-				fmt`Имя должно быть ${bold("не")} больше 10-ти символов в длину.`
-			);
+		// setting name
+		if (newname.length >= 10)
+			return reply(fmt`Имя должно быть ${bold`короче`} 10-ти символов.`);
 
-		user.cache.nickname = input;
+		user.cache.nickname = newname;
 		tables.users.set(ctx.from.id, user);
-		repl(`Ник ${`'${name}'` ?? default_name} сменен на '${input}'`);
+		reply(`Ник ${currentname} сменен на '${newname}'`);
 	}
 );
