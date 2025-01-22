@@ -33,7 +33,7 @@ if (!token) {
 			.static.id;
 		const name =
 			tables.users.values().find((e) => e.cache.discordId === username)?.cache
-				.discordId ?? username;
+				.nickname ?? username;
 
 		if (!podvalId) return logger.error("No podvalid!");
 
