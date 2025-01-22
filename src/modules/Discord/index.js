@@ -4,7 +4,7 @@ import { LeafyLogger } from "leafy-utils";
 import { tables } from "../../lib/launch/database.js";
 import { bold, bot, fmt, link } from "../../lib/launch/telegraf.js";
 import { Service } from "../../lib/Service.js";
-import { util } from "../../lib/utils/index.js";
+import { u, util } from "../../lib/utils/index.js";
 import { Command } from "../../lib/сommand.js";
 
 const token = process.env.DISCORD_TOKEN;
@@ -31,9 +31,11 @@ if (!token) {
 		const username = newState.member.user.username;
 		const podvalId = tables.groups.values().find((e) => !!e.cache.podval)
 			.static.id;
-		const name =
-			tables.users.values().find((e) => e.cache.discordId === username)?.cache
-				.nickname ?? username;
+		const user = tables.users
+			.values()
+			.find((e) => e.cache.discordId === username);
+		const name = user?.cache.nickname ?? username;
+		const tgUsername = user?.static.nickname;
 
 		if (!podvalId) return logger.error("No podvalid!");
 
@@ -51,7 +53,9 @@ if (!token) {
 
 			await bot.telegram.sendMessage(
 				podvalId,
-				fmt`${status}${bold(name)} голосовой чат в ${link(
+				fmt`${status}${bold(
+					tgUsername ? link(name, u.httpsUserLink(tgUsername)) : name
+				)} голосовой чат в ${link(
 					"дискорде",
 					process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
 				)} (${channelName}: ${bold(members.toString())})`,
