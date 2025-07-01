@@ -12,3 +12,6 @@
 !env.sample
 !.gitignore
 !yarn.lock
+!.github
+!Dockerfile
+!compose.yaml

@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { logger } from "../server/utils.js";
 
 export { auth as default } from "./auth.ts";

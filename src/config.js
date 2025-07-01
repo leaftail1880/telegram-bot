@@ -1,6 +1,6 @@
 export default {
 	// Keep it one line for autoreplace from leafs/commit.js
-	version: [9, 13, 12],
+	version: [9, 13, 13],
 
 	command: {
 		/**
@@ -42,7 +42,7 @@ export default {
 	 * Cooldown beetween tries to reconnect after network error
 	 * @type {seconds}
 	 */
-	ReconnectTimerWaitTime: 1,
+	ReconnectTimerWaitTime: 3,
 
 	/**
 	 * Time to wait until abort request to another bot instances

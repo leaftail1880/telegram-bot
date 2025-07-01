@@ -7,21 +7,6 @@ import { removeDefaults, setDefaults } from "../utils/defaults.js";
 export const database = new LeafyDBManager({
 	repository: Github(process.env.DB_REPO),
 	token: process.env.DB_TOKEN,
-	renderer: (postfix, total) => {
-		const bar = new SingleBar({
-			format: `${styles.progress.bar(`{bar}`)} {percentage}% - {value}/{total}`,
-			barCompleteChar: styles.progress.completeChar,
-			barIncompleteChar: styles.progress.incompleteChar,
-			barsize: 150,
-
-			hideCursor: true,
-			clearOnComplete: true,
-			// linewrap: true,
-		});
-
-		bar.start(total, 0);
-		return bar;
-	},
 });
 
 export const tables = {

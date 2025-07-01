@@ -1,9 +1,9 @@
 // @ts-check
 
 import fs from "fs/promises";
-import { Committer } from "leafy-utils";
+import { Commiter } from "leafy-utils";
 
-Committer.precommit = async function ({ version, prev_version }) {
+Commiter.precommit = async function ({ version, prev_version }) {
 	console.log(prev_version.join("."), "->", version.join("."));
 
 	const config_path = "./src/config.js";
@@ -19,7 +19,7 @@ Committer.precommit = async function ({ version, prev_version }) {
 };
 
 async function main() {
-	Committer.commit(await Committer.parseArgs());
+	Commiter.add_commit_push(await Commiter.checkForCommitArgs());
 }
 
 main();

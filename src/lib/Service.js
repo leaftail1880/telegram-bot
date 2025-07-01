@@ -38,7 +38,7 @@ export const Service = {
 	joins: {},
 	/** @type {Record<string, any>} */
 	errors: {},
-	/** @type {NodeJS.Timer} */
+	/** @type {NodeJS.Timeout | number} */
 	pollingTimer: null,
 
 	async start() {
@@ -149,6 +149,7 @@ export const Service = {
 		if (mode === "ALL") {
 			if (!database.closed && this.launched) {
 				console.log(styles.state("Bot", "Saving db..."));
+
 				await database.commitAll();
 				console.log(styles.state("Bot", "Done."));
 			}
@@ -203,7 +204,7 @@ export const Service = {
 			// Use 1s timeout to prevent from errors about "Terminated by other getUpdates request"
 			setTimeout(() => {
 				bot.launch();
-			}, 1000);
+			}, 2000);
 		}, config.update.pollingRelaunchInterval);
 	},
 	stopPolling() {
