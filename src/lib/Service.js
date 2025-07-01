@@ -57,10 +57,9 @@ export const Service = {
 			)}`
 		);
 
-		if (Service.development)
-			try {
-				await fs.mkdir("logs");
-			} catch {}
+		try {
+			await fs.mkdir("logs");
+		} catch {}
 
 		/**
 		 * Connecting to main tables:
