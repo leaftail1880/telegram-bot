@@ -57,10 +57,6 @@ export const Service = {
 			)}`
 		);
 
-		try {
-			await fs.mkdir("logs");
-		} catch {}
-
 		/**
 		 * Connecting to main tables:
 		 * db.json, users.json and groups.json
