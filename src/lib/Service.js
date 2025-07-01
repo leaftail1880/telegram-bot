@@ -66,7 +66,16 @@ export const Service = {
 		 * db.json, users.json and groups.json
 		 */
 		print("Connecting to database...");
-		await database.connect();
+
+		try {
+			await database.connect();
+		} catch (e) {
+			console.error(e);
+			if (e.cause) {
+				console.error(e.cause);
+			}
+			process.exit(0);
+		}
 
 		bot.catch(Service.handlers.bot);
 		bot.telegram.sendMessage(
