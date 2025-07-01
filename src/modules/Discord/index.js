@@ -1,6 +1,7 @@
 import chalk from "chalk";
-import { Client, Events, GatewayIntentBits } from "discord.js";
+import { default as eris, default as Eris } from "eris";
 import { LeafyLogger } from "leafy-utils";
+import { SocksProxyAgent } from "socks-proxy-agent";
 import { tables } from "../../lib/launch/database.js";
 import { bold, bot, fmt, link } from "../../lib/launch/telegraf.js";
 import { Service } from "../../lib/Service.js";
@@ -13,65 +14,86 @@ const logger = new LeafyLogger({ prefix: "discord" });
 if (!token) {
 	logger.info("No DISCORD_TOKEN env, skipping...");
 } else {
-	const client = new Client({
-		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+	const agent = process.env.DISCORD_SOCKS_PROXY_URL
+		? new SocksProxyAgent(process.env.DISCORD_SOCKS_PROXY_URL)
+		: undefined;
+
+	const client = eris(token, {
+		intents: ["guilds", "guildVoiceStates"],
+		rest: { agent },
+		ws: { agent },
 	});
 
 	// When the client is ready, run this code (only once).
 	// The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
 	// It makes some properties non-nullable.
-	client.once(Events.ClientReady, (readyClient) => {
-		logger.success(`Ready! Logged in as ${readyClient.user.tag}`);
+	client.once("ready", () => {
+		logger.success(`Ready! Logged in as ${client.user.username}`);
 	});
 
 	// Log in to Discord with your client's token
-	client.login(token);
+	client.connect();
 
-	client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
-		const username = newState.member.user.username;
-		const podvalId = tables.groups.values().find((e) => !!e.cache.podval)
+	client.on("voiceChannelJoin", (member, channel) => {
+		const telegram = getTelegramUser(member);
+		if (telegram) message("Joined", "+", channel, telegram);
+	});
+
+	client.on("voiceChannelLeave", (member, channel) => {
+		const telegram = getTelegramUser(member);
+		if (telegram) message("Left", "-", channel, telegram);
+	});
+
+	/** @param {Eris.Member} member */
+	function getTelegramUser(member) {
+		const discordUsername = member.user.username;
+		const groupId = tables.groups.values().find((e) => !!e.cache.podval)
 			.static.id;
 		const user = tables.users
 			.values()
-			.find((e) => e.cache.discordId === username);
-		const name = user?.cache.nickname ?? username;
-		const tgUsername = user?.static.nickname;
+			.find((e) => e.cache.discordId === discordUsername);
 
-		if (!podvalId) return logger.error("No podvalid!");
+		const name = user?.cache.nickname ?? discordUsername;
+		const username = user?.static.nickname;
 
-		async function message(log = "Joined", status = "-") {
-			const channel = newState.channel || oldState.channel;
-			const members = channel?.members.size || 0;
-			const channelName = channel.name;
-			logger.log(
-				chalk[status === "-" ? "redBright" : "greenBright"](
-					`${status}${chalk.bold(
-						name
-					)} (${username}) ${log}! (${channelName}: ${chalk.bold(members)})`
-				)
-			);
+		if (!groupId) return logger.error("No groupId!");
 
-			await bot.telegram.sendMessage(
-				podvalId,
-				fmt`${status}${bold(
-					tgUsername ? link(name, u.httpsUserLink(tgUsername)) : name
-				)} голосовой чат в ${link(
-					"дискорде",
-					process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
-				)} (${channelName}: ${bold(members.toString())})`,
-				{ disable_web_page_preview: true }
-			);
-		}
+		return { name, username, groupId, discordUsername };
+	}
 
-		if (oldState.channelId === null && typeof newState.channelId === "string") {
-			await message("Joined", "+");
-		} else if (
-			newState.channelId === null &&
-			typeof oldState.channelId === "string"
-		) {
-			await message("Left", "-");
-		}
-	});
+	/** @typedef {Exclude<ReturnType<typeof getTelegramUser>, void>} TelegramDiscordUser */
+
+	/**
+	 *
+	 * @param {*} log
+	 * @param {*} status
+	 * @param {Eris.AnyVoiceChannel} channel
+	 * @param {TelegramDiscordUser} telegram
+	 */
+	async function message(log = "Joined", status = "-", channel, telegram) {
+		const members = channel.voiceMembers.size || 0;
+		const channelName = channel.name;
+		logger.log(
+			chalk[status === "-" ? "redBright" : "greenBright"](
+				`${status}${chalk.bold(telegram.name)} (${
+					telegram.discordUsername
+				}) ${log}! (${channelName}: ${chalk.bold(members)})`
+			)
+		);
+
+		await bot.telegram.sendMessage(
+			telegram.groupId,
+			fmt`${status}${bold(
+				telegram.username
+					? link(telegram.name, u.httpsUserLink(telegram.username))
+					: telegram.name
+			)} голосовой чат в ${link(
+				"дискорде",
+				process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
+			)} (${channelName}: ${bold(members.toString())})`,
+			{ disable_web_page_preview: true }
+		);
+	}
 
 	new Command(
 		{
