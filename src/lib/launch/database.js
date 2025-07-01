@@ -1,8 +1,6 @@
-import { SingleBar } from "cli-progress";
-import { LeafyDBManager, LeafyDBTable, Github } from "leafy-db";
-export * as leafy_db from "leafy-db";
-import styles from "../styles.js";
+import { Github, LeafyDBManager, LeafyDBTable } from "leafy-db";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
+export * as leafy_db from "leafy-db";
 
 export const database = new LeafyDBManager({
 	repository: Github(process.env.DB_REPO),
