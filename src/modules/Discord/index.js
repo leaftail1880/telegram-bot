@@ -1,22 +1,34 @@
 import chalk from "chalk";
 import { default as eris, default as Eris } from "eris";
+import { socksDispatcher } from "fetch-socks";
 import { LeafyLogger } from "leafy-utils";
 import { SocksProxyAgent } from "socks-proxy-agent";
+import undici from "undici";
 import { tables } from "../../lib/launch/database.js";
 import { bold, bot, fmt, link } from "../../lib/launch/telegraf.js";
 import { Service } from "../../lib/Service.js";
 import { u, util } from "../../lib/utils/index.js";
 import { Command } from "../../lib/сommand.js";
-
 const token = process.env.DISCORD_TOKEN;
 const logger = new LeafyLogger({ prefix: "discord" });
 
 if (!token) {
 	logger.info("No DISCORD_TOKEN env, skipping...");
 } else {
-	const agent = process.env.DISCORD_SOCKS_PROXY_URL
-		? new SocksProxyAgent(process.env.DISCORD_SOCKS_PROXY_URL)
-		: undefined;
+	const proxyUrl = process.env.DISCORD_SOCKS_PROXY_URL;
+	const agent = proxyUrl ? new SocksProxyAgent(proxyUrl) : undefined;
+
+	globalThis.fetch = fetch;
+	if (proxyUrl) {
+		const { hostname, port } = new URL(proxyUrl);
+		logger.info(`Using global proxy at hostname=${hostname}, port=${port}`);
+		const agent = socksDispatcher({
+			type: 5,
+			host: hostname,
+			port: parseInt(port),
+		});
+		undici.setGlobalDispatcher(agent);
+	}
 
 	const client = eris(token, {
 		intents: ["guilds", "guildVoiceStates"],
