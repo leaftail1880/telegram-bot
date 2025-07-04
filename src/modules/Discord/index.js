@@ -32,6 +32,11 @@ if (!token) {
 	// Log in to Discord with your client's token
 	client.connect();
 
+	client.on("error", (error) => {
+		logger.error(error);
+		client.disconnect({ reconnect: true });
+	});
+
 	client.on("voiceChannelJoin", (member, channel) => {
 		const telegram = getTelegramUser(member);
 		if (telegram) message("Joined", "+", channel, telegram);
