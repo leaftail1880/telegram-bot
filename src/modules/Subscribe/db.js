@@ -7,7 +7,7 @@ import { removeDefaults, setDefaults } from "../../lib/utils/defaults.js";
  */
 export const DefaultSubs = {
 	newMembers: true,
-	chatEvents: true,
+	chatEvents: false,
 	botUpdates: false,
 };
 

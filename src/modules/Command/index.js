@@ -1,16 +1,6 @@
 export const cooldown = 5 * 3.6e6;
 
-const PUBLIC = [
-	"abc",
-	"call",
-	"google",
-	"name",
-	"pin",
-	"co",
-	"admins",
-	"upload",
-	// sleep Moved to middlewares/NoNotify/index.js
-];
+const PUBLIC = ["abc", "call", "google", "name", "pin", "co", "admins"];
 
 for (const cmd of PUBLIC) import(`./public/${cmd}.js`);
 

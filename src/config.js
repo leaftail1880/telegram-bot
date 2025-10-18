@@ -50,23 +50,11 @@ export default {
 		 */
 		"ErrorHandler",
 		/**
-		 * Cancels next listeners and deletes message if user entered
-		 * nonotify mode
-		 */
-		"NoNotify",
-		/**
 		 * Parsing ctx.data.user.scene and ctx.data.sceneCache
 		 * to ctx.scene object.
 		 */
 		"Scene",
 	],
 
-	modules: [
-		"Command",
-		"BatteryNotifier",
-		"Subscribe",
-		"Animation",
-		"Web",
-		"Discord",
-	],
+	modules: ["Command", "Subscribe", "Animation", "Web", "Discord"],
 };

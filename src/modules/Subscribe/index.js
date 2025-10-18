@@ -25,7 +25,7 @@ export const Subscriptions = {
 };
 
 bot.on(message("new_chat_members"), async (ctx) => {
-	if (!tables.groups.get(ctx.chat.id)?.cache.podval) return;
+	// if (!tables.groups.get(ctx.chat.id)?.cache.podval) return;
 
 	const members = u.langJoin(
 		ctx.message.new_chat_members.map((user) => util.getTelegramName(user))
