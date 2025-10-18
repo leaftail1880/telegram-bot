@@ -15,18 +15,6 @@ export default {
 
 	update: {
 		/**
-		 * 0 to disable
-		 * @type {milliseconds}
-		 */
-		logTime: Infinity,
-
-		/**
-		 * Cooldown between requests to another active versions
-		 * @type {milliseconds}
-		 */
-		timerTime: 5000,
-
-		/**
 		 * Relaunch polling interval for avoiding hang up's
 		 * @type {milliseconds}
 		 */
@@ -43,12 +31,6 @@ export default {
 	 * @type {seconds}
 	 */
 	ReconnectTimerWaitTime: 3,
-
-	/**
-	 * Time to wait until abort request to another bot instances
-	 * @type {milliseconds}
-	 */
-	MessageTimeout: 2000,
 
 	middlewares: [
 		/**
