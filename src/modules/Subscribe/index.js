@@ -54,4 +54,6 @@ bot.on(message("new_chat_members"), async (ctx) => {
 			console.error(e);
 		}
 	}
+
+	await ctx.reply("Приветствуем!!111");
 });
