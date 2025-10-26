@@ -14,23 +14,25 @@ import { Command } from "../../lib/сommand.js";
 import "./menu.js";
 
 /**
- * @typedef {"newMembers" | "discordJoinOnce"} SubKey
- */
-/**
- * @type {Record<SubKey, boolean>}
+ * @satisfies {Record<string, boolean>}
  */
 export const DefaultSubs = {
 	newMembers: true,
 	discordJoinOnce: false,
+	discordJoin: false,
 };
-/** @type {Record<SubKey, string>} */
 
+/** @type {Record<SubKey, string>} */
 export const SubNamesText = {
 	newMembers: "Новые участники",
 	discordJoinOnce: "Ближайший вход в гс в дс",
+	discordJoin: "Уведомления о всех входах в гс в дс",
 };
+
+/** @typedef {keyof typeof DefaultSubs} SubKey */
+
 /**
- * @type {LeafyDBTable<typeof DefaultSubs>}
+ * @type {LeafyDBTable<Record<SubKey, boolean>>}
  */
 export const SubDB = database.table("modules/subs.json", {
 	beforeGet: (key, value) => setDefaults(value, DefaultSubs),
@@ -122,18 +124,20 @@ bot.on(message("new_chat_members"), async (ctx) => {
 	await ctx.reply("Приветствуем!!11!!1!!! Вам щас всееее расскажут...");
 });
 
-Service.onDiscordVCJoin = (telegram, text) => {
-	Subscriptions.notify(
-		"discordJoinOnce",
-		(id) => {
-			Subscriptions.setUserSetting(id, "discordJoinOnce", false);
-			return true;
-		},
-		text,
-		{
-			disable_web_page_preview: true,
-		}
-	);
+Service.onDiscordVCJoin = async (telegram, text) => {
+	/** @type {SubFilter} */
+	const resetNotify = (id) => {
+		Subscriptions.setUserSetting(id, "discordJoinOnce", false);
+		return true;
+	};
+
+	await Subscriptions.notify("discordJoin", resetNotify, text, {
+		disable_web_page_preview: true,
+	});
+
+	await Subscriptions.notify("discordJoinOnce", resetNotify, text, {
+		disable_web_page_preview: true,
+	});
 };
 
 new Command(
@@ -145,6 +149,6 @@ new Command(
 		ctx.reply(
 			"Теперь вы получите одно уведомление после того как кто-то зайдет в голосовой чат в дс"
 		);
-		Subscriptions.getUserSetting(ctx.from.id, "discordJoinOnce");
+		Subscriptions.setUserSetting(ctx.from.id, "discordJoinOnce", true);
 	}
 );
