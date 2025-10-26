@@ -2,18 +2,14 @@ import { Buttons } from "../web/router.ts";
 import { SaveButton } from "../web/utils.ts";
 
 export function Subscriptions() {
-	type SubKey = import("../../../modules/Subscribe/db.js").SubKey;
+	type SubKey = import("../../../modules/Subscribe/index.js").SubKey;
 
 	const keys: Record<SubKey, { button: string; text: string }> = {
 		newMembers: {
 			button: i18n`New members`,
 			text: i18n`When new members joins`,
 		},
-		chatEvents: {
-			button: i18n`Chat events`,
-			text: i18n`Chat events like games, gartic etc`,
-		},
-		botUpdates: { button: i18n`Bot updates`, text: i18n`On new bot version` },
+		discordJoinOnce: { button: i18n`ds`, text: i18n`ds` },
 	};
 
 	let subs: Record<string, boolean> = {};

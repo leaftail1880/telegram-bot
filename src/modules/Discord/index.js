@@ -18,6 +18,7 @@ if (!token) {
 
 	const client = eris(token, {
 		intents: ["guilds", "guildVoiceStates"],
+		// @ts-ignore it works trust me
 		rest: { agent },
 		ws: { agent },
 	});
@@ -39,32 +40,15 @@ if (!token) {
 
 	client.on("voiceChannelJoin", (member, channel) => {
 		const telegram = getTelegramUser(member);
-		if (telegram) message("Joined", "+", channel, telegram);
+		if (telegram) {
+			message("Joined", "+", channel, telegram);
+		}
 	});
 
 	client.on("voiceChannelLeave", (member, channel) => {
 		const telegram = getTelegramUser(member);
 		if (telegram) message("Left", "-", channel, telegram);
 	});
-
-	/** @param {Eris.Member} member */
-	function getTelegramUser(member) {
-		const discordUsername = member.user.username;
-		const groupId = tables.groups.values().find((e) => !!e.cache.podval)
-			.static.id;
-		const user = tables.users
-			.values()
-			.find((e) => e.cache.discordId === discordUsername);
-
-		const name = user?.cache.nickname ?? discordUsername;
-		const username = user?.static.nickname;
-
-		if (!groupId) return logger.error("No groupId!");
-
-		return { name, username, groupId, discordUsername };
-	}
-
-	/** @typedef {Exclude<ReturnType<typeof getTelegramUser>, void>} TelegramDiscordUser */
 
 	/**
 	 *
@@ -84,18 +68,22 @@ if (!token) {
 			)
 		);
 
-		await bot.telegram.sendMessage(
-			telegram.groupId,
-			fmt`${status}${bold(
-				telegram.username
-					? link(telegram.name, u.httpsUserLink(telegram.username))
-					: telegram.name
-			)} голосовой чат в ${link(
-				"дискорде",
-				process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
-			)} (${channelName}: ${bold(members.toString())})`,
-			{ disable_web_page_preview: true }
-		);
+		const text = fmt`${status}${bold(
+			telegram.username
+				? link(telegram.name, u.httpsUserLink(telegram.username))
+				: telegram.name
+		)} голосовой чат в ${link(
+			"дискорде",
+			process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
+		)} (${channelName}: ${bold(members.toString())})`;
+
+		if (status === "+") {
+			Service.onDiscordVCJoin(telegram, text, channelName, members);
+		}
+
+		await bot.telegram.sendMessage(telegram.groupId, text, {
+			disable_web_page_preview: true,
+		});
 	}
 
 	new Command(
@@ -142,3 +130,22 @@ if (!token) {
 		}
 	);
 }
+
+/** @param {Eris.Member} member */
+function getTelegramUser(member) {
+	const discordUsername = member.user.username;
+	const groupId = tables.groups.values().find((e) => !!e.cache.podval)
+		.static.id;
+	const user = tables.users
+		.values()
+		.find((e) => e.cache.discordId === discordUsername);
+
+	const name = user?.cache.nickname ?? discordUsername;
+	const username = user?.static.nickname;
+
+	if (!groupId) return logger.error("No groupId!");
+
+	return { name, username, groupId, discordUsername };
+}
+
+/** @typedef {Exclude<ReturnType<typeof getTelegramUser>, void>} TelegramDiscordUser */

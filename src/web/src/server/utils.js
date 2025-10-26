@@ -91,7 +91,7 @@ export async function botApiLink() {
 	const { util } = await import("../../../lib/utils/index.js");
 
 	// @ts-ignore
-	const { SubDB } = await import("../../../modules/Subscribe/db.js");
+	const { SubDB } = await import("../../../modules/Subscribe/index.js");
 
 	if (database.closed) await database.connect();
 	Object.assign(globalThis, {

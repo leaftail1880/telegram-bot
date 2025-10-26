@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import fs from "fs/promises";
 import config from "../config.js";
 import styles from "./styles.js";
 
@@ -8,7 +7,7 @@ import { bot, database } from "../index.js";
 import "./query.js";
 import "./сommand.js";
 
-import { bold, fmt, link } from "telegraf/format";
+import { bold, fmt, FmtString, link } from "telegraf/format";
 import { Cooldown } from "./utils/cooldown.js";
 import { util } from "./utils/index.js";
 
@@ -33,6 +32,14 @@ export const Service = {
 		owner: Number(process.env.ownerID),
 		log: Number(process.env.logID),
 	},
+
+	/**
+	 * @param {import("../modules/Discord/index.js").TelegramDiscordUser} telegram
+	 * @param {string} channelName
+	 * @param {string | FmtString} text
+	 * @param {number} channelMembers
+	 */
+	onDiscordVCJoin(telegram, text, channelName, channelMembers) {},
 
 	/** @type {Record<number, 'accepted' | 'waiting'>} */
 	joins: {},

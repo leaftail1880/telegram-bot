@@ -3,7 +3,7 @@
 
 declare const tables: typeof import("../../../lib/launch/db.js").tables;
 declare const util: typeof import("../../../lib/Class/Utils.js").util;
-declare const SubDB: typeof import("../../../modules/Subscribe/db.js").SubDB;
+declare const SubDB: typeof import("../../../modules/Subscribe/index.js").SubDB;
 declare type Route<Body extends Record<string, any> | undefined = undefined> = (
 	req: typeof import("express").request & { body: Body },
 	res: typeof import("express").response,

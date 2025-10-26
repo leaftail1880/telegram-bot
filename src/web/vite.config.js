@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import { pluginAPI } from "vite-plugin-api";
 
-
 // https://vitejs.dev/config/
 export default defineConfig({
 	build: {
@@ -14,7 +13,7 @@ export default defineConfig({
 				"chalk",
 				"quill",
 				"serveonet",
-				"../../../modules/Subscribe/db.js",
+				"../../../modules/Subscribe/index.js",
 				"../../../lib/utils/index.js",
 				"../../../lib/launch/database.js",
 			],
