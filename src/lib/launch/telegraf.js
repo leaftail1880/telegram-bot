@@ -1,17 +1,22 @@
 import dotenv from "dotenv";
 import { Telegraf } from "telegraf";
+import { agent } from "../proxy.js";
 export * from "telegraf";
 export * from "telegraf/filters";
 export * from "telegraf/format";
 export * from "telegraf/future";
 
-const ENV_PATH = process.argv[2] ?? ".env"
-dotenv.config({path: ENV_PATH})
+const ENV_PATH = process.argv[2] ?? ".env";
+dotenv.config({ path: ENV_PATH });
 
 if (!process.env.TOKEN || !process.env.DB_TOKEN || !process.env.DB_REPO) {
 	throw new Error(`No TOKEN in env on ${ENV_PATH} found!`);
 }
 
-
 /** @type {Telegraf<DataContext>} */
-export const bot = new Telegraf(process.env.TOKEN);
+export const bot = new Telegraf(process.env.TOKEN, {
+	telegram: {
+		// @ts-expect-error it works
+		agent,
+	},
+});

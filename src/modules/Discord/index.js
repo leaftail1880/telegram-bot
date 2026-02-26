@@ -1,21 +1,18 @@
 import chalk from "chalk";
 import { default as eris, default as Eris } from "eris";
 import { LeafyLogger } from "leafy-utils";
-import { SocksProxyAgent } from "socks-proxy-agent";
 import { tables } from "../../lib/launch/database.js";
 import { bold, bot, fmt, link } from "../../lib/launch/telegraf.js";
 import { Service } from "../../lib/Service.js";
 import { u, util } from "../../lib/utils/index.js";
 import { Command } from "../../lib/сommand.js";
+import { agent } from "../../lib/proxy.js";
 const token = process.env.DISCORD_TOKEN;
 const logger = new LeafyLogger({ prefix: "discord" });
 
 if (!token) {
 	logger.info("No DISCORD_TOKEN env, skipping...");
 } else {
-	const proxyUrl = process.env.DISCORD_SOCKS_PROXY_URL;
-	const agent = proxyUrl ? new SocksProxyAgent(proxyUrl) : undefined;
-
 	const client = eris(token, {
 		intents: ["guilds", "guildVoiceStates"],
 		// @ts-ignore it works trust me
@@ -64,17 +61,17 @@ if (!token) {
 			chalk[status === "-" ? "redBright" : "greenBright"](
 				`${status}${chalk.bold(telegram.name)} (${
 					telegram.discordUsername
-				}) ${log}! (${channelName}: ${chalk.bold(members)})`
-			)
+				}) ${log}! (${channelName}: ${chalk.bold(members)})`,
+			),
 		);
 
 		const text = fmt`${status}${bold(
 			telegram.username
 				? link(telegram.name, u.httpsUserLink(telegram.username))
-				: telegram.name
+				: telegram.name,
 		)} голосовой чат в ${link(
 			"дискорде",
-			process.env.DISCORD_INVITE_URL ?? "https://discord.gg/"
+			process.env.DISCORD_INVITE_URL ?? "https://discord.gg/",
 		)} (${channelName}: ${bold(members.toString())})`;
 
 		if (status === "+") {
@@ -105,19 +102,19 @@ if (!token) {
 			// naming someone/asking for their name
 			if (ctx.message.reply_to_message?.from) {
 				const repl_user = tables.users.get(
-					ctx.message.reply_to_message.from.id
+					ctx.message.reply_to_message.from.id,
 				);
 				if (!newname) return reply(repl_user.cache.discordId ?? defaultName);
 
 				if (ctx.from.id !== Service.chat.owner)
 					return reply(
-						"Что? Ты не можешь сменить дискорд ник другого участника"
+						"Что? Ты не можешь сменить дискорд ник другого участника",
 					);
 
 				repl_user.cache.discordId = newname;
 				tables.users.set(repl_user.static.id, repl_user);
 				return reply(
-					`Хиля назначил твой ник в дс на ${newname}. Ты можешь сменить ник в любой момент.`
+					`Хиля назначил твой ник в дс на ${newname}. Ты можешь сменить ник в любой момент.`,
 				);
 			}
 
@@ -127,7 +124,7 @@ if (!token) {
 			user.cache.discordId = newname;
 			tables.users.set(ctx.from.id, user);
 			reply(`Ник в дс ${currentname} сменен на '${newname}'`);
-		}
+		},
 	);
 }
 
