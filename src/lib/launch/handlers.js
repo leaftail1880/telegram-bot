@@ -21,7 +21,7 @@ const onError = {
 			if (err?.response?.description?.includes("not enough rights")) {
 				bot.telegram.sendMessage(
 					err.on.payload.chat_id,
-					`У бота нет разрешений для выполнения действия "${err.on.method}"`
+					`У бота нет разрешений для выполнения действия "${err.on.method}"`,
 				);
 			} else Service.error(err);
 		},
@@ -55,7 +55,9 @@ export async function handleError(err) {
  * @param {Error & {code: string; stack: string}} err
  */
 export async function handleBotError(err) {
-	if (err && err.name === "FetchError")
+	if (err && err.name === "FetchError") {
 		noConnection(styles.highlight("Telegraf"));
-	else Service.error(err);
+	} else if (err && err.stack.includes("other getUpdates request")) {
+		console.warn("Other get updates request");
+	} else Service.error(err);
 }
