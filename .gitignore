@@ -5,6 +5,7 @@
 !src/
 !scripts/
 !.yarn/
+!.yarnrc.yml
 .yarn/install-state.gz
 
 # Root files whitelist
