@@ -11,6 +11,8 @@ RUN npm -g install corepack@0.31
 
 RUN corepack enable
 
+
+#as
 RUN yarn install --immutable
 
 CMD [ "node", "." ]
