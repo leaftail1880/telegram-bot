@@ -1,4 +1,4 @@
-import { fmt } from "telegraf/format";
+import { fmt } from "telegraf-hardened/format";
 import { util } from "../../lib/utils/index.js";
 import { GuardLogger } from "./index.js";
 

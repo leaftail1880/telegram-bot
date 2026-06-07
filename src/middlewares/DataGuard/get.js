@@ -1,5 +1,5 @@
-import { Markup } from "telegraf";
-import { bold, code, fmt, link } from "telegraf/format";
+import { Markup } from "telegraf-hardened";
+import { bold, code, fmt, link } from "telegraf-hardened/format";
 import { Service, tables } from "../../index.js";
 import { u, util } from "../../lib/utils/index.js";
 import { CreateGroup, CreateUser } from "./create.js";
@@ -16,7 +16,7 @@ function logNotAccepted(ctx) {
 		util.getTelegramName(ctx.from),
 		ctx.from.username
 			? `https://t.me/${ctx.from.username}`
-			: u.userLink(ctx.from.id)
+			: u.userLink(ctx.from.id),
 	)}${ctx.message && "text" in ctx.message ? `: ${ctx.message.text}` : ""}`;
 
 	GuardLogger.log({
@@ -40,7 +40,7 @@ export async function getUser(ctx) {
 
 				const message = fmt`Запрос на лс от ${link(
 					util.getTelegramName(ctx.from),
-					u.userLink(ctx.from.id)
+					u.userLink(ctx.from.id),
 				)}\nID: ${code(ctx.from.id.toString())}`;
 
 				GuardLogger.log({
@@ -67,9 +67,8 @@ export async function getUser(ctx) {
 				return false;
 			}
 		}
-			user = CreateUser(ctx);
-			user.needSafe = true;
-		
+		user = CreateUser(ctx);
+		user.needSafe = true;
 	}
 
 	/**
@@ -116,7 +115,7 @@ export async function getGroup(ctx) {
 
 				const id = ctx.chat.id;
 				const message = fmt`Запрос на добавление группы:\n${bold(
-					ctx.chat.title
+					ctx.chat.title,
 				)}\n${code(id.toString())}\n\nКод: ${code(id.toString(16))}`;
 
 				GuardLogger.log({
@@ -134,8 +133,8 @@ export async function getGroup(ctx) {
 				if (ctx.botInfo.can_read_all_group_messages)
 					await ctx.reply(
 						fmt`К сожалению, я не настроен для работы с этой группой. Если мой создатель разрешил вам, то отправьте ему код снизу. А теперь прошу извинить, мне нужно идти.\n\nКод вашей группы: ${code(
-							ctx.from.id.toString(16)
-						)}`
+							ctx.from.id.toString(16),
+						)}`,
 					);
 				ctx.leaveChat();
 				return false;

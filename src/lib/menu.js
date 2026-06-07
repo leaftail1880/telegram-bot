@@ -20,9 +20,9 @@ export class MultiMenu {
 	/**
 	 *
 	 * @param {Object} options
-	 * @param {import("telegraf/types").InlineKeyboardButton[][]} options.buttons
+	 * @param {import("telegraf-hardened/types").InlineKeyboardButton[][]} options.buttons
 	 * @param {string} options.queryName
-	 * @param {import("telegraf/types").InlineKeyboardButton} [options.backButton]
+	 * @param {import("telegraf-hardened/types").InlineKeyboardButton} [options.backButton]
 	 * @param {string | number} [options.pageTo]
 	 * @param {number} [options.buttonLimit]
 	 * @returns
@@ -46,7 +46,7 @@ export class MultiMenu {
 
 		if (qBack) {
 			switchPageMenu.push(
-				u.btn(this.config.pageBack, this.prefix, queryName, page - 1)
+				u.btn(this.config.pageBack, this.prefix, queryName, page - 1),
 			);
 		}
 		if (backButton) {
@@ -54,7 +54,7 @@ export class MultiMenu {
 		}
 		if (qNext) {
 			switchPageMenu.push(
-				u.btn(this.config.pageNext, this.prefix, queryName, page + 1)
+				u.btn(this.config.pageNext, this.prefix, queryName, page + 1),
 			);
 		}
 

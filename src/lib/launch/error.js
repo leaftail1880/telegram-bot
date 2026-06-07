@@ -4,11 +4,11 @@ import styles from "../styles.js";
 import { Cooldown } from "../utils/cooldown.js";
 
 const CONNECT = {
-	/** @type {NodeJS.Timer} */
+	/** @type {NodeJS.Timeout | string | number | null} */
 	Interval: null,
-	/** @type {Function} */
+	/** @type {Function | null} */
 	Resolve: null,
-	/** @type {Promise<void>} */
+	/** @type {Promise<void> | null} */
 	Promise: null,
 };
 
@@ -27,8 +27,8 @@ export async function noConnection(type) {
 	if (ERROR_TIMER.isExpired()) {
 		console.log(
 			styles.noConnection(
-				`Нет подключения к интернету ${type ? `${type}` : ""}`
-			)
+				`Нет подключения к интернету ${type ? `${type}` : ""}`,
+			),
 		);
 	}
 
@@ -70,5 +70,5 @@ async function timer() {
 	delete CONNECT.Interval;
 
 	// Call waiting for connection resolve function
-	CONNECT.Resolve();
+	CONNECT.Resolve?.();
 }

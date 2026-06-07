@@ -12,7 +12,7 @@ export class Query {
 	static queries = {};
 	/**
 	 * Создает команду
-	 * @param {Object} info
+	 * @param {object} info
 	 * @param {string} info.name Имя
 	 * @param {string} info.prefix Без ::
 	 * @param {string} [info.message] Сообщение при нажатии (оставьте пустым если не надо)
@@ -69,12 +69,12 @@ process.on("modulesLoad", () => {
 		if (!Q_TIMER.isExpired(data)) return;
 
 		const { query, args } = Query.parseQueryData(data);
-		if (!query) {
+		if (!query || !query.info || !query.callback) {
 			ctx.answerCbQuery(
 				"Ошибка 400: Обработчик кнопки не найден. Возможно, вы нажали на старую кнопку.",
 				{
 					show_alert: true,
-				}
+				},
 			);
 			Query.Log(ctx, "No button parser for: " + data);
 			return next();
@@ -84,7 +84,7 @@ process.on("modulesLoad", () => {
 			ctx,
 			`${query.info.prefix} ${query.info.name}: ${args
 				.map((e) => `'${e}'`)
-				.join(" ")}`
+				.join(" ")}`,
 		);
 
 		try {
@@ -107,6 +107,6 @@ new Query(
 		message: "Выход...",
 	},
 	(ctx) => {
-		ctx.deleteMessage(ctx.callbackQuery.message.message_id)
-	}
+		ctx.deleteMessage(ctx.callbackQuery.message?.message_id);
+	},
 );

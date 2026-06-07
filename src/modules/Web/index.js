@@ -1,1 +1,2 @@
+// @ts-expect-error sssssssssssssssss
 if (false) process.on("loaded", () => import("../../web/dist/server/app.js"));

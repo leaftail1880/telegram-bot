@@ -10,6 +10,6 @@ RUN npm -g install corepack@0.31
 
 RUN corepack enable
 
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 CMD [ "node", "." ]

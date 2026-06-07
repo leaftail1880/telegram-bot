@@ -15,8 +15,8 @@ export const util = {
 	},
 	/**
 	 * @param {{
-	 *   reply: import("telegraf").Context["reply"]
-	 *   message: import("telegraf").Context["message"]
+	 *   reply: import("telegraf-hardened").Context["reply"]
+	 *   message: import("telegraf-hardened").Context["message"]
 	 * }} ctx
 	 * @param {'reply' | 'direct'} prefer
 	 */
@@ -29,14 +29,21 @@ export const util = {
 		 */
 		function repl(text, more_prefer = "reply") {
 			return ctx.reply(text, {
-				allow_sending_without_reply: true,
-				reply_to_message_id:
-					(more_prefer ?? prefer) === "reply"
-						? "reply_to_message" in ctx.message
-							? ctx.message.reply_to_message.message_id
-							: ctx.message.message_id
-						: ctx.message.message_id,
-				disable_web_page_preview: true,
+				reply_parameters: ctx.message
+					? {
+							allow_sending_without_reply: true,
+							message_id:
+								(more_prefer ?? prefer) === "reply"
+									? "reply_to_message" in ctx.message &&
+										ctx.message.reply_to_message
+										? ctx.message.reply_to_message.message_id
+										: ctx.message.message_id
+									: ctx.message.message_id,
+						}
+					: undefined,
+				link_preview_options: {
+					is_disabled: true,
+				},
 			});
 		}
 		return repl;
@@ -51,7 +58,7 @@ export const util = {
 
 	/**
 	 * Only user first_name, username, id and last_name if string is less then 10 characters length
-	 * @param {import("telegraf/types").User} user
+	 * @param {import("telegraf-hardened/types").User} user
 	 */
 	getTelegramName(user) {
 		let name = String(user.first_name ?? user.username ?? user.id);
@@ -64,12 +71,14 @@ export const util = {
 
 	/**
 	 * Gets name from db or from user if no db name found
-	 * @param {DB.User | null} [dbuser]
-	 * @param {import("telegraf/types").User | null} [user]
-	 * @param {number | string} [id]
+	 * @param {DB.User | null} dbuser
+	 * @param {import("telegraf-hardened/types").User} [user]
 	 */
-	getName(dbuser, user, id) {
-		if (!dbuser) dbuser = tables.users.get(user?.id ?? id);
+	getName(dbuser, user) {
+		if (!dbuser) {
+			if (!user) throw new Error("No dbuser or user provided!");
+			dbuser = tables.users.get(user.id);
+		}
 		let name =
 			dbuser?.cache?.nickname ??
 			dbuser?.static?.name ??
@@ -149,7 +158,7 @@ export const u = {
 	 * @param {StringLike} namespace
 	 * @param {StringLike} method
 	 * @param {...StringLike} args
-	 * @returns {import("telegraf/types").InlineKeyboardButton.CallbackButton}
+	 * @returns {import("telegraf-hardened/types").InlineKeyboardButton.CallbackButton}
 	 */
 	btn(text, namespace, method, ...args) {
 		return {

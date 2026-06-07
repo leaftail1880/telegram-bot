@@ -3,10 +3,10 @@ import { default as eris, default as Eris } from "eris";
 import { LeafyLogger } from "leafy-utils";
 import { tables } from "../../lib/launch/database.js";
 import { bold, bot, fmt, link } from "../../lib/launch/telegraf.js";
+import { agent } from "../../lib/proxy.js";
 import { Service } from "../../lib/Service.js";
 import { u, util } from "../../lib/utils/index.js";
 import { Command } from "../../lib/сommand.js";
-import { agent } from "../../lib/proxy.js";
 const token = process.env.DISCORD_TOKEN;
 const logger = new LeafyLogger({ prefix: "discord" });
 
@@ -67,7 +67,7 @@ if (!token) {
 
 		const text = fmt`${status}${bold(
 			telegram.username
-				? link(telegram.name, u.httpsUserLink(telegram.username))
+				? fmt`${link(telegram.name, u.httpsUserLink(telegram.username))}`
 				: telegram.name,
 		)} голосовой чат в ${link(
 			"дискорде",
@@ -79,7 +79,7 @@ if (!token) {
 		}
 
 		await bot.telegram.sendMessage(telegram.groupId, text, {
-			disable_web_page_preview: true,
+			link_preview_options: { is_disabled: true },
 		});
 	}
 
@@ -92,6 +92,8 @@ if (!token) {
 		},
 		async (ctx, newname, data) => {
 			const user = data.user;
+			if (!user || !ctx.from) return ctx.reply("Нет пользователя");
+
 			const defaultName = "<Не установлен>";
 			const currentname = user.cache.discordId
 				? `'${user.cache.discordId}'`
@@ -132,7 +134,7 @@ if (!token) {
 function getTelegramUser(member) {
 	const discordUsername = member.user.username;
 	const groupId = tables.groups.values().find((e) => !!e.cache.podval)
-		.static.id;
+		?.static.id;
 	const user = tables.users
 		.values()
 		.find((e) => e.cache.discordId === discordUsername);

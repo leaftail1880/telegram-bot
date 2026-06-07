@@ -7,7 +7,7 @@ import { bot, database } from "../index.js";
 import "./query.js";
 import "./сommand.js";
 
-import { bold, fmt, FmtString, link } from "telegraf/format";
+import { bold, fmt, FmtString, link } from "telegraf-hardened/format";
 import { Cooldown } from "./utils/cooldown.js";
 import { util } from "./utils/index.js";
 
@@ -53,15 +53,15 @@ export const Service = {
 		 * @param {string} m
 		 */
 		function print(m) {
-			console.log(styles.state(`${c}/8`, m));
+			console.log(styles.state(`${c}/7`, m));
 			c++;
 		}
 		let c = 0;
 
 		print(
 			`${Service.development ? chalk.yellow("DEV ") : ""}v${config.version.join(
-				"."
-			)}`
+				".",
+			)}`,
 		);
 
 		/**
@@ -83,23 +83,25 @@ export const Service = {
 		bot.catch(Service.handlers.bot);
 		bot.telegram.sendMessage(
 			Service.chat.log,
-			fmt`⌬ Кобольдя ${link(bold(Service.sv), "https://t.me/")} запущен`
+			fmt`⌬ Кобольдя ${link(bold(Service.sv), "https://t.me/")} запущен`,
 		);
 
 		/**
 		 * Middlewares
 		 */
 		print("Loading middlewares...");
-		await importMultiple(config.middlewares, (s) =>
-			import(`../middlewares/${s}/index.js`)
+		await importMultiple(
+			config.middlewares,
+			(s) => import(`../middlewares/${s}/index.js`),
 		);
 
 		/**
 		 * Modules
 		 */
 		print("Loading modules...");
-		await importMultiple(config.modules, (s) =>
-			import(`../modules/${s}/index.js`)
+		await importMultiple(
+			config.modules,
+			(s) => import(`../modules/${s}/index.js`),
 		);
 
 		/**
@@ -126,8 +128,8 @@ export const Service = {
 
 		print(
 			`Ready to work in ${styles.highlight(
-				((Date.now() - Service.startTime) / 1000).toFixed(2)
-			)}s`
+				((Date.now() - Service.startTime) / 1000).toFixed(2),
+			)}s`,
 		);
 		process.emit("loaded");
 	},
@@ -183,21 +185,23 @@ export const Service = {
 				console.warn(stringColoredStack);
 				console.warn(" ");
 
+				if (error.on) console.warn(util.inspect(error.on));
+
 				if (!Service.launched || Service.stopped) return;
 
 				const text = fmt`${link(type, "https://t.me/")}${bold(
-					message
+					message,
 				)}\n${stringStack}`;
 
 				await bot.telegram.sendMessage(Service.chat.log, text, {
-					disable_web_page_preview: true,
+					link_preview_options: { is_disabled: true },
 				});
 
 				if (extra) {
 					await util.sendSeparatedMessage(extra, (a) =>
 						bot.telegram.sendMessage(Service.chat.log, a, {
-							disable_web_page_preview: true,
-						})
+							link_preview_options: { is_disabled: true },
+						}),
 					);
 				}
 			} catch (e) {

@@ -34,7 +34,7 @@ new Command(
 			const { parsedTime, type } = util.toRemainingTime(cooldown - Date.now());
 
 			return ctx.reply(
-				fmt`Подожди еще ${bold("", link(parsedTime, u.guide(7)))} ${type}`
+				fmt`Подожди еще ${bold("", fmt`${link(parsedTime, u.guide(7))}`)} ${type}`,
 			);
 		}
 
@@ -63,7 +63,7 @@ new Command(
 		group.cache.pin.date = time;
 
 		tables.groups.set(ctx.chat.id, group);
-	}
+	},
 );
 
 setInterval(async () => {

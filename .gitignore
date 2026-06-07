@@ -4,6 +4,8 @@
 # Folder whitelist
 !src/
 !scripts/
+!.yarn/
+.yarn/install-state.gz
 
 # Root files whitelist
 !package.json

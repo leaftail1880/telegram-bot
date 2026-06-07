@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { FmtString } from "telegraf/format";
+import { FmtString } from "telegraf-hardened/format";
 import { Service } from "../Service.js";
 import { bot } from "../launch/telegraf.js";
 
@@ -16,7 +16,7 @@ export class MultiLogger {
 	/**
 	 * @param {{
 	 * 	text?: FmtString;
-	 *  textExtra?: import("telegraf/types").Convenience.ExtraReplyMessage
+	 *  textExtra?: import("telegraf-hardened/types").Convenience.ExtraReplyMessage
 	 * 	consoleMessage?: string;
 	 * 	fileMessage?: string
 	 * }} log
@@ -28,11 +28,12 @@ export class MultiLogger {
 			this.stream.write(
 				`[${new Date().toLocaleString([], {
 					hourCycle: "h24",
-				})}] ${fileMessage}\r`
+				})}] ${fileMessage}\r`,
 			);
 
 		if (text) {
-			textExtra.disable_web_page_preview ??= true;
+			textExtra.link_preview_options ??= {};
+			textExtra.link_preview_options.is_disabled ??= true;
 			bot.telegram.sendMessage(Service.chat.log, text, textExtra);
 		}
 	}

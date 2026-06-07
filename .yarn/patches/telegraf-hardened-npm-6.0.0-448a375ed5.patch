@@ -1,0 +1,16 @@
+diff --git a/lib/core/network/client.js b/lib/core/network/client.js
+index 3250ec15e5b6f6b16f70712a810da3a5ee7ebc99..192c05895ddc5b74e7b5d2783616f9733f80c9a2 100644
+--- a/lib/core/network/client.js
++++ b/lib/core/network/client.js
+@@ -128,7 +128,10 @@ function isInputFile(value) {
+     return (!!value &&
+         typeof value === 'object' &&
+         (((0, check_1.hasProp)(value, 'source') && !!value.source) ||
+-            ((0, check_1.hasProp)(value, 'url') && !!value.url)));
++            ((0, check_1.hasProp)(value, 'url') && !!value.url))) && !isLinkEntity(value);
++}
++function isLinkEntity(value) {
++    return value && check_1.hasProp(value, 'type') && value.type === "text_link"
+ }
+ function includesMediaValue(value) {
+     if (!value || typeof value !== 'object')

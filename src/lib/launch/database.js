@@ -1,10 +1,13 @@
 import { Github, LeafyDBManager, LeafyDBTable } from "leafy-db";
+import { dispatcher } from "../proxy.js";
 import { removeDefaults, setDefaults } from "../utils/defaults.js";
 export * as leafy_db from "leafy-db";
 
 export const database = new LeafyDBManager({
 	repository: Github(process.env.DB_REPO),
 	token: process.env.DB_TOKEN,
+	// @ts-expect-error Version mismatch
+	dispatcher,
 });
 
 export const tables = {
@@ -18,7 +21,7 @@ export const tables = {
 			return setDefaults(
 				value,
 				{ static: { id: Number(key) }, cache: {} },
-				true
+				true,
 			);
 		},
 		beforeSet(key, value) {

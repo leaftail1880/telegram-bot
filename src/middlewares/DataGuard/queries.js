@@ -1,4 +1,4 @@
-import { code, fmt } from "telegraf/format";
+import { code, fmt } from "telegraf-hardened/format";
 import { Service, tables } from "../../index.js";
 import { Query } from "../../lib/query.js";
 import { u } from "../../lib/utils/index.js";
@@ -17,7 +17,7 @@ new Query(
 				inline_keyboard: [[u.btn("Удалить", "N", "del", "u", path[0])]],
 			},
 		});
-	}
+	},
 );
 
 new Query(
@@ -34,7 +34,7 @@ new Query(
 				inline_keyboard: [[u.btn("Удалить", "N", "del", "g", path[0])]],
 			},
 		});
-	}
+	},
 );
 
 new Query(
@@ -46,5 +46,5 @@ new Query(
 		tables[type === "g" ? "groups" : "users"].delete(chat);
 		await ctx.deleteMessage(ctx.callbackQuery.message.message_id);
 		ctx.answerCbQuery("Успешно!");
-	}
+	},
 );

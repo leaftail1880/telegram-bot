@@ -1,4 +1,4 @@
-import { bold, fmt, link } from "telegraf/format";
+import { bold, fmt, link } from "telegraf-hardened/format";
 import { Service } from "../../../index.js";
 import { u } from "../../../lib/utils/index.js";
 import { Command } from "../../../lib/сommand.js";
@@ -15,8 +15,8 @@ new Command(
 	(ctx) => {
 		ctx.reply(
 			fmt`${link(bold(Service.sv), u.guide(8))} ${bold(
-				process.env.whereImRunning
-			)}`
+				process.env.whereImRunning,
+			)}`,
 		);
-	}
+	},
 );

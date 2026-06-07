@@ -1,4 +1,4 @@
-import { fmt, mention } from "telegraf/format";
+import { fmt, mention } from "telegraf-hardened/format";
 import { tables } from "../../../index.js";
 import { util } from "../../../lib/utils/index.js";
 import { Command } from "../../../lib/сommand.js";
@@ -11,6 +11,8 @@ new Command(
 		target: "group",
 	},
 	async (ctx, _, data) => {
+		if (!ctx.data.group || !data.group || !ctx.chat) return;
+
 		const perMessage = 4;
 		let res = fmt``;
 		let i = 0;
@@ -25,7 +27,7 @@ new Command(
 			} catch (e) {
 				console.error(e);
 				data.group.cache.members = data.group.cache.members.filter(
-					(e) => e !== member
+					(e) => e !== member,
 				);
 				needSave = true;
 				continue;
@@ -35,8 +37,10 @@ new Command(
 			res = fmt`${res}\n${mention(util.getName(null, user.user), user.user)}`;
 			if (i % perMessage === 0) {
 				await ctx.reply(res, {
-					reply_to_message_id: ctx.message.message_id,
-					allow_sending_without_reply: true,
+					reply_parameters: {
+						message_id: ctx.message.message_id,
+						allow_sending_without_reply: true,
+					},
 					disable_notification: false,
 				});
 				res = fmt``;
@@ -44,5 +48,5 @@ new Command(
 		}
 
 		if (needSave) tables.groups.set(ctx.chat.id, data.group);
-	}
+	},
 );

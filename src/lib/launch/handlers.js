@@ -56,7 +56,7 @@ export async function handleError(err) {
  */
 export async function handleBotError(err) {
 	if (err && err.name === "FetchError") {
-		noConnection(styles.highlight("Telegraf"));
+		noConnection(styles.highlight("telegraf-hardened"));
 	} else if (err && err.stack.includes("other getUpdates request")) {
 		console.warn("Other get updates request");
 	} else Service.error(err);

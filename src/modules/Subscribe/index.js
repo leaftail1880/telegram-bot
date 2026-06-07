@@ -77,7 +77,7 @@ export const Subscriptions = {
 	 * @param {SubKey} key
 	 * @param {(SubFilter)} filter
 	 * @param {string | FmtString} message
-	 * @param {import('telegraf/types').Convenience.ExtraReplyMessage} [extra]
+	 * @param {import('telegraf-hardened/types').Convenience.ExtraReplyMessage} [extra]
 	 */
 	async notify(key, filter, message, extra) {
 		for (const id of Subscriptions.list(key)) {
@@ -97,7 +97,7 @@ bot.on(message("new_chat_members"), async (ctx) => {
 	if (!tables.groups.get(ctx.chat.id)?.cache.podval) return;
 
 	const members = u.langJoin(
-		ctx.message.new_chat_members.map((user) => util.getTelegramName(user))
+		ctx.message.new_chat_members.map((user) => util.getTelegramName(user)),
 	);
 	const one = members.length === 1;
 
@@ -109,7 +109,7 @@ bot.on(message("new_chat_members"), async (ctx) => {
 
 			const member = await ctx.getChatMember(id);
 
-			/** @type {import("telegraf/types").ChatMember['status'][]} */
+			/** @type {import("telegraf-hardened/types").ChatMember['status'][]} */
 			const activeStatus = ["administrator", "creator", "restricted", "member"];
 
 			if (activeStatus.includes(member.status)) return false;
@@ -118,7 +118,7 @@ bot.on(message("new_chat_members"), async (ctx) => {
 		},
 		one
 			? fmt`В подвале новичок!\n${members}`
-			: fmt`В подвале новички!\n${members}`
+			: fmt`В подвале новички!\n${members}`,
 	);
 
 	await ctx.reply("Приветствуем!!11!!1!!! Вам щас всееее расскажут...");
@@ -132,11 +132,11 @@ Service.onDiscordVCJoin = async (telegram, text) => {
 	};
 
 	await Subscriptions.notify("discordJoin", resetNotify, text, {
-		disable_web_page_preview: true,
+		link_preview_options: { is_disabled: true },
 	});
 
 	await Subscriptions.notify("discordJoinOnce", resetNotify, text, {
-		disable_web_page_preview: true,
+		link_preview_options: { is_disabled: true },
 	});
 };
 
@@ -147,8 +147,8 @@ new Command(
 	},
 	(ctx) => {
 		ctx.reply(
-			"Теперь вы получите одно уведомление после того как кто-то зайдет в голосовой чат в дс"
+			"Теперь вы получите одно уведомление после того как кто-то зайдет в голосовой чат в дс",
 		);
 		Subscriptions.setUserSetting(ctx.from.id, "discordJoinOnce", true);
-	}
+	},
 );

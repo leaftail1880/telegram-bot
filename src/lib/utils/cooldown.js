@@ -27,7 +27,7 @@ export class Cooldown {
 	 * @returns
 	 */
 	isExpired(key) {
-		let time;
+		let time = 0;
 		const keyIsValid =
 			typeof key === "string" ||
 			typeof key === "number" ||

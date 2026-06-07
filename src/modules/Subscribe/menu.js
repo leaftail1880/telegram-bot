@@ -16,12 +16,12 @@ new Command(
 	},
 	async (ctx) => {
 		ctx.reply(...SubMenuLang(ctx.from.id));
-	}
+	},
 );
 
 /**
  * @param {number} id
- * @returns {[string, import("telegraf/types").Convenience.ExtraReplyMessage]}
+ * @returns {[string, import("telegraf-hardened/types").Convenience.ExtraReplyMessage]}
  */
 function SubMenuLang(id, page = 1) {
 	return [
@@ -40,7 +40,7 @@ function SubMenuLang(id, page = 1) {
 								"c",
 								page,
 								key,
-								value ? 0 : 1
+								value ? 0 : 1,
 							),
 						];
 					}),

@@ -72,15 +72,16 @@ new Command(
 	(ctx) => {
 		const repl = util.makeReply(ctx, "direct");
 		/** @type {{text?: string; caption?: string; message_id: number}} */
-		const msg = ctx.message.reply_to_message;
+		const msg = ctx.message.reply_to_message ?? ctx.message;
 
 		if (!msg)
 			return repl(
-				fmt`${bold("Ответь")} на сообщение, раскладку которого хочешь перевести`
+				fmt`${bold("Ответь")} на сообщение, раскладку которого хочешь перевести`,
 			);
 
-		if (!msg.text && !msg.caption) return repl("Я не могу это перевести!");
+		const text = msg.text ?? msg.caption;
 
-		repl(abc(msg.text ?? msg.caption), "reply");
-	}
+		if (!text) return repl("Я не могу это перевести!");
+		repl(abc(text), "reply");
+	},
 );

@@ -1,4 +1,4 @@
-type Context = import("telegraf").Context;
+type Context = import("telegraf-hardened").Context;
 type DataContext = Context & { data: State };
 type State = {
 	user?: DB.User;
@@ -10,15 +10,15 @@ type State = {
 };
 
 type TextMessageContext = Context & {
-	message: import("telegraf/types").Message.TextMessage;
+	message: import("telegraf-hardened/types").Message.TextMessage;
 };
 
 declare namespace CommandTypes {
 	type Callback = (
 		ctx: TextMessageContext & { data: State },
 		input: string,
-		data: State & { user_rigths: import("telegraf/types").ChatMember },
-		self: Stored
+		data: State & { user_rigths: import("telegraf-hardened/types").ChatMember },
+		self: Stored,
 	) => any | Promise<any>;
 
 	type Target = "group" | "private" | "all" | "channel";
@@ -87,13 +87,13 @@ declare namespace DB {
 
 type QueryCallback = (
 	ctx: Context & {
-		callbackQuery: import("telegraf/types").CallbackQuery.DataQuery;
+		callbackQuery: import("telegraf-hardened/types").CallbackQuery.DataQuery;
 	},
 	path: string[],
 	edit: (
 		text: string,
-		extra?: import("telegraf/types").Convenience.ExtraEditMessageText
-	) => Promise<any>
+		extra?: import("telegraf-hardened/types").Convenience.ExtraEditMessageText,
+	) => Promise<any>,
 ) => void | Promise<void>;
 
 type RealError = {
@@ -136,4 +136,4 @@ type minutes = number;
 type hours = number;
 
 type StringLike = number | string;
-type Text = string | import("telegraf").Format.FmtString;
+type Text = string | import("telegraf-hardened").Format.FmtString;

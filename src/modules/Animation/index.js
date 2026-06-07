@@ -1,7 +1,7 @@
 import { LeafyDBTable } from "leafy-db";
 import { LeafyLogger } from "leafy-utils";
 import { Hemisphere, Moon } from "lunarphase-js";
-import { message } from "telegraf/filters";
+import { message } from "telegraf-hardened/filters";
 import { bot, database } from "../../index.js";
 
 /**
@@ -49,7 +49,7 @@ function consistentUpdate(id, options) {
 		setTimeout(
 			() => consistentUpdate(id, options),
 			// For some reason big time like 20 hours will not even trigger
-			Math.min(TIMEOUT_LIMIT, actualTime)
+			Math.min(TIMEOUT_LIMIT, actualTime),
 		);
 	}
 }
@@ -69,7 +69,7 @@ function setLunarTitle(id, text) {
 		id,
 		`${Moon.lunarPhaseEmoji(new Date(), {
 			hemisphere: Hemisphere.NORTHERN,
-		})} ${text ?? ""}`
+		})} ${text ?? ""}`,
 	);
 }
 

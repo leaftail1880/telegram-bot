@@ -1,6 +1,6 @@
 import chalk from "chalk";
-import { Context } from "telegraf";
-import { bold, code, fmt, italic, link } from "telegraf/format";
+import { Context } from "telegraf-hardened";
+import { bold, code, fmt, italic, link } from "telegraf-hardened/format";
 import config from "../config.js";
 import { Service, bot, message } from "../index.js";
 import { u, util } from "./utils/index.js";
@@ -58,7 +58,7 @@ export class Command {
 			Command.commands.find(
 				(с) =>
 					с.info.prefix.includes(prefix) &&
-					(с.info.name === command || с.info.aliases?.includes(command))
+					(с.info.name === command || с.info.aliases?.includes(command)),
 			) ?? "not_found"
 		);
 	}
@@ -66,7 +66,7 @@ export class Command {
 	 *
 	 * @param {CommandTypes.Stored} command
 	 * @param {Context} ctx
-	 * @param {import("telegraf/types").ChatMember} chatMember
+	 * @param {import("telegraf-hardened/types").ChatMember} chatMember
 	 * @returns
 	 */
 	static cantUse(command, ctx, chatMember = null) {
@@ -95,7 +95,7 @@ export class Command {
 
 	/**
 	 *
-	 * @param {Context & { message: import("telegraf/types").Message.TextMessage;}} ctx
+	 * @param {Context & { message: import("telegraf-hardened/types").Message.TextMessage;}} ctx
 	 * @param {DB.User} dbuser
 	 * @param {string} message
 	 */
@@ -135,7 +135,7 @@ process.on("modulesLoad", () => {
 	const botAdminCommands = [];
 
 	for (const command of Command.commands.filter((e) =>
-		e.info.prefix.includes("/")
+		e.info.prefix.includes("/"),
 	)) {
 		if (command.info.hideFromHelpList) continue;
 		const packedCommand = {
@@ -158,8 +158,8 @@ process.on("modulesLoad", () => {
 
 	/**
 	 *
-	 * @param {import("telegraf/types").BotCommand[]} commands
-	 * @param {import("telegraf/types").BotCommandScope} scope
+	 * @param {import("telegraf-hardened/types").BotCommand[]} commands
+	 * @param {import("telegraf-hardened/types").BotCommandScope} scope
 	 */
 	function addIfExists(commands, scope) {
 		if (commands.length > 0) bot.telegram.setMyCommands(commands, { scope });
@@ -170,17 +170,20 @@ process.on("modulesLoad", () => {
 		type: "all_chat_administrators",
 	});
 	addIfExists(privateCommands, { type: "all_private_chats" });
-	addIfExists(botAdminCommands.concat(privateCommands), {
-		type: "chat",
-		chat_id: Service.chat.owner,
-	});
+	if (Service.chat.owner)
+		addIfExists(botAdminCommands.concat(privateCommands), {
+			type: "chat",
+			chat_id: Service.chat.owner,
+		});
 
 	bot.on(message("text"), async (ctx, next) => {
 		const text = ctx.message.text;
 		function reply(/** @type {string} */ text) {
 			ctx.reply(text, {
-				reply_to_message_id: ctx.message.message_id,
-				allow_sending_without_reply: true,
+				reply_parameters: {
+					message_id: ctx.message.message_id,
+					allow_sending_without_reply: true,
+				},
 			});
 		}
 
@@ -205,15 +208,17 @@ process.on("modulesLoad", () => {
 				`В сцене ${ctx.data.scene.name} ${
 					ctx.data.scene.state
 				} вам доступны только ${u.langJoin(
-					Command.commands.filter(
-						(e) => e.info.allowScene && e.info.permission !== "bot_owner"
-					).map((e) => e.info.prefix[0] + e.info.name)
-				)}`
+					Command.commands
+						.filter(
+							(e) => e.info.allowScene && e.info.permission !== "bot_owner",
+						)
+						.map((e) => e.info.prefix[0] + e.info.name),
+				)}`,
 			);
 
 		const user_rigths = await ctx.telegram.getChatMember(
 			ctx.chat.id,
-			ctx.from.id
+			ctx.from.id,
 		);
 
 		if (Command.cantUse(command, ctx, user_rigths))
@@ -225,7 +230,7 @@ process.on("modulesLoad", () => {
 				ctx,
 				text.replace(config.command.clear, ""),
 				{ ...ctx.data, user_rigths },
-				command
+				command,
 			);
 		} catch (error) {
 			Service.error({
@@ -245,8 +250,8 @@ new Command(
 		hideFromHelpList: true,
 	},
 	(ctx, _args, data) => {
-		ctx.reply(`${data.user.static.name}, кобольдя очнулся. /help`);
-	}
+		ctx.reply(`${data.user?.static.name}, кобольдя очнулся. /help`);
+	},
 );
 
 new Command(
@@ -260,16 +265,16 @@ new Command(
 		const rigths = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
 		for (const e of Command.commands.filter((e) =>
-			e.info.prefix.includes("/")
+			e.info.prefix.includes("/"),
 		)) {
 			if (Command.cantUse(e, ctx, rigths) || e.info.hideFromHelpList) continue;
 			message = fmt`${message}  /${e.info.name} - ${italic(
-				e.info.description
+				e.info.description,
 			)}\n`;
 		}
 
 		for (const e of Command.commands.filter(
-			(e) => !e.info.prefix.includes("/")
+			(e) => !e.info.prefix.includes("/"),
 		)) {
 			if (Command.cantUse(e, ctx, rigths)) continue;
 			message = fmt`${message}  ${code(
@@ -277,11 +282,11 @@ new Command(
 					e.info.prefix.length > 1
 						? `[${e.info.prefix.join(", ")}]`
 						: e.info.prefix[0]
-				}${e.info.name}`
+				}${e.info.name}`,
 			)} - ${italic(e.info.description)}\n`;
 		}
 
 		if (message.text === "Команды:\n") return ctx.reply("Команды недоступны");
 		ctx.reply(message);
-	}
+	},
 );
