@@ -1,7 +1,11 @@
+import './utils/env.js';
+
 import { socksDispatcher } from "fetch-socks";
 import { SocksProxyAgent } from "socks-proxy-agent";
 
 const proxyUrl = process.env.DISCORD_SOCKS_PROXY_URL;
+if (proxyUrl) console.log("USING PROXY", proxyUrl)
+
 export const agent = proxyUrl ? new SocksProxyAgent(proxyUrl) : undefined;
 
 export const dispatcher = proxyUrl
