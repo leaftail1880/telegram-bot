@@ -247,7 +247,7 @@ __metadata:
     lunarphase-js: "npm:^2.0.1"
     sanitize-html: "npm:^2.11.0"
     socks-proxy-agent: "npm:^8.0.5"
-    telegraf-hardened: "npm:^6.0.0"
+    telegraf-hardened: "patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch"
   languageName: unknown
   linkType: soft
 
@@ -421,7 +421,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"telegraf-hardened@npm:^6.0.0":
+"telegraf-hardened@npm:6.0.0":
   version: 6.0.0
   resolution: "telegraf-hardened@npm:6.0.0"
   dependencies:
@@ -433,6 +433,21 @@ __metadata:
   bin:
     telegraf: lib/cli.mjs
   checksum: 10c0/962a4ca2795c500ba1a7880b668dbcb1b785ab8fe67317b649661b50fe6a279ec36906731a3da8ca4e5a3a24a8c49382621ff5ed29958fe2688345bf2c38503a
+  languageName: node
+  linkType: hard
+
+"telegraf-hardened@patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch":
+  version: 6.0.0
+  resolution: "telegraf-hardened@patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch::version=6.0.0&hash=df0209"
+  dependencies:
+    "@telegraf/types": "npm:@telegraf-hardened/types@^9.6.0"
+    debug: "npm:^4.4.3"
+    mri: "npm:^1.2.0"
+    p-timeout: "npm:^4.1.0"
+    safe-compare: "npm:^1.1.4"
+  bin:
+    telegraf: lib/cli.mjs
+  checksum: 10c0/25f22d23b67f6e2a4a94d71e3b7b28b23e8393cca7a96d125dce59c2e001ab915c5ab5d431626b9e3f39d2b74dba1a0f64e9602dd2ea6a3682075037729a21d1
   languageName: node
   linkType: hard
 
