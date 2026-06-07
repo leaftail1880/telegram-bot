@@ -23,4 +23,4 @@ jobs:
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           keep-n-tagged: 3
-          package: ${{ github.repository }}
+          package: ${{ github.event.repository.name }}
