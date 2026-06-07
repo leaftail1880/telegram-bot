@@ -6,7 +6,6 @@ export * as leafy_db from "leafy-db";
 export const database = new LeafyDBManager({
 	repository: Github(process.env.DB_REPO),
 	token: process.env.DB_TOKEN,
-	// @ts-expect-error Version mismatch
 	dispatcher,
 });
 
