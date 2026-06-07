@@ -4,6 +4,7 @@ WORKDIR /usr/bot
 
 COPY package.json .
 COPY yarn.lock .
+COPY .yarnrc.yml .
 COPY src src
 COPY .yarn .yarn
 
