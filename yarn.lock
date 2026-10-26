@@ -5,10 +5,10 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
-"@telegraf/types@npm:@telegraf-hardened/types@^9.6.0":
-  version: 9.6.0
-  resolution: "@telegraf-hardened/types@npm:9.6.0"
-  checksum: 10c0/eb26e0468ac3f49682c8adf059de128253dc1e661ace0a31afb4ee51d3349bbe2e01352a2ad48fb7b6dd2a39acf27bf2461a3c793e73e0bfc437733aca0bbe96
+"@telegraf/types@npm:@telegraf-hardened/types@^10.3.1":
+  version: 10.3.1
+  resolution: "@telegraf-hardened/types@npm:10.3.1"
+  checksum: 10c0/e9d8ea5d0f8e69f1a072c05d740ffc077177dc9b44b4f90c8a85b679e53ab7a61317951dfabd850ffcf510fda70cea5b969bcd4facf01476e871adb9e7718d49
   languageName: node
   linkType: hard
 
@@ -97,65 +97,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deepmerge@npm:^4.2.2":
-  version: 4.3.1
-  resolution: "deepmerge@npm:4.3.1"
-  checksum: 10c0/e53481aaf1aa2c4082b5342be6b6d8ad9dfe387bc92ce197a66dea08bd4265904a087e75e464f14d1347cf2ac8afe1e4c16b266e0561cc5df29382d3c5f80044
-  languageName: node
-  linkType: hard
-
-"dom-serializer@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "dom-serializer@npm:2.0.0"
-  dependencies:
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.2"
-    entities: "npm:^4.2.0"
-  checksum: 10c0/d5ae2b7110ca3746b3643d3ef60ef823f5f078667baf530cec096433f1627ec4b6fa8c072f09d079d7cda915fd2c7bc1b7b935681e9b09e591e1e15f4040b8e2
-  languageName: node
-  linkType: hard
-
-"domelementtype@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "domelementtype@npm:2.3.0"
-  checksum: 10c0/686f5a9ef0fff078c1412c05db73a0dce096190036f33e400a07e2a4518e9f56b1e324f5c576a0a747ef0e75b5d985c040b0d51945ce780c0dd3c625a18cd8c9
-  languageName: node
-  linkType: hard
-
-"domhandler@npm:^5.0.1, domhandler@npm:^5.0.2, domhandler@npm:^5.0.3":
-  version: 5.0.3
-  resolution: "domhandler@npm:5.0.3"
-  dependencies:
-    domelementtype: "npm:^2.3.0"
-  checksum: 10c0/bba1e5932b3e196ad6862286d76adc89a0dbf0c773e5ced1eb01f9af930c50093a084eff14b8de5ea60b895c56a04d5de8bbc4930c5543d029091916770b2d2a
-  languageName: node
-  linkType: hard
-
-"domutils@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "domutils@npm:3.0.1"
-  dependencies:
-    dom-serializer: "npm:^2.0.0"
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.1"
-  checksum: 10c0/8ec14e7e54f58cae0062fa9aaf97c05a094733ff6df8ede588c57d96799ceb45d1ea46479e8dd285f43af43b3e7618a501b2b41d2c2080078d5947b5fee2b5f9
-  languageName: node
-  linkType: hard
-
-"entities@npm:^4.2.0":
-  version: 4.4.0
-  resolution: "entities@npm:4.4.0"
-  checksum: 10c0/b7971419897622d3996bbbff99249e166caaaf3ea95d3841d6dc5d3bf315f133b649fbe932623e3cc527d871112e7563a8284e24f23e472126aa90c4e9c3215b
-  languageName: node
-  linkType: hard
-
-"entities@npm:^4.4.0":
-  version: 4.5.0
-  resolution: "entities@npm:4.5.0"
-  checksum: 10c0/5b039739f7621f5d1ad996715e53d964035f75ad3b9a4d38c6b3804bb226e282ffeae2443624d8fdd9c47d8e926ae9ac009c54671243f0c3294c26af7cc85250
-  languageName: node
-  linkType: hard
-
 "eris@npm:^0.18.0":
   version: 0.18.0
   resolution: "eris@npm:0.18.0"
@@ -172,13 +113,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"escape-string-regexp@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "escape-string-regexp@npm:4.0.0"
-  checksum: 10c0/9497d4dd307d845bd7f75180d8188bb17ea8c151c1edbf6b6717c100e104d629dc2dfb687686181b0f4b7d732c7dfdc4d5e7a8ff72de1b0ca283a75bbb3a9cd9
-  languageName: node
-  linkType: hard
-
 "fetch-socks@npm:^1.3.3":
   version: 1.3.3
   resolution: "fetch-socks@npm:1.3.3"
@@ -186,18 +120,6 @@ __metadata:
     socks: "npm:^2.8.7"
     undici: "npm:>=7"
   checksum: 10c0/ae65a0ca23c5474ea386aa861fdb89dc8188be02e4bcd23220a89aca02f3f76fb086d2b5b8ba0724e36c90940e2df59efde7dc3c3b59545fd59254627af60608
-  languageName: node
-  linkType: hard
-
-"htmlparser2@npm:^8.0.0":
-  version: 8.0.2
-  resolution: "htmlparser2@npm:8.0.2"
-  dependencies:
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.3"
-    domutils: "npm:^3.0.1"
-    entities: "npm:^4.4.0"
-  checksum: 10c0/609cca85886d0bf2c9a5db8c6926a89f3764596877492e2caa7a25a789af4065bc6ee2cdc81807fe6b1d03a87bf8a373b5a754528a4cc05146b713c20575aab4
   languageName: node
   linkType: hard
 
@@ -215,13 +137,6 @@ __metadata:
     jsbn: "npm:1.1.0"
     sprintf-js: "npm:^1.1.3"
   checksum: 10c0/331cd07fafcb3b24100613e4b53e1a2b4feab11e671e655d46dc09ee233da5011284d09ca40c4ecbdfe1d0004f462958675c224a804259f2f78d2465a87824bc
-  languageName: node
-  linkType: hard
-
-"is-plain-object@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "is-plain-object@npm:5.0.0"
-  checksum: 10c0/893e42bad832aae3511c71fd61c0bf61aa3a6d853061c62a307261842727d0d25f761ce9379f7ba7226d6179db2a3157efa918e7fe26360f3bf0842d9f28942c
   languageName: node
   linkType: hard
 
@@ -245,9 +160,8 @@ __metadata:
     leafy-db: "npm:^4.0.1"
     leafy-utils: "npm:^5.3.2"
     lunarphase-js: "npm:^2.0.1"
-    sanitize-html: "npm:^2.11.0"
     socks-proxy-agent: "npm:^8.0.5"
-    telegraf-hardened: "patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch"
+    telegraf-hardened: "npm:^6.1.0"
   languageName: unknown
   linkType: soft
 
@@ -299,15 +213,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.6":
-  version: 3.3.6
-  resolution: "nanoid@npm:3.3.6"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: 10c0/606b355960d0fcbe3d27924c4c52ef7d47d3b57208808ece73279420d91469b01ec1dce10fae512b6d4a8c5a5432b352b228336a8b2202a6ea68e67fa348e2ee
-  languageName: node
-  linkType: hard
-
 "opusscript@npm:^0.0.8":
   version: 0.0.8
   resolution: "opusscript@npm:0.0.8"
@@ -322,51 +227,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parse-srcset@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "parse-srcset@npm:1.0.2"
-  checksum: 10c0/2f268e3d110d4c53d06ed2a8e8ee61a7da0cee13bf150819a6da066a8ca9b8d15b5600d6e6cae8be940e2edc50ee7c1e1052934d6ec858324065ecef848f0497
-  languageName: node
-  linkType: hard
-
-"picocolors@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "picocolors@npm:1.0.0"
-  checksum: 10c0/20a5b249e331c14479d94ec6817a182fd7a5680debae82705747b2db7ec50009a5f6648d0621c561b0572703f84dbef0858abcbd5856d3c5511426afcb1961f7
-  languageName: node
-  linkType: hard
-
-"postcss@npm:^8.3.11":
-  version: 8.4.27
-  resolution: "postcss@npm:8.4.27"
-  dependencies:
-    nanoid: "npm:^3.3.6"
-    picocolors: "npm:^1.0.0"
-    source-map-js: "npm:^1.0.2"
-  checksum: 10c0/41a0476e05cb97514ff8d75e4ff9fdcf778f22b2e0d25b7028f219cd408e01d3c4f50459d4a1cd9a430d8ef08202c881374a4fa4ea6009f4a135a07315d606e5
-  languageName: node
-  linkType: hard
-
 "safe-compare@npm:^1.1.4":
   version: 1.1.4
   resolution: "safe-compare@npm:1.1.4"
   dependencies:
     buffer-alloc: "npm:^1.2.0"
   checksum: 10c0/ada2ef3b6c3a216d82be7b749b4b3a247bcf28b028e1786e636ec83c0a0f918779c30158473e13b30120a6c5bfe3262eb39e95b42dae1dee191565442629f71e
-  languageName: node
-  linkType: hard
-
-"sanitize-html@npm:^2.11.0":
-  version: 2.11.0
-  resolution: "sanitize-html@npm:2.11.0"
-  dependencies:
-    deepmerge: "npm:^4.2.2"
-    escape-string-regexp: "npm:^4.0.0"
-    htmlparser2: "npm:^8.0.0"
-    is-plain-object: "npm:^5.0.0"
-    parse-srcset: "npm:^1.0.2"
-    postcss: "npm:^8.3.11"
-  checksum: 10c0/863dcce83c4631fcb5519fd0739ed9e93adcce8dd89e5a738823c309c68686048b0f4e30e07bae0de67ea72b567ee9c908af756ba22fcfcb8fd1fa2c69ca3e0d
   languageName: node
   linkType: hard
 
@@ -408,13 +274,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-js@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "source-map-js@npm:1.0.2"
-  checksum: 10c0/32f2dfd1e9b7168f9a9715eb1b4e21905850f3b50cf02cf476e47e4eebe8e6b762b63a64357896aa29b37e24922b4282df0f492e0d2ace572b43d15525976ff8
-  languageName: node
-  linkType: hard
-
 "sprintf-js@npm:^1.1.3":
   version: 1.1.3
   resolution: "sprintf-js@npm:1.1.3"
@@ -422,33 +281,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"telegraf-hardened@npm:6.0.0":
-  version: 6.0.0
-  resolution: "telegraf-hardened@npm:6.0.0"
+"telegraf-hardened@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "telegraf-hardened@npm:6.1.0"
   dependencies:
-    "@telegraf/types": "npm:@telegraf-hardened/types@^9.6.0"
+    "@telegraf/types": "npm:@telegraf-hardened/types@^10.3.1"
     debug: "npm:^4.4.3"
     mri: "npm:^1.2.0"
     p-timeout: "npm:^4.1.0"
     safe-compare: "npm:^1.1.4"
   bin:
     telegraf: lib/cli.mjs
-  checksum: 10c0/962a4ca2795c500ba1a7880b668dbcb1b785ab8fe67317b649661b50fe6a279ec36906731a3da8ca4e5a3a24a8c49382621ff5ed29958fe2688345bf2c38503a
-  languageName: node
-  linkType: hard
-
-"telegraf-hardened@patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch":
-  version: 6.0.0
-  resolution: "telegraf-hardened@patch:telegraf-hardened@npm%3A6.0.0#~/.yarn/patches/telegraf-hardened-npm-6.0.0-448a375ed5.patch::version=6.0.0&hash=df0209"
-  dependencies:
-    "@telegraf/types": "npm:@telegraf-hardened/types@^9.6.0"
-    debug: "npm:^4.4.3"
-    mri: "npm:^1.2.0"
-    p-timeout: "npm:^4.1.0"
-    safe-compare: "npm:^1.1.4"
-  bin:
-    telegraf: lib/cli.mjs
-  checksum: 10c0/25f22d23b67f6e2a4a94d71e3b7b28b23e8393cca7a96d125dce59c2e001ab915c5ab5d431626b9e3f39d2b74dba1a0f64e9602dd2ea6a3682075037729a21d1
+  checksum: 10c0/3df486678cd6de346926577c5c14a74f704bbc68f524f10e70841f4dd6809a57ad63320868256d18692f351390ad1f04c41f1c96fbf4272ea69613905dc6c144
   languageName: node
   linkType: hard
 
