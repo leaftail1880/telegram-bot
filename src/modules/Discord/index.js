@@ -31,8 +31,7 @@ if (!token) {
 	client.connect();
 
 	client.on("error", (error) => {
-		logger.error(error);
-		client.disconnect({ reconnect: true });
+		logger.error("ErrorEvent", error);
 	});
 
 	client.on("voiceChannelJoin", (member, channel) => {
